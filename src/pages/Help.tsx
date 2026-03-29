@@ -182,7 +182,7 @@ export default function Help () {
           </li>
           <li>
             <h3 className="mt-8">What networks are supported?</h3>
-            <p className="mt-2 leading-relaxed w-full max-w-ch">Currently DVPeasy supports the testnets Ethereum Sepolia and Arbitrum Sepolia, and the mainnets Polygon and Avalanche. If you'd like support for a new chain, please <a className="link link-primary link-animated" href="https://github.com/tristan-mcdonald/dvpeasy/issues" rel="noopener noreferrer" target="_blank">request it on GitHub</a></p>
+            <p className="mt-2 leading-relaxed w-full max-w-ch">Currently DVPeasy supports the testnets Ethereum Sepolia and Base Sepolia, and the mainnets Ethereum and Base. If you'd like support for a new chain, please <a className="link link-primary link-animated" href="https://github.com/tristan-mcdonald/dvpeasy/issues" rel="noopener noreferrer" target="_blank">request it on GitHub</a></p>
           </li>
           <li>
             <h3 className="mt-8">Who is behind DVPeasy?</h3>

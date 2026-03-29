@@ -1,4 +1,3 @@
-import { arbitrumSepoliaTokens } from '../data/testnet-tokens/arbitrum-sepolia';
 import { chainManager } from '../lib/chain-manager';
 import { logger } from '../lib/logger';
 import { sepoliaTokens } from '../data/testnet-tokens/sepolia';
@@ -78,8 +77,6 @@ function loadTestnetTokens (chainId: number): TestnetTokenDatabase | null {
   switch (chainId) {
     case 11155111: // Sepolia.
       return sepoliaTokens;
-    case 421614: // Arbitrum Sepolia.
-      return arbitrumSepoliaTokens;
     default:
       return null;
   }

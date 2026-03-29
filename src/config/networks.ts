@@ -1,25 +1,17 @@
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import {
-  arbitrumSepolia as viemArbitrumSepolia,
-  avalanche as viemAvalanche,
-  avalancheFuji as viemAvalancheFuji,
-  base as viemBase,
-  baseSepolia as viemBaseSepolia,
-  mainnet as viemMainnet,
-  polygon as viemPolygon,
-  sepolia as viemSepolia,
-} from 'viem/chains';
-import {
-  arbitrumSepolia as appKitArbitrumSepolia,
-  avalanche as appKitAvalanche,
-  avalancheFuji as appKitAvalancheFuji,
   base as appKitBase,
   baseSepolia as appKitBaseSepolia,
   mainnet as appKitMainnet,
-  polygon as appKitPolygon,
   sepolia as appKitSepolia,
 } from '@reown/appkit/networks';
 import type { Chain } from 'viem';
+import {
+  base as viemBase,
+  baseSepolia as viemBaseSepolia,
+  mainnet as viemMainnet,
+  sepolia as viemSepolia,
+} from 'viem/chains';
 
 /**
  * Network metadata interface containing all properties for a blockchain network.
@@ -84,33 +76,6 @@ const createNetworkConfig = (
 });
 
 export const NETWORKS: Record<string, NetworkMetadata> = {
-  arbitrumSepolia: createNetworkConfig(
-    'arbitrumSepolia',
-    'Arbitrum Sepolia',
-    'arbitrum.svg',
-    viemArbitrumSepolia,
-    appKitArbitrumSepolia,
-    true,
-    `https://arb-sepolia.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
-  avalanche: createNetworkConfig(
-    'avalanche',
-    'Avalanche C-Chain',
-    'avalanche.svg',
-    viemAvalanche,
-    appKitAvalanche,
-    false,
-    'https://api.avax.network/ext/bc/C/rpc',
-  ),
-  avalancheFuji: createNetworkConfig(
-    'avalancheFuji',
-    'Avalanche Fuji',
-    'avalanche.svg',
-    viemAvalancheFuji,
-    appKitAvalancheFuji,
-    true,
-    'https://api.avax-test.network/ext/bc/C/rpc',
-  ),
   base: createNetworkConfig(
     'base',
     'Base',
@@ -137,15 +102,6 @@ export const NETWORKS: Record<string, NetworkMetadata> = {
     appKitMainnet,
     false,
     `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
-  polygon: createNetworkConfig(
-    'polygon',
-    'Polygon Mainnet',
-    'polygon.svg',
-    viemPolygon,
-    appKitPolygon,
-    false,
-    `https://polygon-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
   ),
   sepolia: createNetworkConfig(
     'sepolia',
@@ -222,9 +178,6 @@ export const networkConfigManager = {
    */
   networkCategory (networkId: string): NetworkCategory | undefined {
     if (networkId === 'mainnet' || networkId === 'sepolia') return NetworkCategory.ETHEREUM;
-    if (networkId.includes('arbitrum')) return NetworkCategory.ARBITRUM;
-    if (networkId.includes('avalanche')) return NetworkCategory.AVALANCHE;
-    if (networkId.includes('polygon')) return NetworkCategory.POLYGON;
     if (networkId.includes('base')) return NetworkCategory.BASE;
     return undefined;
   },
@@ -247,9 +200,6 @@ export const networkConfigManager = {
     const result = {
       [NetworkCategory.BASE]: [],
       [NetworkCategory.ETHEREUM]: [],
-      [NetworkCategory.ARBITRUM]: [],
-      [NetworkCategory.AVALANCHE]: [],
-      [NetworkCategory.POLYGON]: [],
     } as Record<NetworkCategory, NetworkMetadata[]>;
 
     Object.values(NETWORKS).forEach(network => {
@@ -339,7 +289,4 @@ export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.values(NETW
 export enum NetworkCategory {
   BASE = 'base',
   ETHEREUM = 'ethereum',
-  ARBITRUM = 'arbitrum',
-  AVALANCHE = 'avalanche',
-  POLYGON = 'polygon',
 }
