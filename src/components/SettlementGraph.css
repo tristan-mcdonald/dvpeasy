@@ -1,0 +1,59 @@
+.settlement-graph {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.settlement-graph .node rect {
+  stroke: #fff;
+  stroke-width: 2px;
+  cursor: move;
+}
+
+.settlement-graph .node text {
+  font-size: 12px;
+  font-family: "Geist", system-ui, -apple-system, sans-serif;
+  fill: #333;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+.settlement-graph .edge path {
+  stroke: #999;
+  stroke-width: 1.5px;
+  fill: none;
+  marker-end: url(#arrow);
+}
+
+.settlement-graph .edge-label {
+  font-size: 12px;
+  font-family: "Geist", system-ui, -apple-system, sans-serif;
+  fill: #374151;
+  pointer-events: none;
+  background: white;
+}
+
+.settlement-graph .edge-label-bg {
+  fill: white;
+  fill-opacity: 0.8;
+}
+
+.settlement-graph .edge-label-container text {
+  font-size: 12px;
+  font-family: "Geist", system-ui, -apple-system, sans-serif;
+  fill: #374151;
+  pointer-events: none;
+}
+
+/* Additional styles for better visibility */
+.settlement-graph .node:hover rect {
+  stroke: #666;
+  stroke-width: 3px;
+}
+
+.settlement-graph .edge:hover path {
+  stroke: #666;
+  stroke-width: 2px;
+}

@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  # Use the project's existing ESLint (via Yarn) to lint only changed JS/TS files.
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint (project)
+        entry: yarn eslint
+        language: system
+        types: [javascript, jsx, ts, tsx]
+        args: ["--max-warnings=0"]
+        pass_filenames: true

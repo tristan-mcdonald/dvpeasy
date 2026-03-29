@@ -1,0 +1,263 @@
+@import "flatpickr/dist/flatpickr.css";
+@import "flatpickr/dist/themes/dark.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "Geist";
+    src: url("/fonts/Geist/webfonts/Geist[wght].woff2") format("woff2-variations");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "GeistMono";
+    src: url("/fonts/GeistMono/webfonts/GeistMono[wght].woff2") format("woff2-variations");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@layer base {
+    :root {
+        /* Override FlyOnUi custom properties. */
+        --radius-selector: 20px;
+
+        /* Set our own custom properties. */
+        --color-primary: hsla(205, 100%, 34.3%, 1);
+        --color-primary-interaction: hsla(205, 100%, 20%, 1);
+        --color-primary-subtle: hsla(205, 55.7%, 62%, 1);
+
+        --color-secondary: hsla(107.5, 55.8%, 48.8%, 1);
+
+        --color-attention: hsla(34.1, 100%, 62.7%, 1);
+        --color-attention-subtle: hsla(34.1, 100%, 62.7%, .5);
+
+        --color-interface-dark: hsla(205, 73%, 14%, 1);
+        --color-interface-low: hsla(205, 82%, 8%, 1);
+        --color-interface-black: hsla(205, 73.3%, 2.9%, 1);
+        --color-interface-border: hsla(40, 100%, 89.4%, 1);
+
+        --color-text-anchor: hsla(216, 100%, 70.4%, 1);
+        --color-text-body: hsla(205, 45%, 30%, 1);
+        --color-text-disabled: hsla(205, 30.5%, 72.4%, 1);
+        --color-text-heading: hsla(205, 81.6%, 19.2%, 1);
+        --color-text-label: hsla(205, 34.2%, 47.6%, 1);
+
+        --color-body-background: hsla(40, 100%, 95.9%, 1);
+        --color-card-background: hsla(40, 100%, 98.2%, 1);
+
+        --color-input-background: white;
+        --color-input-border: hsla(34, 100%, 89.6%, 1);
+        --color-input-border-focus: hsla(35.1, 100%, 83.9%, 1);
+        --color-input-outline: hsla(35.1, 100%, 83.9%, 1);
+        --color-input-placeholder: hsla(220, 34%, 65%, 1);
+
+        --color-primary-button-border: hsla(205, 84.5%, 37.8%, 1);
+        --color-primary-button-background: hsla(205, 72.2%, 14.1%, 1);
+
+        --color-logo-main: hsla(205, 65%, 26.9%, 1);
+        --color-logo-highlight: hsla(34.1, 100%, 65.5%, 1);
+
+        /* Add missing FlyOnUI variables. */
+        --text-xs: .75rem;
+        --text-xs--line-height: calc(1/.75);
+        --text-sm: .875rem;
+        --text-sm--line-height: calc(1.25/.875);
+        --text-base: 1rem;
+        --text-base--line-height: calc(1.5/1);
+        --text-lg: 1.125rem;
+        --text-lg--line-height: calc(1.75/1.125);
+        --text-xl: 1.25rem;
+        --text-xl--line-height: calc(1.75/1.25);
+        --text-2xl: 1.5rem;
+        --text-2xl--line-height: calc(2/1.5);
+        --text-3xl: 1.875rem;
+        --text-3xl--line-height: calc(2.25/1.875);
+        --text-4xl: 2.25rem;
+        --text-4xl--line-height: calc(2.5/2.25);
+        --text-5xl: 3rem;
+        --text-5xl--line-height: 1;
+        --text-6xl: 3.75rem;
+        --text-6xl--line-height: 1;
+        --text-7xl: 4.5rem;
+        --text-7xl--line-height: 1;
+        --text-8xl: 6rem;
+        --text-8xl--line-height: 1;
+        --text-9xl: 8rem;
+        --text-9xl--line-height: 1;
+        --font-weight-light: 300;
+        --font-weight-normal: 400;
+        --font-weight-medium: 500;
+        --font-weight-semibold: 600;
+        --font-weight-bold: 700;
+        --font-weight-black: 900;
+        --tracking-widest: .1em;
+        --leading-tight: 1.25;
+        --radius-xs: .125rem;
+        --radius-sm: .25rem;
+        --radius-md: .375rem;
+        --radius-lg: .5rem;
+        --radius-xl: .75rem;
+        --radius-2xl: 1rem;
+        --radius-3xl: 1.5rem;
+        --drop-shadow-sm: 0 1px 2px #00000026;
+        --ease-in: cubic-bezier(.4,0,1,1);
+        --ease-out: cubic-bezier(0,0,.2,1);
+        --ease-in-out: cubic-bezier(.4,0,.2,1);
+        --animate-spin: spin 1s linear infinite;
+        --animate-ping: ping 1s cubic-bezier(0,0,.2,1)infinite;
+        --animate-pulse: pulse 2s cubic-bezier(.4,0,.6,1)infinite;
+        --animate-bounce: bounce 1s infinite;
+        --blur-xs: 4px;
+        --blur-lg: 16px;
+        --blur-2xl: 40px;
+        --aspect-video: 16/9;
+        --default-transition-duration: .15s;
+        --default-transition-timing-function: cubic-bezier(.4,0,.2,1);
+        --default-font-family: var(--font-sans);
+        --default-mono-font-family: var(--font-mono);
+        --animate-border: background 10s ease infinite;
+    }
+    html {
+        font-family: "Geist", system-ui, -apple-system, sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-size: 12px;
+        @media (min-width: 640px) {
+            font-size: 13px;
+        }
+        @media (min-width: 768px) {
+            font-size: 14px;
+        }
+        @media (min-width: 1024px) {
+            font-size: 15px;
+        }
+        @media (min-width: 1280px) {
+            font-size: 16px;
+        }
+        @media (min-width: 1536px) {
+            font-size: 17px;
+        }
+        font-style: normal;
+        letter-spacing: -.01em;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+        font-variation-settings: "wdth" 7;
+        color: var(--color-text-heading);
+    }
+    h1 {
+        @apply text-3xl;
+    }
+    h2 {
+        @apply text-xl;
+    }
+    h3 {
+        @apply text-lg;
+    }
+    [aria-current] .link,
+    [aria-current].link {
+        --link-color: var(--color-attention)!important;
+    }
+    .label {
+        @apply text-sm font-medium text-text-label;
+    }
+    .input-standard {
+        @apply transition block w-full rounded-lg bg-input-background border border-input-border px-4 py-3 focus:border-input-border-focus focus:ring-4 focus:ring-input-outline-focus focus:outline-none focus-within:border-input-border-focus focus-within:ring-4 focus-within:ring-input-outline-focus focus-within:outline-none;
+    }
+    .shadow-standard {
+        box-shadow: 0 4px 6px -1px hsla(34, 100%, 90%, 0.2), 0 2px 4px -2px hsla(34, 100%, 50%, 0.1);
+    }
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-input-placeholder);
+    }
+    /* Override FlyOnUI's checkbox border-color. */
+    .checkbox.border-input-border {
+        --tw-border-opacity: 1;
+        border-color: var(--color-input-border);
+    }
+    /* Override FlyOnUI's badge component. */
+    .badge {
+        border-radius: 2px !important;
+        padding-left: calc(.25rem * 2.2) !important;
+    }
+}
+
+@layer components {
+    /* Override switch background color for unchecked state only. */
+    .switch.switch-primary:not(:checked):not([aria-checked="true"]) {
+        background-color: hsla(34.1, 100%, 62.7%, .3);
+    }
+    .table-no-padding-inline td:first-child,
+    .table-no-padding-inline th:first-child {
+        padding-inline-start: 0;
+    }
+    .table-no-padding-inline td:last-child,
+    .table-no-padding-inline th:last-child {
+        padding-inline-end: 0;
+    }
+    .break-numbers {
+        word-break: break-all !important;
+        overflow-wrap: anywhere !important;
+        white-space: normal !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+    }
+    .fade-container {
+        position: relative;
+        min-height: 120px;
+    }
+    .fade-content {
+        opacity: 1;
+        transition: opacity 300ms ease-in-out;
+    }
+    .fade-content.fade-out {
+        opacity: 0;
+    }
+    .fade-content.initial-load {
+        transition: opacity 500ms ease-in-out;
+    }
+    .fade-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 300ms ease-in-out;
+    }
+    .fade-loading.fade-in {
+        opacity: 1;
+    }
+    .fade-loading.initial-load {
+        transition: opacity 500ms ease-in-out;
+    }
+
+    /* Drag and drop animations */
+    .sortable-item {
+        transition: transform 200ms ease, opacity 200ms ease;
+    }
+
+    .sortable-item.is-dragging {
+        transition: none;
+    }
+
+    .drag-overlay {
+        animation: dragLift 200ms ease-out;
+    }
+
+    @keyframes dragLift {
+        0% {
+            transform: scale(1) rotate(0deg);
+            box-shadow: 0 4px 6px -1px hsla(34, 100%, 90%, 0.2), 0 2px 4px -2px hsla(34, 100%, 50%, 0.1);
+        }
+        100% {
+            transform: scale(1.05) rotate(3deg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    }
+}

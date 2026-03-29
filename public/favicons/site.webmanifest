@@ -1,0 +1,7 @@
+{
+  "name": "DVPeasy",
+  "short_name": "DVP",
+  "theme_color": "#070e22",
+  "background_color": "#02050d",
+  "display": "standalone"
+}

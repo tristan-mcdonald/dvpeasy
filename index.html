@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html
+data-theme="light"
+lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta
+    content="width=device-width, initial-scale=1.0"
+    name="viewport">
+    <meta
+    content="IE=edge"
+    http-equiv="X-UA-Compatible">
+    <title>DVPeasy</title>
+    <script type="text/javascript">
+      // Single page apps configuration for GitHub Pages.
+      (function (location) {
+        if (location.search[1] === '/' ) {
+          const decoded = location.search.slice(1).split('&').map(function (segment) {
+            return segment.replace(/~and~/g, '&')
+          }).join('?');
+          sessionStorage.setItem('redirect', decoded);
+        }
+      }(window.location))
+    </script>
+  </head>
+  <body class="m-0 w-full max-w-full min-h-[100vh] shadow-[inset_0_3px_var(--color-attention)] bg-body-background px-6 text-base text-text-body">
+    <div id="root"></div>
+    <script
+    src="/src/main.tsx"
+    type="module"></script>
+  </body>
+</html>
