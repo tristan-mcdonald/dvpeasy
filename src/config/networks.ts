@@ -3,6 +3,9 @@ import {
   arbitrumSepolia as viemArbitrumSepolia,
   avalanche as viemAvalanche,
   avalancheFuji as viemAvalancheFuji,
+  base as viemBase,
+  baseSepolia as viemBaseSepolia,
+  mainnet as viemMainnet,
   polygon as viemPolygon,
   sepolia as viemSepolia,
 } from 'viem/chains';
@@ -10,6 +13,9 @@ import {
   arbitrumSepolia as appKitArbitrumSepolia,
   avalanche as appKitAvalanche,
   avalancheFuji as appKitAvalancheFuji,
+  base as appKitBase,
+  baseSepolia as appKitBaseSepolia,
+  mainnet as appKitMainnet,
   polygon as appKitPolygon,
   sepolia as appKitSepolia,
 } from '@reown/appkit/networks';
@@ -105,6 +111,33 @@ export const NETWORKS: Record<string, NetworkMetadata> = {
     true,
     'https://api.avax-test.network/ext/bc/C/rpc',
   ),
+  base: createNetworkConfig(
+    'base',
+    'Base',
+    'base.svg',
+    viemBase,
+    appKitBase,
+    false,
+    `https://base-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
+  ),
+  baseSepolia: createNetworkConfig(
+    'baseSepolia',
+    'Base Sepolia',
+    'base.svg',
+    viemBaseSepolia,
+    appKitBaseSepolia,
+    true,
+    `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey()}`,
+  ),
+  mainnet: createNetworkConfig(
+    'mainnet',
+    'Ethereum',
+    'ethereum.svg',
+    viemMainnet,
+    appKitMainnet,
+    false,
+    `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
+  ),
   polygon: createNetworkConfig(
     'polygon',
     'Polygon Mainnet',
@@ -188,10 +221,11 @@ export const networkConfigManager = {
    * Network category by network ID.
    */
   networkCategory (networkId: string): NetworkCategory | undefined {
-    if (networkId.includes('sepolia')) return NetworkCategory.ETHEREUM;
+    if (networkId === 'mainnet' || networkId === 'sepolia') return NetworkCategory.ETHEREUM;
     if (networkId.includes('arbitrum')) return NetworkCategory.ARBITRUM;
     if (networkId.includes('avalanche')) return NetworkCategory.AVALANCHE;
     if (networkId.includes('polygon')) return NetworkCategory.POLYGON;
+    if (networkId.includes('base')) return NetworkCategory.BASE;
     return undefined;
   },
 
@@ -211,6 +245,7 @@ export const networkConfigManager = {
    */
   networksByCategory (): Record<NetworkCategory, NetworkMetadata[]> {
     const result = {
+      [NetworkCategory.BASE]: [],
       [NetworkCategory.ETHEREUM]: [],
       [NetworkCategory.ARBITRUM]: [],
       [NetworkCategory.AVALANCHE]: [],
@@ -302,6 +337,7 @@ export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.values(NETW
  * Network category definitions.
  */
 export enum NetworkCategory {
+  BASE = 'base',
   ETHEREUM = 'ethereum',
   ARBITRUM = 'arbitrum',
   AVALANCHE = 'avalanche',

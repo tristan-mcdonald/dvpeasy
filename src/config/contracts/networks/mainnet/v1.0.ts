@@ -3,13 +3,13 @@ import { DVP_ABI } from '../../abis/dvp';
 import { DVP_HELPER_ABI } from '../../abis/dvpHelper';
 
 /**
- * Sepolia v1.0 contract configuration.
+ * Ethereum Mainnet v1.0 contract configuration.
  * Source: https://github.com/KevinSmall/delivery-versus-payment
  */
 export const config: ContractConfig = {
-  networkId: 'sepolia',
-  dvpAddress: '0x0270Eca05754e19Ca0321a0A29A8C0e75409A8BD',
-  dvpHelperAddress: '0x25B3c1ba1C2e38c7C0978F3A43D2D7ab59Beca2d',
+  networkId: 'mainnet',
+  dvpAddress: '0xb0d73b0559F260bc239FF2ffBc8676595601134c',
+  dvpHelperAddress: '0x5de79c31355ABD1683e6f41aA75Bc535c56a6156',
   dvpAbi: DVP_ABI,
   dvpHelperAbi: DVP_HELPER_ABI,
   version: {
