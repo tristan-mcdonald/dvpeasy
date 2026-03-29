@@ -1,7 +1,5 @@
-import ArbitrumSVG from '../assets/icons/networks/arbitrum.svg?react';
-import AvalancheSVG from '../assets/icons/networks/avalanche.svg?react';
+import BaseSVG from '../assets/icons/networks/base.svg?react';
 import EthereumSVG from '../assets/icons/networks/ethereum.svg?react';
-import PolygonSVG from '../assets/icons/networks/polygon.svg?react';
 
 /**
  * Network icon components.
@@ -13,18 +11,10 @@ interface IconProps {
   className?: string;
 }
 
-export function ArbitrumIcon ({ className = 'size-6' }: IconProps) {
-  return <ArbitrumSVG className={className} />;
-}
-
-export function AvalancheIcon ({ className = 'size-6' }: IconProps) {
-  return <AvalancheSVG className={className} />;
+export function BaseIcon ({ className = 'size-6' }: IconProps) {
+  return <BaseSVG className={className} />;
 }
 
 export function EthereumIcon ({ className = 'size-6' }: IconProps) {
   return <EthereumSVG className={className} />;
-}
-
-export function PolygonIcon ({ className = 'size-6' }: IconProps) {
-  return <PolygonSVG className={className} />;
 }

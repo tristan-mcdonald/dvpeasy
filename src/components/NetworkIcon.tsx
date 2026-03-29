@@ -1,4 +1,4 @@
-import { ArbitrumIcon, AvalancheIcon, EthereumIcon, PolygonIcon } from './NetworkIcons';
+import { BaseIcon, EthereumIcon } from './NetworkIcons';
 import { NetworkMetadata } from '../config/networks';
 import { useNetwork } from '../hooks/useNetwork';
 
@@ -32,15 +32,12 @@ export default function NetworkIcon ({
 
   // Display the appropriate icon component based on network ID.
   switch (displayNetwork.id) {
+    case 'mainnet':
     case 'sepolia':
       return <EthereumIcon className={className} />;
-    case 'arbitrumSepolia':
-      return <ArbitrumIcon className={className} />;
-    case 'polygon':
-      return <PolygonIcon className={className} />;
-    case 'avalancheFuji':
-    case 'avalanche':
-      return <AvalancheIcon className={className} />;
+    case 'base':
+    case 'baseSepolia':
+      return <BaseIcon className={className} />;
     default:
       // Fallback for networks without dedicated icon components.
       return (

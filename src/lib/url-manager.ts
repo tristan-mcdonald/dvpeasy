@@ -114,9 +114,9 @@ export const urlManager = {
       // Fall through to default.
     }
 
-    // Default to Polygon Mainnet with latest version.
-    const defaultNetworkId = 'polygon';
-    const defaultVersion = VERSIONED_CONTRACT_CONFIGS.polygon?.defaultVersion || 'v1.0';
+    // Default to Sepolia testnet with latest version.
+    const defaultNetworkId = 'sepolia';
+    const defaultVersion = VERSIONED_CONTRACT_CONFIGS.sepolia?.defaultVersion || 'v1.0';
     return {
       networkId: this.networkIdToSlug(defaultNetworkId),
       version: defaultVersion,
