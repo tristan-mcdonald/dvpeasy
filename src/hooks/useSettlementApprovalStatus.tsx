@@ -70,9 +70,7 @@ export function useSettlementApprovalStatus (
       const formattedRequired = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdRequired, tokenStatus.tokenAddress);
       const formattedApproved = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdApprovedForDvp, tokenStatus.tokenAddress);
       const formattedHeld = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdHeldByParty, tokenStatus.tokenAddress);
-
-      // Extract symbol from formatted amount (e.g., "1.00 ETH" -> "ETH").
-      const symbol = formattedRequired.split(' ').pop() || '';
+      const symbol = await tokenManager.tokenSymbol(tokenStatus.tokenAddress);
 
       return {
         ...tokenStatus,
