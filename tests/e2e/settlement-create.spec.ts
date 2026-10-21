@@ -126,13 +126,13 @@ test.describe('Settlement Creation', () => {
       {
         fromAddress: TEST_WALLETS.ADDRESS_1,
         toAddress: TEST_WALLETS.ADDRESS_2,
-        tokenName: 'ETH ETH Ethereum',
+        tokenName: 'ETH Ethereum',
         amount: '0.01',
       },
       {
         fromAddress: TEST_WALLETS.ADDRESS_2,
         toAddress: TEST_WALLETS.ADDRESS_1,
-        tokenName: 'USDC USDC USD Coin (Test)',
+        tokenName: 'USDC USD Coin (Test)',
         amount: '4000',
       },
     ];

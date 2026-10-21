@@ -81,7 +81,7 @@ export const testSetupManager = {
   },
 
   /**
-   * Selects a network in the application UI.
+   * Selects a network in the application UI, unless the app is already on it.
    *
    * @param page - The application page.
    * @param network - The network identifier to select.
@@ -90,9 +90,16 @@ export const testSetupManager = {
     page: Page,
     network: string,
   ): Promise<void> {
-    // Click on any network button to open the selector.
     const networkButtonPattern = new RegExp(`${TEST_SELECTORS.NETWORK_SELECT_BUTTON}-.*`);
-    await page.getByTestId(networkButtonPattern).click();
+    const networkButton = page.getByTestId(networkButtonPattern);
+    await networkButton.waitFor({ state: 'visible', timeout: TIMEOUTS.STANDARD });
+
+    // The selector disables the current network, so there's nothing to click.
+    const currentNetworkButton = page.getByTestId(`${TEST_SELECTORS.NETWORK_SELECT_BUTTON}-${network}`);
+    if (await currentNetworkButton.isVisible()) return;
+
+    // Open the selector.
+    await networkButton.click();
 
     // Select the specific network.
     const networkDisplayName = getNetworkDisplayName(network);
