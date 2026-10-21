@@ -22,8 +22,6 @@ A decentralized application for creating and managing Delivery Versus Payment se
 - Real-time settlement status tracking
 - Secure wallet connection and transaction signing
 - Multi-chain support (Ethereum, Arbitrum, Polygon)
-- Automatic native token detection for blockchain networks via chainid.network API
-- Fallback handling for unsupported networks
 
 ## Supported networks
 
@@ -35,19 +33,6 @@ A decentralized application for creating and managing Delivery Versus Payment se
 | **Avalanche** | Production | v1.0 | `0xE87c95AB6a3e11e16E72A2b6234454Bb29130C95` |
 | **Avalanche Fuji** | Development | v1.0 | `0xa70404d8ca272bE8bAA48A4b83ED94Db17068e05` |
 
-## Native token resolution
-
-The application automatically detects native tokens for blockchain networks using a two-tier approach:
-
-1. **Local configuration** - Pre-configured networks (Ethereum, Polygon, Arbitrum, Avalanche) use built-in settings
-2. **ChainID.network API** - Unknown networks fetch native token information from chainid.network's database
-
-### How it works:
-- When encountering an unsupported network, the app queries chainid.network for native token details
-- Data is cached for 24 hours to minimize API calls
-- If the API is unavailable, the app falls back to "ETH" as a default
-- Native token symbols (BNB, MATIC, FTM, etc.) are displayed correctly for each network
-
 ## Technology stack
 
 - **Frontend framework**: React with TypeScript
@@ -58,7 +43,6 @@ The application automatically detects native tokens for blockchain networks usin
   - Wagmi (React Hooks for Ethereum)
   - Viem (TypeScript Interface for Ethereum)
   - AppKit/Reown (Wallet connection)
-  - ChainID.network API (Network metadata resolution)
 - **Routing**: React Router
 - **State management**: React Query
 - **UI components**: Headless UI, Lucide React icons
@@ -326,19 +310,12 @@ Notes:
 - Test changes locally with `yarn dev`
 - Ensure all builds pass: `yarn build`
 - Check code quality: `yarn lint`
-- Test network fallback: Run specific test with `yarn test:e2e tests/e2e/network-fallback.spec.ts`
 
 ### E2E Test Coverage
 
 Core test suites:
 - `dashboard.spec.ts` - Dashboard functionality and wallet connection
 - `settlement-create.spec.ts` - Settlement creation flow
-- `network-fallback.spec.ts` - Native token resolution and API fallback handling
-
-The network fallback tests validate:
-- Correct native token display for new networks
-- Graceful degradation when chainid.network is unavailable
-- Cache behavior to prevent excessive API calls
 
 ### Implement e2e tests
 1. go to tests/e2e

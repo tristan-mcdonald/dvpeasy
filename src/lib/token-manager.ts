@@ -10,19 +10,6 @@ import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 // Re-export TokenDetectionError for external use.
 export { TokenDetectionError };
 
-// ChainID.network API response interfaces.
-interface ChainIdNetworkNativeCurrency {
-  name: string;
-  symbol: string;
-  decimals: number;
-}
-
-interface ChainIdNetworkChain {
-  chainId: number;
-  name: string;
-  nativeCurrency: ChainIdNetworkNativeCurrency;
-}
-
 // Token metadata interface with strict typing.
 export interface TokenMetadata {
   decimals: number;
@@ -163,55 +150,6 @@ const KNOWN_TOKENS: Record<string, TokenMetadata> = {
 // Cache for token metadata with proper typing.
 const tokenCache = new Map<string, TokenMetadata>();
 
-// Cache for chainid.network data to avoid repeated API calls.
-const chainDataCache = new Map<number, ChainIdNetworkNativeCurrency>();
-let chainDataFetchTime = 0;
-const CHAIN_DATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds.
-
-/**
- * Fetches native currency information from chainid.network for a specific chain ID.
- * Uses caching to minimize API calls and improve performance.
- */
-async function fetchChainNativeCurrency (chainId: number): Promise<ChainIdNetworkNativeCurrency | undefined> {
-  // Check if we have cached data that's still fresh.
-  const now = Date.now();
-  if (chainDataCache.has(chainId) && (now - chainDataFetchTime) < CHAIN_DATA_CACHE_DURATION) {
-    return chainDataCache.get(chainId);
-  }
-
-  try {
-    // Only fetch new data if cache is empty or stale.
-    const shouldFetchNew = chainDataCache.size === 0 || (now - chainDataFetchTime) >= CHAIN_DATA_CACHE_DURATION;
-
-    if (shouldFetchNew) {
-      logger.info(`Fetching chain data from chainid.network for chain ${chainId}`);
-
-      const response = await fetch('https://chainid.network/chains.json');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const chains: ChainIdNetworkChain[] = await response.json();
-
-      // Update cache with fresh data.
-      chainDataCache.clear();
-      chains.forEach((chain) => {
-        if (chain.chainId && chain.nativeCurrency) {
-          chainDataCache.set(chain.chainId, chain.nativeCurrency);
-        }
-      });
-
-      chainDataFetchTime = now;
-      logger.info(`Cached ${chainDataCache.size} chain configurations from chainid.network`);
-    }
-
-    return chainDataCache.get(chainId);
-  } catch (error) {
-    logger.warn(`Failed to fetch chain data from chainid.network for chain ${chainId}:`, error);
-    return undefined;
-  }
-}
-
 export enum AssetType {
   ETH = 'ETH',
   ERC20 = 'ERC20',
@@ -342,22 +280,6 @@ export const tokenManager = {
         };
       }
 
-      // Fallback if chain config not found - use chainid.network as backup.
-      try {
-        const chainNativeCurrency = await fetchChainNativeCurrency(chainId);
-        if (chainNativeCurrency) {
-          return {
-            decimals: chainNativeCurrency.decimals,
-            symbol: chainNativeCurrency.symbol,
-            name: chainNativeCurrency.name,
-            isNFT: false,
-          };
-        }
-      } catch (error) {
-        logger.warn(`Failed to fetch chain data for chain ${chainId}, using ETH fallback:`, error);
-      }
-
-      // Final fallback to ETH if chainid.network lookup fails.
       return {
         decimals: 18,
         symbol: 'ETH',
