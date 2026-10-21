@@ -1,9 +1,7 @@
 import ApprovalStatusIcon from './ApprovalStatusIcon';
 import NFTCollectionPreview from '../NFTCollectionPreview';
 import TokenApprovalButtons from './TokenApprovalButtons';
-import Tooltip from '../Tooltip';
-import { approvalEventsManager, ApprovalEvent } from '../../lib/approval-events';
-import { ExternalLink, Infinity } from 'lucide-react';
+import { Infinity } from 'lucide-react';
 import { FormattedTokenStatus, PartyApprovalStatus } from './types';
 import { settlementManager } from './utils';
 import { TokenLogo } from '../TokenLogo';
@@ -17,7 +15,6 @@ interface TokenApprovalRowProps {
   isSettled: boolean;
   onApproveToken: (tokenAddress: string, amount: bigint) => void;
   onMaxApprove: (tokenAddress: string) => void;
-  approvalEvents: ApprovalEvent[];
 }
 
 export default function TokenApprovalRow ({
@@ -29,14 +26,10 @@ export default function TokenApprovalRow ({
   isSettled,
   onApproveToken,
   onMaxApprove,
-  approvalEvents,
 }: TokenApprovalRowProps) {
   const hasApproval = settlementManager.hasEnoughApproved(tokenStatus.amountOrIdApprovedForDvp, tokenStatus.amountOrIdRequired);
   const isUserParty = settlementManager.isCurrentUserParty(currentUserAddress, partyStatus.address);
   const isTokenApproving = approvingToken?.toLowerCase() === tokenStatus.tokenAddress.toLowerCase() && isUserParty;
-
-  const approvalTransactionHash = settlementManager.approvalTransactionForParty(partyStatus.address, approvalEvents);
-  const approvalTransactionUrl = approvalTransactionHash ? approvalEventsManager.transactionUrl(approvalTransactionHash) : undefined;
 
   const renderApprovalColumn = () => {
     // Show approve buttons if not approved, not expired, not settled, and current user is the party.
@@ -95,18 +88,6 @@ export default function TokenApprovalRow ({
           isApproved={hasApproval}
           isExpired={isExpired}
           isSettled={isSettled} />
-          {hasApproval && approvalTransactionUrl && (
-            <Tooltip content="View this approval transaction on blockchain explorer">
-              <a
-              aria-label="View this approval transaction on blockchain explorer"
-              className="transition-colours text-primary hover:text-primary-interact"
-              href={approvalTransactionUrl}
-              rel="noopener noreferrer"
-              target="_blank">
-                <ExternalLink className="size-4" />
-              </a>
-            </Tooltip>
-          )}
         </div>
       </td>
     </tr>

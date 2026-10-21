@@ -1,5 +1,4 @@
 import { ContractErrorType } from '../../types/errors';
-import { ApprovalEvent } from '../../lib/approval-events';
 
 export interface FormattedTokenStatus {
   tokenAddress: string;
@@ -35,7 +34,6 @@ export interface SettlementApprovalsProps {
   onMaxApprove: (tokenAddress: string) => void;
   currentUserAddress: string | undefined;
   approvingToken: string | null;
-  approvalEvents: ApprovalEvent[];
   flows: Array<{ to: string; from: string }>;
   onRevokeApproval?: () => void;
   onWithdrawETH?: () => void;

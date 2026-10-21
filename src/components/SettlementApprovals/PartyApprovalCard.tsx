@@ -1,9 +1,7 @@
 import ApprovalStatusBadge from './ApprovalStatusBadge';
 import EtherApprovalRow from './EtherApprovalRow';
 import TokenApprovalRow from './TokenApprovalRow';
-import Tooltip from '../Tooltip';
-import { approvalEventsManager, ApprovalEvent } from '../../lib/approval-events';
-import { Check, ExternalLink, Hourglass, Wallet, X } from 'lucide-react';
+import { Check, Hourglass, Wallet, X } from 'lucide-react';
 import { settlementManager } from './utils';
 import { PartyApprovalStatus } from './types';
 import { ReactNode } from 'react';
@@ -16,7 +14,6 @@ interface PartyApprovalCardProps {
   isSettled: boolean;
   onApproveToken: (tokenAddress: string, amount: bigint) => void;
   onMaxApprove: (tokenAddress: string) => void;
-  approvalEvents: ApprovalEvent[];
   flows: Array<{ to: string; from: string }>;
   onRevokeApproval?: () => void;
   onWithdrawETH?: () => void;
@@ -45,7 +42,6 @@ export default function PartyApprovalCard ({
   isSettled,
   onApproveToken,
   onMaxApprove,
-  approvalEvents,
   flows,
   onRevokeApproval,
   onWithdrawETH,
@@ -71,8 +67,6 @@ export default function PartyApprovalCard ({
   }
 
   const approvalStatus = settlementManager.approvalStatus(partyStatus, isExpired, isSettled);
-  const approvalTransactionHash = settlementManager.approvalTransactionForParty(partyStatus.address, approvalEvents);
-  const approvalTransactionUrl = approvalTransactionHash ? approvalEventsManager.transactionUrl(approvalTransactionHash) : undefined;
 
   return (
     <CardContainer isUserParty={isUserParty}>
@@ -102,18 +96,6 @@ export default function PartyApprovalCard ({
                 : (isExpired ? 'Settlement was not approved by party' : 'Settlement awaiting approval by party')
               }
             </span>
-            {partyStatus.isApproved && approvalTransactionUrl && (
-              <Tooltip content="View this approval transaction on blockchain explorer">
-                <a
-                aria-label="View this approval transaction on blockchain explorer"
-                className="transition-colours text-primary hover:text-primary-interact"
-                href={approvalTransactionUrl}
-                rel="noopener noreferrer"
-                target="_blank">
-                  <ExternalLink className="size-4" />
-                </a>
-              </Tooltip>
-            )}
           </div>
         </div>
       </div>
@@ -133,7 +115,6 @@ export default function PartyApprovalCard ({
             </thead>
             <tbody>
               <EtherApprovalRow
-              approvalEvents={approvalEvents}
               currentUserAddress={currentUserAddress}
               flows={flows}
               isExpired={isExpired}
@@ -146,7 +127,6 @@ export default function PartyApprovalCard ({
               {partyStatus.tokenStatuses.map((tokenStatus, index) => (
                 <TokenApprovalRow
                 approvingToken={approvingToken}
-                approvalEvents={approvalEvents}
                 currentUserAddress={currentUserAddress}
                 isExpired={isExpired}
                 isSettled={isSettled}

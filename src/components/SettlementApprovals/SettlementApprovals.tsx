@@ -24,7 +24,6 @@ export default function SettlementApprovals ({
   onMaxApprove,
   currentUserAddress,
   approvingToken,
-  approvalEvents,
   flows,
   onRevokeApproval,
   onWithdrawETH,
@@ -90,7 +89,6 @@ export default function SettlementApprovals ({
                   title="Party approval error">
                     <PartyApprovalCard
                     approvingToken={approvingToken}
-                    approvalEvents={approvalEvents}
                     currentUserAddress={currentUserAddress}
                     flows={flows}
                     isExpired={isExpired}

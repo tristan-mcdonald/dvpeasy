@@ -1,5 +1,4 @@
 import { PartyApprovalStatus, ApprovalStatus } from './types';
-import { ApprovalEvent } from '../../lib/approval-events';
 
 /**
  * Settlement manager for approval-related operations.
@@ -109,18 +108,6 @@ export const settlementManager = {
     return amount >= maxApprovalThreshold;
   },
 
-  /**
-   * Approval transaction hash for a specific party.
-   */
-  approvalTransactionForParty (
-    partyAddress: string,
-    approvalEvents: ApprovalEvent[],
-  ): string | undefined {
-    const event = approvalEvents.find(
-      event => event.party.toLowerCase() === partyAddress.toLowerCase(),
-    );
-    return event?.transactionHash;
-  },
 
   /**
    * Check if party is involved in settlement flows.

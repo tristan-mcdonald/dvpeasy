@@ -1,9 +1,6 @@
 import ApprovalStatusIcon from './ApprovalStatusIcon';
 import RevokeApprovalButton from './RevokeApprovalButton';
-import Tooltip from '../Tooltip';
 import WithdrawEtherButton from './WithdrawEtherButton';
-import { approvalEventsManager, ApprovalEvent } from '../../lib/approval-events';
-import { ExternalLink } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { settlementManager } from './utils';
 import { PartyApprovalStatus } from './types';
@@ -13,7 +10,6 @@ interface EtherApprovalRowProps {
   partyStatus: PartyApprovalStatus;
   isExpired: boolean;
   isSettled: boolean;
-  approvalEvents: ApprovalEvent[];
   currentUserAddress: string | undefined;
   flows: Array<{ to: string; from: string }>;
   onRevokeApproval?: () => void;
@@ -26,7 +22,6 @@ export default function EtherApprovalRow ({
   partyStatus,
   isExpired,
   isSettled,
-  approvalEvents,
   currentUserAddress,
   flows,
   onRevokeApproval,
@@ -42,9 +37,6 @@ export default function EtherApprovalRow ({
 
   // When settlement is settled, show the required amount as the approved amount since funds were transferred.
   const displayedApprovedAmount = isSettled ? formattedRequired : formattedDeposited;
-
-  const approvalTransactionHash = settlementManager.approvalTransactionForParty(partyStatus.address, approvalEvents);
-  const approvalTransactionUrl = approvalTransactionHash ? approvalEventsManager.transactionUrl(approvalTransactionHash) : undefined;
 
   const isUserParty = settlementManager.isCurrentUserParty(currentUserAddress, partyStatus.address);
   const isInvolved = settlementManager.isPartyInvolved(partyStatus.address, flows);
@@ -78,18 +70,6 @@ export default function EtherApprovalRow ({
       <td className="wrap-anywhere">
         <div className="flex items-center gap-2">
           <ApprovalStatusIcon isApproved={hasEnoughEther} isExpired={isExpired} isSettled={isSettled} />
-          {hasEnoughEther && approvalTransactionUrl && (
-            <Tooltip content="View this approval transaction on blockchain explorer">
-              <a
-              aria-label="View approval transaction on blockchain explorer"
-              className="transition-colours text-primary hover:text-primary-interact"
-              href={approvalTransactionUrl}
-              rel="noopener noreferrer"
-              target="_blank">
-                <ExternalLink className="size-4" />
-              </a>
-            </Tooltip>
-          )}
         </div>
       </td>
     </tr>

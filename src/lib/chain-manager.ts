@@ -176,13 +176,6 @@ class ChainConfigObject {
   }
 
   /**
-   * Block explorer URL for a transaction.
-   */
-  transactionUrl (txHash: string): string {
-    return `${this.config.blockExplorerUrl}/tx/${txHash}`;
-  }
-
-  /**
    * NFT marketplace URL.
    */
   nftUrl (contractAddress: string, tokenId: string): string {
@@ -286,14 +279,6 @@ class ChainManager {
   blockExplorerAddressUrl (chainId: number, address: string): string | undefined {
     const configObject = this.chainConfigObject(chainId);
     return configObject?.addressUrl(address);
-  }
-
-  /**
-   * Block explorer URL for a transaction on a specific chain.
-   */
-  blockExplorerTransactionUrl (chainId: number, txHash: string): string | undefined {
-    const configObject = this.chainConfigObject(chainId);
-    return configObject?.transactionUrl(txHash);
   }
 
   /**

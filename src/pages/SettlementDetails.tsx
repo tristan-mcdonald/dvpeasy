@@ -7,7 +7,6 @@ import SettlementHeader from '../components/SettlementHeader';
 import SettlementOverview from '../components/SettlementOverview';
 import { urlManager } from '../lib/url-manager';
 import { Loader2 } from 'lucide-react';
-import { useApprovalEvents } from '../hooks/useApprovalEvents';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useContractConfig } from '../hooks/useContractConfig';
 import { useNavigate } from 'react-router-dom';
@@ -50,8 +49,6 @@ export default function SettlementDetails () {
   const tokenMetadata = useTokenMetadata(flowsForTokenMetadata);
 
 
-  const { approvalEvents, refetchApprovalEvents } = useApprovalEvents(settlementId);
-
   const {
     partyStatuses,
     isLoading: isLoadingApprovalStatus,
@@ -62,9 +59,8 @@ export default function SettlementDetails () {
 
   const handleRefresh = useCallback(async () => {
     await manualRefresh();
-    await refetchApprovalEvents();
     await refetchApprovalStatus();
-  }, [manualRefresh, refetchApprovalEvents, refetchApprovalStatus]);
+  }, [manualRefresh, refetchApprovalStatus]);
 
   const handleActionSuccess = useCallback(async () => {
     await refreshData();
@@ -141,7 +137,6 @@ export default function SettlementDetails () {
         flows={formattedFlows}
         tokenMetadata={tokenMetadata} />
         <SettlementApprovals
-        approvalEvents={approvalEvents}
         approvingToken={approvingToken}
         currentUserAddress={address}
         error={approvalStatusError}
