@@ -39,13 +39,13 @@ export default function TokenApprovalButtons ({
         <span className="font-mono break-numbers">{tokenStatus.formattedApproved}</span>
       )}
       <div className="flex gap-1">
-        <Tooltip content="Approve the exact amount needed for this settlement">
+        <Tooltip content={tokenStatus.isNFT ? 'Approve this NFT for this settlement' : 'Approve the exact amount needed for this settlement'}>
           <button
           className="btn btn-sm btn-outline btn-primary"
           onClick={() => onApproveToken(tokenStatus.tokenAddress, requiredAmount)}>
             <Check className="size-3" />
             <span className="text-sm font-mono">
-              {settlementManager.formattedApprovalAmount(
+              {tokenStatus.isNFT ? tokenStatus.formattedRequired : settlementManager.formattedApprovalAmount(
                 tokenStatus.formattedRequired,
                 tokenStatus.amountOrIdRequired,
                 tokenStatus.amountOrIdApprovedForDvp,
@@ -54,14 +54,17 @@ export default function TokenApprovalButtons ({
             </span>
           </button>
         </Tooltip>
-        <Tooltip content="Give unlimited approval (no need to approve again for future transactions)">
-          <button
-          className="btn btn-sm btn-gradient btn-primary"
-          onClick={() => onMaxApprove(tokenStatus.tokenAddress)}>
-            <Check className="size-3" />
-            <Infinity className="size-4" />
-          </button>
-        </Tooltip>
+        {/* An ERC-721 approval is for one token ID, so there's no unlimited amount to approve. */}
+        {!tokenStatus.isNFT && (
+          <Tooltip content="Give unlimited approval (no need to approve again for future transactions)">
+            <button
+            className="btn btn-sm btn-gradient btn-primary"
+            onClick={() => onMaxApprove(tokenStatus.tokenAddress)}>
+              <Check className="size-3" />
+              <Infinity className="size-4" />
+            </button>
+          </Tooltip>
+        )}
       </div>
     </div>
   );
