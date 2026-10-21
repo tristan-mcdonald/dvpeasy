@@ -72,8 +72,8 @@ Feature requests are welcome! Please [open an issue](https://github.com/tristan-
    ```
 6. (Optional) Run e2e tests:
    ```bash
-   yarn pretest:e2e:playwright
-   yarn pretest:e2e:synpress
+   yarn test:e2e:install-browser
+   yarn test:e2e:setup-wallet
    yarn test:e2e
    ```
 7. Commit your changes with a clear commit message

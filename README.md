@@ -237,17 +237,17 @@ const OLD_VERSION: ContractVersion = {
 
 ### Available scripts
 
-| Command                       | Description                                                         |
-|-------------------------------|---------------------------------------------------------------------|
-| `yarn dev`                    | Start development server                                            |
-| `yarn build`                  | Build for production (includes icon sync, linting, and compilation) |
-| `yarn sync-icons`             | Sync cryptocurrency icons from the library                          |
-| `yarn lint`                   | Run ESLint to check code quality                                    |
-| `yarn lint:fix`               | Auto-fix linting issues where possible                              |
-| `yarn preview`                | Preview production build locally                                    |
-| `yarn pretest:e2e:playwright` | Install playwright browsers                                         |
-| `yarn pretest:e2e:synpress`   | Configure metamask extension                                        |
-| `yarn test:e2e`               | Run playwright e2e tests                                            |
+| Command                         | Description                                                         |
+|---------------------------------|---------------------------------------------------------------------|
+| `yarn dev`                      | Start development server                                            |
+| `yarn build`                    | Build for production (includes icon sync, linting, and compilation) |
+| `yarn sync-icons`               | Sync cryptocurrency icons from the library                          |
+| `yarn lint`                     | Run ESLint to check code quality                                    |
+| `yarn lint:fix`                 | Auto-fix linting issues where possible                              |
+| `yarn preview`                  | Preview production build locally                                    |
+| `yarn test:e2e:install-browser` | Install the Chromium browser for Playwright                         |
+| `yarn test:e2e:setup-wallet`    | Configure the MetaMask extension for Synpress                       |
+| `yarn test:e2e`                 | Run playwright e2e tests                                            |
 
 ### Build process
 
@@ -318,7 +318,7 @@ Notes:
 3. Create a feature branch: `git checkout -b feature-name`
 4. Make your changes following our code standards
 5. Run tests: `yarn lint` and `yarn build`
-6. Configure synpress (playwright + metamask) for e2e tests: `yarn pretest:e2e:playwright && yarn pretest:e2e:synpress`
+6. Configure synpress (playwright + metamask) for e2e tests: `yarn test:e2e:install-browser && yarn test:e2e:setup-wallet`
 7. Run e2e tests: `yarn test:e2e`
 8. Submit a pull request
 
