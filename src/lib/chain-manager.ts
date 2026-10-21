@@ -214,14 +214,6 @@ class ChainManager {
   }
 
   /**
-   * Human-readable chain name from chain ID.
-   */
-  chainName (chainId: number): string {
-    const config = CHAIN_CONFIG[chainId];
-    return config?.name || `Chain ${chainId}`;
-  }
-
-  /**
    * Check if a chain ID represents a testnet.
    */
   isTestnetChain (chainId: number): boolean {
