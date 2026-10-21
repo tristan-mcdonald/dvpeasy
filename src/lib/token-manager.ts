@@ -5,7 +5,7 @@ import { contractConfigManager } from '../config/contracts';
 import { ContractValidationError, contractValidationManager } from './contract-validation';
 import { logger } from './logger';
 import { TokenDetectionError } from '../types/errors';
-import { writeContract } from 'wagmi/actions';
+import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 
 // Re-export TokenDetectionError for external use.
 export { TokenDetectionError };
@@ -533,7 +533,7 @@ export const tokenManager = {
 
   /**
    * Approve token spending for contracts.
-   * Handles both ERC20 and ERC721 approval flows.
+   * Handles both ERC20 and ERC721 approval flows, and resolves once the approval is mined.
    */
   async approveToken (
     tokenAddress: string,
@@ -551,6 +551,7 @@ export const tokenManager = {
         : [spender as Address, amount],
       account: account as Address,
     });
+    await waitForTransactionReceipt(config, { hash });
     return hash;
   },
 };
