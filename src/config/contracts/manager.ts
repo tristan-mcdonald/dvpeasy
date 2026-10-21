@@ -60,7 +60,7 @@ class ContractConfigManager {
       chainId: network.chainId,
       dvpAbi: DVP_ABI,
       dvpHelperAbi: DVP_HELPER_ABI,
-      name: networks.displayName(network),
+      name: networks.nameWithEnvironment(network),
       networkId: network.id,
     };
   }

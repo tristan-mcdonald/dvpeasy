@@ -141,10 +141,9 @@ export const networks = {
   },
 
   /**
-   * The network's name, followed by "(DEV)" or "(PROD)" unless `showEnvironment` is false.
+   * The network's name, followed by "(DEV)" for a test network or "(PROD)" for a main one.
    */
-  displayName (network: Network, showEnvironment: boolean = true): string {
-    if (!showEnvironment) return network.displayName;
+  nameWithEnvironment (network: Network): string {
     return `${network.displayName} (${network.isTestnet ? 'DEV' : 'PROD'})`;
   },
 };

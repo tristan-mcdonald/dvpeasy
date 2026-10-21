@@ -16,7 +16,7 @@ export default function NetworkButton () {
 
   // Get the network metadata from the contract config's networkId.
   const currentNetwork = networks.byId(config.networkId);
-  const displayName = currentNetwork ? networks.displayName(currentNetwork, false) : 'Select network';
+  const displayName = currentNetwork?.displayName ?? 'Select network';
 
   const tooltipText = `Current network: ${displayName}`;
 
