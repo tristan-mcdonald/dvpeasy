@@ -69,9 +69,11 @@ export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, p
   // Map to UI-friendly shape.
   const settlements: Settlement[] = useMemo(() => {
     if (!settlementDatas || !settlementIds.length) return [];
-    return settlementDatas.map((data: unknown, idx: number) => {
+    return settlementDatas.flatMap((data: unknown, idx: number) => {
       // Type assertion for contract read result.
       const settlementData = data as { result?: [string, bigint, unknown[], boolean, boolean] };
+      // A read which failed has no result, so it's left out rather than crashing the dashboard.
+      if (!settlementData.result) return [];
       return {
         id: settlementIds[idx].toString(),
         reference: settlementData.result?.[0] as string,

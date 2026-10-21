@@ -109,9 +109,11 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
       return [];
     }
 
-    return settlementDatas.map((data: unknown, idx: number) => {
+    return settlementDatas.flatMap((data: unknown, idx: number) => {
       // Type assertion for contract read result.
       const settlementData = data as { result?: [string, bigint, ContractFlow[], boolean, boolean] };
+      // A read which failed has no result, so it's left out rather than crashing the dashboard.
+      if (!settlementData.result) return [];
       logger.info(`useSettlementsWithFlows: Processing settlement ${settlementIds[idx]} at index ${idx}:`, data);
 
       const flows = settlementData.result?.[2] || [];
