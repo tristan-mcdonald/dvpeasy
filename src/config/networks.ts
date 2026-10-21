@@ -136,23 +136,6 @@ export const networkConfigManager = {
   },
 
   /**
-   * Filtered networks based on testnet preference.
-   */
-  filteredNetworks (showTestNetworks: boolean): NetworkMetadata[] {
-    return Object.values(NETWORKS).filter(network => {
-      return showTestNetworks || !network.isTestnet;
-    });
-  },
-
-  /**
-   * AppKit network object by chain ID.
-   */
-  appKitNetworkByChainId (chainId: number): AppKitNetwork | undefined {
-    const network = this.byChainId(chainId);
-    return network?.appKitNetwork;
-  },
-
-  /**
    * Arrays of networks for wagmi/AppKit configuration.
    */
   networkArrays () {
@@ -172,104 +155,7 @@ export const networkConfigManager = {
       [network.chainId]: network.rpcUrl,
     }), {});
   },
-
-  /**
-   * Network category by network ID.
-   */
-  networkCategory (networkId: string): NetworkCategory | undefined {
-    if (networkId === 'mainnet' || networkId === 'sepolia') return NetworkCategory.ETHEREUM;
-    if (networkId.includes('base')) return NetworkCategory.BASE;
-    return undefined;
-  },
-
-  /**
-   * Networks grouped by testnet status.
-   */
-  networksByType () {
-    const allNetworks = Object.values(NETWORKS);
-    return {
-      mainnet: allNetworks.filter(network => !network.isTestnet),
-      testnet: allNetworks.filter(network => network.isTestnet),
-    };
-  },
-
-  /**
-   * Networks grouped by category.
-   */
-  networksByCategory (): Record<NetworkCategory, NetworkMetadata[]> {
-    const result = {
-      [NetworkCategory.BASE]: [],
-      [NetworkCategory.ETHEREUM]: [],
-    } as Record<NetworkCategory, NetworkMetadata[]>;
-
-    Object.values(NETWORKS).forEach(network => {
-      const category = this.networkCategory(network.id);
-      if (category) {
-        result[category].push(network);
-      }
-    });
-
-    return result;
-  },
-
-  /**
-   * Sort networks alphabetically by display name.
-   */
-  sortAlphabetically (networks: NetworkMetadata[]): NetworkMetadata[] {
-    return networks.sort((a, b) => a.displayName.localeCompare(b.displayName));
-  },
-
-  /**
-   * Network by ID with validation.
-   */
-  byId (networkId: string): NetworkMetadata | undefined {
-    return NETWORKS[networkId];
-  },
-
-  /**
-   * Check if a chain ID is supported.
-   */
-  isChainIdSupported (chainId: number): boolean {
-    return Object.values(NETWORKS).some(network => network.chainId === chainId);
-  },
-
-  /**
-   * All supported chain IDs.
-   */
-  supportedChainIds (): number[] {
-    return Object.values(NETWORKS).map(network => network.chainId);
-  },
-
-  /**
-   * Validate network configuration on startup.
-   */
-  validateConfigurations (): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    // Check for duplicate chain IDs.
-    const chainIds = Object.values(NETWORKS).map(network => network.chainId);
-    const duplicateChainIds = chainIds.filter((chainId, index) => chainIds.indexOf(chainId) !== index);
-    if (duplicateChainIds.length > 0) {
-      errors.push(`Duplicate chain IDs found: ${duplicateChainIds.join(', ')}`);
-    }
-
-    // Check for missing required properties.
-    Object.entries(NETWORKS).forEach(([key, network]) => {
-      if (!network.id || !network.displayName || !network.chain || !network.appKitNetwork) {
-        errors.push(`Network ${key} is missing required properties`);
-      }
-      if (network.id !== key) {
-        errors.push(`Network ${key} has mismatched ID: ${network.id}`);
-      }
-    });
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  },
 };
-
 
 /**
  * Map chain ID to network ID for configuration lookup.
@@ -281,12 +167,3 @@ export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.values(NETW
   }),
   {},
 );
-
-
-/**
- * Network category definitions.
- */
-export enum NetworkCategory {
-  BASE = 'base',
-  ETHEREUM = 'ethereum',
-}
