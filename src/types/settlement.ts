@@ -1,8 +1,5 @@
 import { Address } from 'viem';
-import type {
-  ContractFlow as ValidatedContractFlow,
-  ContractSettlementResult as ValidatedContractSettlementResult,
-} from '../lib/contract-validation';
+import type { ContractFlow as ValidatedContractFlow } from '../lib/contract-validation';
 
 // Flow interface with branded types for better type safety.
 export interface Flow {
@@ -13,9 +10,6 @@ export interface Flow {
   amount: string;
   isNFT: boolean;
 }
-
-// Contract return type for getSettlement function with typing.
-export type ContractSettlementResult = ValidatedContractSettlementResult;
 
 // Contract Flow structure (matches ABI) with typing.
 export type ContractFlow = ValidatedContractFlow;
@@ -34,27 +28,4 @@ export interface Settlement {
   isAutoSettled: boolean;
   // Optional flows data for enriched settlement information.
   flows?: ContractFlow[];
-}
-
-// Settlement creation data with validation.
-export interface SettlementCreationData {
-  flows: Flow[];
-  reference: string;
-  cutoffDate: string; // ISO date string
-  isAutoSettled: boolean;
-}
-
-// Settlement status enumeration for better type safety.
-export enum SettlementStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  EXECUTED = 'executed',
-  EXPIRED = 'expired',
-}
-
-// Settlement with status information.
-export interface SettlementWithStatus extends Settlement {
-  status: SettlementStatus;
-  expiresAt: Date;
-  createdAt?: Date;
 }
