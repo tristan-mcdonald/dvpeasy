@@ -255,7 +255,7 @@ export function useSettlementActions ({
         address: dvpAddress,
         abi: dvpAbi,
         functionName: 'withdrawETH',
-        args: [BigInt(settlementId)],
+        args: [[BigInt(settlementId)]],
         account: address as `0x${string}`,
         chainId: walletClient.chain?.id,
       });
