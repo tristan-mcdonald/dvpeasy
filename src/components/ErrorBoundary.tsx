@@ -1,6 +1,7 @@
 import ButtonLink from './ButtonLink';
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { logger } from '../lib/logger';
+import { savedSelection } from '../lib/saved-selection';
 import { urlManager } from '../lib/url-manager';
 import { RotateCcw } from 'lucide-react';
 
@@ -94,8 +95,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
    */
   handleGoHome = () => {
     logger.info('Error Boundary triggered navigation to home');
-    const { networkId, version } = urlManager.defaultNetworkAndVersion();
-    window.location.href = `/${networkId}/${version}`;
+    const { networkId, version } = savedSelection.initial();
+    window.location.href = urlManager.buildDashboardUrl(networkId, version);
   };
 
   render () {

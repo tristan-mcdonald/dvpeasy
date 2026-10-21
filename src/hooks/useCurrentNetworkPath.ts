@@ -1,3 +1,4 @@
+import { savedSelection } from '../lib/saved-selection';
 import { urlManager } from '../lib/url-manager';
 import { useLocation } from 'react-router-dom';
 
@@ -29,6 +30,6 @@ export function useCurrentNetworkPath (): string {
   }
 
   // Fallback to default network and version if URL doesn't contain valid network/version.
-  const { networkId, version } = urlManager.defaultNetworkAndVersion();
-  return `/${networkId}/${version}`;
+  const { networkId, version } = savedSelection.initial();
+  return urlManager.buildDashboardUrl(networkId, version);
 }

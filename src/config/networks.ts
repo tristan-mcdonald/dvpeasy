@@ -61,6 +61,8 @@ function alchemyUrl (subdomain: string): string {
   return `https://${subdomain}.g.alchemy.com/v2/${apiKey}`;
 }
 
+export const DEFAULT_NETWORK_ID: NetworkId = 'sepolia';
+
 export const NETWORKS: Record<NetworkId, Network> = {
   base: {
     id: 'base',
@@ -142,10 +144,3 @@ export const networks = {
     return `${network.displayName} (${network.isTestnet ? 'DEV' : 'PROD'})`;
   },
 };
-
-/**
- * Map chain ID to network ID for configuration lookup.
- */
-export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.fromEntries(
-  networks.all().map(network => [network.chainId, network.id]),
-);

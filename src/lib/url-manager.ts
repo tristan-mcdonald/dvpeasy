@@ -1,4 +1,3 @@
-import { CHAIN_ID_TO_NETWORK_ID, networks } from '../config/networks';
 import { contracts } from '../config/contracts/deployments';
 
 /**
@@ -70,66 +69,6 @@ export const urlManager = {
       networkId,
       version,
     };
-  },
-
-  /**
-   * Get default network and version for redirects.
-   * Returns URL-formatted values (kebab-case network, formatted version).
-   */
-  defaultNetworkAndVersion (): { networkId: string; version: string } {
-    // Try to get from localStorage first.
-    try {
-      const appKitState = localStorage.getItem('W3M_STORE_NETWORK');
-      if (appKitState) {
-        const parsedState = JSON.parse(appKitState);
-        const chainId = parsedState?.caipNetwork?.id;
-        if (chainId) {
-          const numericChainId = typeof chainId === 'string' ? parseInt(chainId) : chainId;
-          const networkId = networks.byChainId(numericChainId)?.id;
-          if (networkId) {
-            const versionState = localStorage.getItem('DVP_CONTRACT_VERSION');
-            let version = contracts.defaultVersion(networkId);
-            if (versionState) {
-              const parsedVersionState = JSON.parse(versionState);
-              const storedVersion = parsedVersionState?.[networkId];
-              if (storedVersion && contracts.deployment(networkId, storedVersion)) {
-                version = storedVersion;
-              }
-            }
-            // Return URL-formatted values.
-            return {
-              networkId: this.networkIdToSlug(networkId),
-              version,
-            };
-          }
-        }
-      }
-    } catch {
-      // Fall through to default.
-    }
-
-    // Default to Sepolia testnet with latest version.
-    const defaultNetworkId = 'sepolia';
-    const defaultVersion = contracts.defaultVersion(defaultNetworkId);
-    return {
-      networkId: this.networkIdToSlug(defaultNetworkId),
-      version: defaultVersion,
-    };
-  },
-
-  /**
-   * Get network ID from chain ID.
-   */
-  networkIdFromChainId (chainId: number): string | null {
-    return CHAIN_ID_TO_NETWORK_ID[chainId] || null;
-  },
-
-  /**
-   * Get the chain ID for a network.
-   */
-  chainIdForNetwork (networkId: string): number | null {
-    const network = networks.byId(networkId);
-    return network?.chainId || null;
   },
 
   /**

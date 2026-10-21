@@ -3,11 +3,7 @@ import { createPublicClient, http, PublicClient } from 'viem';
 import { DVP_ABI, DVP_HELPER_ABI } from './abis';
 import { logger } from '../../lib/logger';
 import { NetworkId, NETWORKS, networks } from '../networks';
-
-/**
- * Default configuration key.
- */
-const DEFAULT_CONFIG_KEY: NetworkId = 'sepolia';
+import { savedSelection } from '../../lib/saved-selection';
 
 export interface ContractConfigWithNetwork extends ContractDeployment {
   chainId: number;
@@ -30,48 +26,10 @@ class ContractConfigManager {
   private networkChangeListeners: ((networkId: string, chainId: number) => void)[] = [];
 
   constructor () {
-    // Start with default config, but try to restore from AppKit's persisted state.
-    const { networkId, version } = this.getInitialConfig();
+    const { networkId, version } = savedSelection.initial();
     this.currentNetworkId = networkId;
     this.currentVersion = version;
     this.publicClient = this.createPublicClient();
-  }
-
-  private getInitialConfig (): { networkId: NetworkId; version: string } {
-    let networkId = DEFAULT_CONFIG_KEY;
-
-    // Try to get the persisted network from AppKit's localStorage.
-    try {
-      const appKitState = localStorage.getItem('W3M_STORE_NETWORK');
-      if (appKitState) {
-        const parsedState = JSON.parse(appKitState);
-        const chainId = parsedState?.caipNetwork?.id;
-        if (chainId) {
-          const numericChainId = typeof chainId === 'string' ? parseInt(chainId) : chainId;
-          networkId = networks.byChainId(numericChainId)?.id ?? networkId;
-        }
-      }
-    } catch (error) {
-      logger.warn('Failed to restore network from AppKit state:', error);
-    }
-
-    let version = contracts.defaultVersion(networkId);
-
-    // Try to restore version from localStorage.
-    try {
-      const versionState = localStorage.getItem('DVP_CONTRACT_VERSION');
-      if (versionState) {
-        const parsedVersionState = JSON.parse(versionState);
-        const networkVersion = parsedVersionState?.[networkId];
-        if (networkVersion && contracts.deployment(networkId, networkVersion)) {
-          version = networkVersion;
-        }
-      }
-    } catch (error) {
-      logger.warn('Failed to restore contract version from localStorage:', error);
-    }
-
-    return { networkId, version };
   }
 
   private createPublicClient () {
@@ -116,7 +74,7 @@ class ContractConfigManager {
     }
 
     // Use provided version, or fall back to persisted/default version.
-    const targetVersion = version || this.getPersistedVersion(networkId) || contracts.defaultVersion(networkId);
+    const targetVersion = version || savedSelection.version(networkId) || contracts.defaultVersion(networkId);
 
     // Check if we need to update configuration.
     const needsUpdate = this.currentNetworkId !== networkId || this.currentVersion !== targetVersion;
@@ -172,8 +130,7 @@ class ContractConfigManager {
       this.listeners.forEach(listener => listener(configWithNetwork));
     }
 
-    // Persist version selection.
-    this.persistVersion(networkId, version);
+    savedSelection.saveVersion(networkId, version);
 
     // Notify version listeners.
     this.versionListeners.forEach(listener => listener(networkId, version));
@@ -207,30 +164,6 @@ class ContractConfigManager {
         this.networkChangeListeners.splice(index, 1);
       }
     };
-  }
-
-  private persistVersion (networkId: string, version: string): void {
-    try {
-      const existing = localStorage.getItem('DVP_CONTRACT_VERSION');
-      const versionState = existing ? JSON.parse(existing) : {};
-      versionState[networkId] = version;
-      localStorage.setItem('DVP_CONTRACT_VERSION', JSON.stringify(versionState));
-    } catch (error) {
-      logger.warn('Failed to persist contract version:', error);
-    }
-  }
-
-  getPersistedVersion (networkId: string): string | null {
-    try {
-      const versionState = localStorage.getItem('DVP_CONTRACT_VERSION');
-      if (versionState) {
-        const parsedVersionState = JSON.parse(versionState);
-        return parsedVersionState?.[networkId] || null;
-      }
-    } catch (error) {
-      logger.warn('Failed to get persisted contract version:', error);
-    }
-    return null;
   }
 }
 

@@ -4,7 +4,6 @@ import { networks } from '../config/networks';
 import { PublicClient } from 'viem';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { urlManager } from '../lib/url-manager';
 
 export interface UseContractConfigReturn {
   config: ContractConfigWithNetwork;
@@ -57,7 +56,7 @@ export function useContractConfig (): UseContractConfigReturn {
       // Convert kebab-case URL slug to camelCase network ID.
       const networkId = params.network.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
-      const urlChainId = urlManager.chainIdForNetwork(networkId);
+      const urlChainId = networks.byId(networkId)?.chainId;
       if (urlChainId) {
         try {
           // Set the version first, then the config.

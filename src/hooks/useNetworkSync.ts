@@ -1,6 +1,6 @@
 import { useNetworkManager } from './useNetworkManager';
 import { useChainId, useSwitchChain, useDisconnect } from 'wagmi';
-import { urlManager } from '../lib/url-manager';
+import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
 import { useState, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -44,7 +44,7 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
   const [isLoading, setIsLoading] = useState(false);
 
   // Get wallet network ID from chain ID.
-  const walletNetworkId = walletChainId ? urlManager.networkIdFromChainId(walletChainId) : null;
+  const walletNetworkId = walletChainId ? networks.byChainId(walletChainId)?.id ?? null : null;
   // Check if networks are synced.
   const isNetworkSynced = Boolean(
     networkManager.urlNetworkId &&
@@ -61,7 +61,7 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
       return;
     }
 
-    const targetChainId = urlManager.chainIdForNetwork(networkManager.urlNetworkId);
+    const targetChainId = networks.byId(networkManager.urlNetworkId)?.chainId;
     if (!targetChainId) {
       logger.error(`No chain ID found for network ${networkManager.urlNetworkId}`);
       return;
