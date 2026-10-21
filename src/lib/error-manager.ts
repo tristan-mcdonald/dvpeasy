@@ -3,7 +3,6 @@ import {
   ContractErrorType,
   ContractNotFoundError,
   ContractReadError,
-  ErrorResult,
   InsufficientBalanceError,
   InvalidDataError,
   NetworkError,
@@ -158,34 +157,6 @@ export const errorManager = {
   },
 
   /**
-   * Get the type of an error.
-   */
-  type (error: ContractErrorType): string {
-    return error.type;
-  },
-
-  /**
-   * Create an error result object.
-   */
-  createResult (
-    error: ContractErrorType,
-    context?: Record<string, unknown>,
-  ): ErrorResult<ContractErrorType> {
-    return {
-      success: false,
-      error,
-      context,
-    };
-  },
-
-  /**
-   * Check if two errors are of the same type.
-   */
-  isSameType (error1: ContractErrorType, error2: ContractErrorType): boolean {
-    return error1.constructor === error2.constructor;
-  },
-
-  /**
    * Calculate retry delay based on error type and retry count.
    */
   retryDelay (error: ContractErrorType, retryCount: number): number {
@@ -201,17 +172,6 @@ export const errorManager = {
   },
 
   /**
-   * Check if enough time has passed to allow a retry.
-   */
-  canRetry (lastRetryAt: number | null, retryDelay: number): boolean {
-    if (!lastRetryAt) {
-      return true;
-    }
-
-    return Date.now() - lastRetryAt >= retryDelay;
-  },
-
-  /**
    * Enhanced error details for debugging.
    */
   debugInfo (error: ContractErrorType): Record<string, unknown> {
@@ -224,36 +184,6 @@ export const errorManager = {
       stack: error.stack,
       originalError: error.originalError,
     };
-  },
-
-  /**
-   * Get error recovery suggestions.
-   */
-  recoverySuggestions (error: ContractErrorType): string[] {
-    const suggestions: string[] = [];
-
-    if (error instanceof NetworkError) {
-      suggestions.push('Check your internet connection');
-      suggestions.push('Try again in a few moments');
-      suggestions.push('Switch to a different RPC endpoint if available');
-    } else if (error instanceof RateLimitError) {
-      suggestions.push('Wait a moment before trying again');
-      suggestions.push('Reduce the frequency of requests');
-    } else if (error instanceof InsufficientBalanceError) {
-      suggestions.push('Ensure you have enough tokens for the transaction');
-      suggestions.push('Check your wallet balance');
-    } else if (error instanceof UserRejectionError) {
-      suggestions.push('Review the transaction details');
-      suggestions.push('Ensure you understand what you are approving');
-    } else if (error instanceof ContractNotFoundError) {
-      suggestions.push('Verify the contract address');
-      suggestions.push('Ensure you are on the correct network');
-    } else if (error instanceof TokenDetectionError) {
-      suggestions.push('Verify the token contract address');
-      suggestions.push('Check if the token is deployed on this network');
-    }
-
-    return suggestions;
   },
 
   /**

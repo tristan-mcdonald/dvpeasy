@@ -128,24 +128,3 @@ export type ContractErrorType =
   | ContractReadError
   | TransactionError
   | UserRejectionError;
-
-/**
- * Error result type for hooks.
- */
-export interface ErrorResult {
-  error: ContractErrorType;
-  timestamp: number;
-  context?: Record<string, unknown>;
-}
-
-/**
- * Hook error state.
- */
-export interface HookErrorState {
-  error: ContractErrorType | null;
-  hasError: boolean;
-  errorHistory: ErrorResult[];
-  clearError: () => void;
-  retryCount: number;
-  lastRetryAt: number | null;
-}
