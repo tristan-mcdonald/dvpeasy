@@ -25,7 +25,7 @@ export function useCurrentNetworkPath (): string {
     });
 
     if (parsed) {
-      return `/${parsed.networkId}/${parsed.version}`;
+      return urlManager.buildDashboardUrl(parsed.networkId, parsed.version);
     }
   }
 
