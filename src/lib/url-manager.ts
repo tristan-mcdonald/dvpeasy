@@ -131,112 +131,11 @@ export const urlManager = {
   },
 
   /**
-   * Check if a network and version combination is valid.
-   */
-  isValidNetworkVersion (networkId: string, version: string): boolean {
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    return Boolean(networkVersions?.versions[version]);
-  },
-
-  /**
    * Get the chain ID for a network.
    */
   chainIdForNetwork (networkId: string): number | null {
     const network = NETWORKS[networkId];
     return network?.chainId || null;
-  },
-
-  /**
-   * Build URL with query parameters.
-   */
-  buildUrlWithParams (basePath: string, params: Record<string, string | number | boolean>): string {
-    const queryParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, String(value));
-      }
-    }
-
-    const queryString = queryParams.toString();
-    return queryString ? `${basePath}?${queryString}` : basePath;
-  },
-
-  /**
-   * Parse current location and extract network/version context.
-   */
-  parseCurrentLocation (pathname: string): {
-    networkId: string | null;
-    version: string | null;
-    settlementId: string | null;
-    page: 'dashboard' | 'create' | 'settlement' | 'unknown';
-  } {
-    const segments = pathname.split('/').filter(Boolean);
-
-    if (segments.length < 2) {
-      return { networkId: null, version: null, settlementId: null, page: 'unknown' };
-    }
-
-    const networkSlug = segments[0];
-    const version = segments[1];
-    const networkId = this.slugToNetworkId(networkSlug);
-
-    // Validate network and version.
-    if (!this.isValidNetworkVersion(networkId, version)) {
-      return { networkId: null, version: null, settlementId: null, page: 'unknown' };
-    }
-
-    // Determine page type.
-    let page: 'dashboard' | 'create' | 'settlement' | 'unknown' = 'dashboard';
-    let settlementId: string | null = null;
-
-    if (segments.length === 2) {
-      page = 'dashboard';
-    } else if (segments[2] === 'create') {
-      page = 'create';
-    } else if (segments[2] === 'settlement' && segments[3]) {
-      page = 'settlement';
-      settlementId = segments[3];
-    } else {
-      page = 'unknown';
-    }
-
-    return { networkId, version, settlementId, page };
-  },
-
-  /**
-   * Generate breadcrumb data from current location.
-   */
-  generateBreadcrumbs (pathname: string): Array<{ label: string; path: string }> {
-    const { networkId, version, settlementId, page } = this.parseCurrentLocation(pathname);
-    const breadcrumbs: Array<{ label: string; path: string }> = [];
-
-    if (!networkId || !version) {
-      return breadcrumbs;
-    }
-
-    // Add network/version root.
-    const network = NETWORKS[networkId];
-    const networkLabel = network ? network.name : networkId;
-    breadcrumbs.push({
-      label: `${networkLabel} ${version}`,
-      path: this.buildDashboardUrl(networkId, version),
-    });
-
-    // Add page-specific breadcrumb.
-    if (page === 'create') {
-      breadcrumbs.push({
-        label: 'Create Settlement',
-        path: this.buildCreateUrl(networkId, version),
-      });
-    } else if (page === 'settlement' && settlementId) {
-      breadcrumbs.push({
-        label: `Settlement #${settlementId}`,
-        path: this.buildSettlementUrl(networkId, version, settlementId),
-      });
-    }
-
-    return breadcrumbs;
   },
 
   /**
