@@ -5,165 +5,147 @@ import {
   mainnet as appKitMainnet,
   sepolia as appKitSepolia,
 } from '@reown/appkit/networks';
-import type { Chain } from 'viem';
+import type { Address, Chain } from 'viem';
 import {
   base as viemBase,
   baseSepolia as viemBaseSepolia,
   mainnet as viemMainnet,
   sepolia as viemSepolia,
 } from 'viem/chains';
+import { zeroAddress } from 'viem';
 
-/**
- * Network metadata interface containing all properties for a blockchain network.
- */
-export interface NetworkMetadata {
-  id: string;
-  displayName: string;
-  iconFilename: string | null;
-  iconUrl: string | null; // Computed property.
-  chainId: number;
-  chain: Chain;
+export type NetworkId = 'base' | 'baseSepolia' | 'mainnet' | 'sepolia';
+
+export interface NativeToken {
+  address: Address;
+  decimals: number;
+  name: string;
+  symbol: string;
+}
+
+export interface Network {
+  id: NetworkId;
   appKitNetwork: AppKitNetwork;
+  blockExplorerUrl: string;
+  chain: Chain;
+  chainId: number;
+  displayName: string;
+  faucetUrl?: string;
   isTestnet: boolean;
+  nativeToken: NativeToken;
+  /** OpenSea's page for an NFT, with `{contract}` and `{token}` placeholders. */
+  nftUrlTemplate: string;
   rpcUrl: string;
+  /** The chain's folder in Trust Wallet's assets repository, which serves token logos. */
+  trustWalletFolder: string;
 }
 
 /**
- * Base path for network icon assets.
+ * The native token of every supported network.
  */
-const NETWORK_ICONS_PATH = '/icons/networks/';
+const ETHER: NativeToken = {
+  address: zeroAddress,
+  decimals: 18,
+  name: 'Ethereum',
+  symbol: 'ETH',
+};
 
 /**
- * Generate icon URL from filename.
+ * Alchemy's RPC URL for a network, which needs the `VITE_ALCHEMY_API_KEY` environment variable.
  */
-function iconUrl (iconFilename: string | null): string | null {
-  return iconFilename ? `${NETWORK_ICONS_PATH}${iconFilename}` : null;
-}
-
-/**
- * Get Alchemy API key from environment variables with validation.
- */
-function alchemyApiKey (): string {
+function alchemyUrl (subdomain: string): string {
   const apiKey = import.meta.env.VITE_ALCHEMY_API_KEY;
   if (!apiKey) {
     throw new Error('VITE_ALCHEMY_API_KEY environment variable is required');
   }
-  return apiKey;
+  return `https://${subdomain}.g.alchemy.com/v2/${apiKey}`;
 }
 
-/**
- * Centralized network configurations.
- * Single source of truth for all network-related metadata.
- */
-const createNetworkConfig = (
-  id: string,
-  displayName: string,
-  iconFilename: string | null,
-  chain: Chain,
-  appKitNetwork: AppKitNetwork,
-  isTestnet: boolean,
-  rpcUrl: string,
-): NetworkMetadata => ({
-  id,
-  displayName,
-  iconFilename,
-  iconUrl: iconUrl(iconFilename),
-  chainId: chain.id,
-  chain,
-  appKitNetwork,
-  isTestnet,
-  rpcUrl,
-});
-
-export const NETWORKS: Record<string, NetworkMetadata> = {
-  base: createNetworkConfig(
-    'base',
-    'Base',
-    'base.svg',
-    viemBase,
-    appKitBase,
-    false,
-    `https://base-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
-  baseSepolia: createNetworkConfig(
-    'baseSepolia',
-    'Base Sepolia',
-    'base.svg',
-    viemBaseSepolia,
-    appKitBaseSepolia,
-    true,
-    `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
-  mainnet: createNetworkConfig(
-    'mainnet',
-    'Ethereum',
-    'ethereum.svg',
-    viemMainnet,
-    appKitMainnet,
-    false,
-    `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
-  sepolia: createNetworkConfig(
-    'sepolia',
-    'Ethereum Sepolia',
-    'ethereum.svg',
-    viemSepolia,
-    appKitSepolia,
-    true,
-    `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey()}`,
-  ),
+export const NETWORKS: Record<NetworkId, Network> = {
+  base: {
+    id: 'base',
+    appKitNetwork: appKitBase,
+    blockExplorerUrl: 'https://basescan.org',
+    chain: viemBase,
+    chainId: viemBase.id,
+    displayName: 'Base',
+    isTestnet: false,
+    nativeToken: ETHER,
+    nftUrlTemplate: 'https://opensea.io/item/base/{contract}/{token}',
+    rpcUrl: alchemyUrl('base-mainnet'),
+    trustWalletFolder: 'base',
+  },
+  baseSepolia: {
+    id: 'baseSepolia',
+    appKitNetwork: appKitBaseSepolia,
+    blockExplorerUrl: 'https://sepolia.basescan.org',
+    chain: viemBaseSepolia,
+    chainId: viemBaseSepolia.id,
+    displayName: 'Base Sepolia',
+    faucetUrl: 'https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet',
+    isTestnet: true,
+    nativeToken: ETHER,
+    nftUrlTemplate: 'https://testnets.opensea.io/assets/base-sepolia/{contract}/{token}',
+    rpcUrl: alchemyUrl('base-sepolia'),
+    trustWalletFolder: 'base',
+  },
+  mainnet: {
+    id: 'mainnet',
+    appKitNetwork: appKitMainnet,
+    blockExplorerUrl: 'https://etherscan.io',
+    chain: viemMainnet,
+    chainId: viemMainnet.id,
+    displayName: 'Ethereum',
+    isTestnet: false,
+    nativeToken: ETHER,
+    nftUrlTemplate: 'https://opensea.io/item/ethereum/{contract}/{token}',
+    rpcUrl: alchemyUrl('eth-mainnet'),
+    trustWalletFolder: 'ethereum',
+  },
+  sepolia: {
+    id: 'sepolia',
+    appKitNetwork: appKitSepolia,
+    blockExplorerUrl: 'https://sepolia.etherscan.io',
+    chain: viemSepolia,
+    chainId: viemSepolia.id,
+    displayName: 'Ethereum Sepolia',
+    faucetUrl: 'https://sepoliafaucet.com',
+    isTestnet: true,
+    nativeToken: ETHER,
+    nftUrlTemplate: 'https://testnets.opensea.io/assets/sepolia/{contract}/{token}',
+    rpcUrl: alchemyUrl('eth-sepolia'),
+    trustWalletFolder: 'ethereum',
+  },
 };
 
-/**
- * Centralized network configuration manager for all network-related operations.
- */
-export const networkConfigManager = {
-  /**
-   * Network metadata by chain ID.
-   */
-  byChainId (chainId: number): NetworkMetadata | undefined {
-    return Object.values(NETWORKS).find(network => network.chainId === chainId);
+export const networks = {
+  all (): Network[] {
+    return Object.values(NETWORKS);
+  },
+
+  byChainId (chainId: number): Network | undefined {
+    return networks.all().find(network => network.chainId === chainId);
   },
 
   /**
-   * Display name for a network with optional environment indicator.
+   * The network with this ID, or `undefined` for a string which isn't one, such as from a URL.
    */
-  displayName (network: NetworkMetadata, showEnvironment: boolean = true): string {
-    if (showEnvironment) {
-      return `${network.displayName} (${network.isTestnet ? 'DEV' : 'PROD'})`;
-    }
-    return network.displayName;
+  byId (networkId: string): Network | undefined {
+    return networks.all().find(network => network.id === networkId);
   },
 
   /**
-   * Arrays of networks for wagmi/AppKit configuration.
+   * The network's name, followed by "(DEV)" or "(PROD)" unless `showEnvironment` is false.
    */
-  networkArrays () {
-    const networkMetadataArray = Object.values(NETWORKS);
-    return {
-      appKitNetworks: networkMetadataArray.map(network => network.appKitNetwork),
-      viemChains: networkMetadataArray.map(network => network.chain),
-    };
-  },
-
-  /**
-   * Transport configuration for wagmi from network metadata.
-   */
-  networkTransports () {
-    return Object.values(NETWORKS).reduce((transports, network) => ({
-      ...transports,
-      [network.chainId]: network.rpcUrl,
-    }), {});
+  displayName (network: Network, showEnvironment: boolean = true): string {
+    if (!showEnvironment) return network.displayName;
+    return `${network.displayName} (${network.isTestnet ? 'DEV' : 'PROD'})`;
   },
 };
 
 /**
  * Map chain ID to network ID for configuration lookup.
  */
-export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.values(NETWORKS).reduce(
-  (accumulator, network) => ({
-    ...accumulator,
-    [network.chainId]: network.id,
-  }),
-  {},
+export const CHAIN_ID_TO_NETWORK_ID: Record<number, string> = Object.fromEntries(
+  networks.all().map(network => [network.chainId, network.id]),
 );

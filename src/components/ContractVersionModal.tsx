@@ -2,7 +2,7 @@ import ContractDeploymentDate from './ContractDeploymentDate';
 import React, { useState } from 'react';
 import Tooltip from './Tooltip';
 import { Copy, Check, ExternalLink, X } from 'lucide-react';
-import { chainManager } from '../lib/chain-manager';
+import { networkLinks } from '../lib/network-links';
 import { logger } from '../lib/logger';
 import { utilityManager } from '../lib/utils';
 import { useAppKitNetworkState } from '../hooks/useAppKitNetwork';
@@ -124,7 +124,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                     <Tooltip content="View on block explorer">
                                       <a
                                       className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                      href={chainId ? chainManager.blockExplorerAddressUrl(chainId, addresses.dvpAddress) : '#'}
+                                      href={chainId ? networkLinks.address(chainId, addresses.dvpAddress) : '#'}
                                       rel="noopener noreferrer"
                                       target="_blank"
                                       onClick={(event) => event.stopPropagation()}>
@@ -155,7 +155,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                     <Tooltip content="View on block explorer">
                                       <a
                                       className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                      href={chainId ? chainManager.blockExplorerAddressUrl(chainId, addresses.dvpHelperAddress) : '#'}
+                                      href={chainId ? networkLinks.address(chainId, addresses.dvpHelperAddress) : '#'}
                                       rel="noopener noreferrer"
                                       target="_blank"
                                       onClick={(event) => event.stopPropagation()}>

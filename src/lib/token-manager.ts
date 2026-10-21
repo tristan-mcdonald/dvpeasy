@@ -1,5 +1,5 @@
 import { Address, formatUnits, parseUnits } from 'viem';
-import { chainManager } from './chain-manager';
+import { networks } from '../config/networks';
 import { config } from '../config/wagmi';
 import { contractConfigManager } from '../config/contracts';
 import { ContractValidationError, contractValidationManager } from './contract-validation';
@@ -184,7 +184,7 @@ export const tokenManager = {
       const chainId = await publicClient.getChainId();
 
       // Skip DVP validation for testnet fallback tokens on testnets.
-      if (knownToken?.isTestnetFallback && chainManager.isTestnetChain(chainId)) {
+      if (knownToken?.isTestnetFallback && networks.byChainId(chainId)?.isTestnet) {
         // Use direct interface detection instead of DVP validation.
         try {
           // Try to call ERC20 functions first (most common).
@@ -269,13 +269,13 @@ export const tokenManager = {
     if (normalizedAddress === '0x0000000000000000000000000000000000000000') {
       const publicClient = contractConfigManager.getPublicClient();
       const chainId = await publicClient.getChainId();
-      const chainConfig = chainManager.chainConfig(chainId);
+      const network = networks.byChainId(chainId);
 
-      if (chainConfig) {
+      if (network) {
         return {
-          decimals: chainConfig.nativeToken.decimals,
-          symbol: chainConfig.nativeToken.symbol,
-          name: chainConfig.nativeToken.name,
+          decimals: network.nativeToken.decimals,
+          symbol: network.nativeToken.symbol,
+          name: network.nativeToken.name,
           isNFT: false,
         };
       }

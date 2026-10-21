@@ -1,6 +1,6 @@
 import { createAppKit } from '@reown/appkit/react';
 import { fallback } from 'wagmi';
-import { networkConfigManager } from './networks';
+import { networks } from './networks';
 import { http } from 'viem';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
@@ -13,14 +13,10 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
-const { appKitNetworks } = networkConfigManager.networkArrays();
-const networkTransports = networkConfigManager.networkTransports();
-
-// Generate transports configuration from network data.
-const transports = Object.entries(networkTransports).reduce((accumulator, [chainId, rpcUrl]) => ({
-  ...accumulator,
-  [Number(chainId)]: fallback([http(rpcUrl)]),
-}), {});
+const appKitNetworks = networks.all().map(network => network.appKitNetwork);
+const transports = Object.fromEntries(
+  networks.all().map(network => [network.chainId, fallback([http(network.rpcUrl)])]),
+);
 
 const wagmiAdapter = new WagmiAdapter({
   networks: appKitNetworks,

@@ -2,9 +2,9 @@ import LabelWithIcon from '../LabelWithIcon';
 import Tooltip from '../Tooltip';
 import { AlertCircle, Loader2, RefreshCw, X } from 'lucide-react';
 import { forwardRef, ReactNode } from 'react';
-import { chainManager } from '../../lib/chain-manager';
+import { networkLinks } from '../../lib/network-links';
 import { isAddress } from 'viem';
-import { networkConfigManager } from '../../config/networks';
+import { networks } from '../../config/networks';
 import { TokenMetadata } from '../../lib/token-api';
 import { tokenStorage } from '../../lib/custom-token-storage';
 import { useAccount, useChainId } from 'wagmi';
@@ -304,7 +304,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
                         <div className="text-xs text-text-label mx-3 py-2 font-medium border-b border-interface-border">
                           {isSearching
                             ? `Search results (${tokensToDisplay.length})`
-                            : `Tokens (${networkConfigManager.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`
+                            : `Tokens (${networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`
                           }
                         </div>
                         {tokensToDisplay.map((token: TokenMetadata) => (
@@ -368,12 +368,12 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
       </div>
 
       {/* Testnet notices. */}
-      {chainManager.isTestnetChain(chainId) && (
+      {networks.byChainId(chainId)?.isTestnet && (
         <span className="block !mt-2 text-xs text-text-label">
           You're on a test network. You can get test tokens{' '}
           <a
           className="link link-primary"
-          href={chainManager.testnetFaucetUrl(chainId)}
+          href={networkLinks.faucet(chainId)}
           target="_blank">here</a>.
         </span>
       )}

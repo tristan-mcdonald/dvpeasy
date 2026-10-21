@@ -1,6 +1,6 @@
 import NetworkIcon from './NetworkIcon';
 import React from 'react';
-import { networkConfigManager, NETWORKS } from '../config/networks';
+import { networks } from '../config/networks';
 import { networkManager } from '../lib/network-manager';
 import { useAccount } from 'wagmi';
 import { useNetworkManager } from '../hooks/useNetworkManager';
@@ -125,7 +125,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                 <ul className="space-y-1">
                   {mainnetConfigs.map(([key, config]) => {
                     const isUrlNetwork = config.networkId === urlNetworkId;
-                    const network = NETWORKS[config.networkId];
+                    const network = networks.byId(config.networkId);
 
                     return (
                       <li key={key}>
@@ -140,7 +140,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                         type="button">
                           <NetworkIcon network={network} />
                           <div className="flex-1 text-left">
-                            <span className="text-primary">{networkConfigManager.displayName(network, false)}</span>
+                            <span className="text-primary">{network && networks.displayName(network, false)}</span>
                           </div>
                           {isUrlNetwork && (
                             <span className="text-sm text-success">Connected</span>
@@ -160,7 +160,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                 <ul className="space-y-1">
                   {testnetConfigs.map(([key, config]) => {
                     const isUrlNetwork = config.networkId === urlNetworkId;
-                    const network = NETWORKS[config.networkId];
+                    const network = networks.byId(config.networkId);
 
                     return (
                       <li key={key}>
@@ -175,7 +175,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                         type="button">
                           <NetworkIcon network={network} />
                           <div className="flex-1 text-left">
-                            <span className="text-primary">{networkConfigManager.displayName(network, false)}</span>
+                            <span className="text-primary">{network && networks.displayName(network, false)}</span>
                           </div>
                           {isUrlNetwork && (
                             <span className="text-sm text-success">Connected</span>

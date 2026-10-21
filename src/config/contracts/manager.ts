@@ -1,5 +1,5 @@
 import type { ContractConfig, ContractConfigWithNetwork, ContractVersion } from './types';
-import { CHAIN_ID_TO_NETWORK_ID, networkConfigManager, NETWORKS } from '../networks';
+import { CHAIN_ID_TO_NETWORK_ID, NETWORKS, networks } from '../networks';
 import { createPublicClient, http, PublicClient } from 'viem';
 import { logger } from '../../lib/logger';
 import { VERSIONED_CONTRACT_CONFIGS } from './networks';
@@ -102,9 +102,8 @@ class ContractConfigManager {
     const network = NETWORKS[this.currentConfig.networkId];
     return {
       ...this.currentConfig,
-      name: networkConfigManager.displayName(network),
+      name: networks.displayName(network),
       chainId: network.chainId,
-      iconUrl: network.iconUrl,
     };
   }
 
@@ -165,10 +164,9 @@ class ContractConfigManager {
       if (network) {
         configsWithNetwork[key] = {
           ...defaultConfig,
-          name: networkConfigManager.displayName(network),
+          name: networks.displayName(network),
           chainId: network.chainId,
-          iconUrl: network.iconUrl,
-        };
+            };
       }
     }
     return configsWithNetwork;

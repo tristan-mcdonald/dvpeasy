@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import Tooltip from '../Tooltip';
-import { chainManager } from '../../lib/chain-manager';
+import { networkLinks } from '../../lib/network-links';
 import { Copy, Check, ExternalLink, Loader2 } from 'lucide-react';
 import { isAddress } from 'viem';
 import { logger } from '../../lib/logger';
@@ -74,7 +74,7 @@ const Address = memo(({
   };
 
   // Get the block explorer URL for the current chain and address.
-  const blockExplorerUrl = chainId ? chainManager.blockExplorerAddressUrl(chainId, address) : undefined;
+  const blockExplorerUrl = chainId ? networkLinks.address(chainId, address) : undefined;
 
   // Only show loading spinner on initial load, not during background refetches.
   if (isLoading && !hasInitiallyLoadedRef.current) {

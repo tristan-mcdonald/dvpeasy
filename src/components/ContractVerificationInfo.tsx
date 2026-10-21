@@ -1,5 +1,5 @@
 import Address from './scaffold-eth/Address';
-import { NETWORKS } from '../config/networks';
+import { networks } from '../config/networks';
 import { useContractConfig } from '../hooks/useContractConfig';
 
 /**
@@ -8,7 +8,7 @@ import { useContractConfig } from '../hooks/useContractConfig';
  */
 export default function ContractVerificationInfo () {
   const { config } = useContractConfig();
-  const network = config.networkId ? NETWORKS[config.networkId] : undefined;
+  const network = networks.byId(config.networkId);
 
   if (!network || !config.version) {
     return null;

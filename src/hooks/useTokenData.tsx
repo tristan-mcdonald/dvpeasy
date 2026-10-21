@@ -1,4 +1,5 @@
-import { chainManager } from '../lib/chain-manager';
+import { networkLinks } from '../lib/network-links';
+import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
 import { sepoliaTokens } from '../data/testnet-tokens/sepolia';
 import { TokenMetadata } from '../lib/token-api';
@@ -96,7 +97,7 @@ function getTestnetTokens (chainId: number): TokenMetadata[] {
         name: 'Ethereum',
         chainId,
         decimals: 18,
-        trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, '0x0000000000000000000000000000000000000000'),
+        trustWalletLogoUrl: networkLinks.tokenLogo(chainId, '0x0000000000000000000000000000000000000000'),
         lastUpdated: Date.now(),
       }];
     }
@@ -107,7 +108,7 @@ function getTestnetTokens (chainId: number): TokenMetadata[] {
       name: token.name,
       chainId,
       decimals: token.decimals,
-      trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, token.address),
+      trustWalletLogoUrl: networkLinks.tokenLogo(chainId, token.address),
       lastUpdated: Date.now(),
     }));
   } catch (error) {
@@ -119,7 +120,7 @@ function getTestnetTokens (chainId: number): TokenMetadata[] {
       name: 'Ethereum',
       chainId,
       decimals: 18,
-      trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, '0x0000000000000000000000000000000000000000'),
+      trustWalletLogoUrl: networkLinks.tokenLogo(chainId, '0x0000000000000000000000000000000000000000'),
       lastUpdated: Date.now(),
     }];
   }
@@ -129,20 +130,20 @@ function getTestnetTokens (chainId: number): TokenMetadata[] {
  * Fetch tokens from 1Inch API for mainnet networks.
  */
 async function fetchMainnetTokens (chainId: number): Promise<TokenMetadata[]> {
-  const networkConfig = chainManager.chainConfig(chainId)!;
+  const network = networks.byChainId(chainId)!;
 
   try {
     const apiKey = import.meta.env.VITE_API_KEY_ONEINCH;
     if (!apiKey) {
       logger.warn('VITE_API_KEY_ONEINCH not configured, falling back to native token');
       return [{
-        address: networkConfig.nativeToken.address,
-        symbol: networkConfig.nativeToken.symbol,
-        name: networkConfig.nativeToken.name,
+        address: network.nativeToken.address,
+        symbol: network.nativeToken.symbol,
+        name: network.nativeToken.name,
         chainId,
-        decimals: networkConfig.nativeToken.decimals,
-        trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
-        logoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
+        decimals: network.nativeToken.decimals,
+        trustWalletLogoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
+        logoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
         lastUpdated: Date.now(),
       }];
     }
@@ -163,13 +164,13 @@ async function fetchMainnetTokens (chainId: number): Promise<TokenMetadata[]> {
   } catch (error) {
     logger.warn(`Failed to fetch from 1inch API: ${error instanceof Error ? error.message : error}`);
     return [{
-      address: networkConfig.nativeToken.address,
-      symbol: networkConfig.nativeToken.symbol,
-      name: networkConfig.nativeToken.name,
+      address: network.nativeToken.address,
+      symbol: network.nativeToken.symbol,
+      name: network.nativeToken.name,
       chainId,
-      decimals: networkConfig.nativeToken.decimals,
-      trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
-      logoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
+      decimals: network.nativeToken.decimals,
+      trustWalletLogoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
+      logoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
       lastUpdated: Date.now(),
     }];
   }
@@ -179,18 +180,18 @@ async function fetchMainnetTokens (chainId: number): Promise<TokenMetadata[]> {
  * Transform 1Inch API response data into TokenMetadata array.
  */
 function transformTokensData (tokensData: Record<string, unknown>, chainId: number): TokenMetadata[] {
-  const networkConfig = chainManager.chainConfig(chainId)!;
+  const network = networks.byChainId(chainId)!;
   const tokens: TokenMetadata[] = [];
 
   // First, add native token.
   tokens.push({
-    address: networkConfig.nativeToken.address,
-    symbol: networkConfig.nativeToken.symbol,
-    name: networkConfig.nativeToken.name,
+    address: network.nativeToken.address,
+    symbol: network.nativeToken.symbol,
+    name: network.nativeToken.name,
     chainId,
-    decimals: networkConfig.nativeToken.decimals,
-    trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
-    logoUrl: chainManager.trustWalletLogoUrl(chainId, networkConfig.nativeToken.address),
+    decimals: network.nativeToken.decimals,
+    trustWalletLogoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
+    logoUrl: networkLinks.tokenLogo(chainId, network.nativeToken.address),
     lastUpdated: Date.now(),
   });
 
@@ -198,7 +199,7 @@ function transformTokensData (tokensData: Record<string, unknown>, chainId: numb
   const transformedTokens = Object.values(tokensData)
     .filter((token: unknown) => {
       const tokenData = token as Record<string, unknown>;
-      return (tokenData.address as string).toLowerCase() !== networkConfig.nativeToken.address.toLowerCase();
+      return (tokenData.address as string).toLowerCase() !== network.nativeToken.address.toLowerCase();
     })
     .map((token: unknown) => {
       const tokenData = token as Record<string, unknown>;
@@ -209,7 +210,7 @@ function transformTokensData (tokensData: Record<string, unknown>, chainId: numb
         chainId,
         decimals: (tokenData.decimals as number) || 18,
         logoUrl: tokenData.logoURI as string,
-        trustWalletLogoUrl: chainManager.trustWalletLogoUrl(chainId, tokenData.address as string),
+        trustWalletLogoUrl: networkLinks.tokenLogo(chainId, tokenData.address as string),
         lastUpdated: Date.now(),
       };
     });
@@ -318,14 +319,14 @@ export function useTokenData (chainId: number, limit: number = 100) {
   } = useQuery({
     queryKey: ['unified-token-data', chainId],
     queryFn: async (): Promise<TokenMetadata[]> => {
-      const networkConfig = chainManager.chainConfig(chainId);
+      const network = networks.byChainId(chainId);
 
-      if (!networkConfig) {
+      if (!network) {
         throw new Error(`Unsupported network: ${chainId}`);
       }
 
       // Handle testnets.
-      if (networkConfig.isTestnet) {
+      if (network.isTestnet) {
         return getTestnetTokens(chainId);
       }
 

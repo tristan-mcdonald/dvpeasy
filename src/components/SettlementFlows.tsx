@@ -13,7 +13,8 @@ import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, K
 import { flowsManager } from '../lib/flow-utils';
 import { CSS } from '@dnd-kit/utilities';
 import { Flow } from '../types/settlement';
-import { chainManager } from '../lib/chain-manager';
+import { networkLinks } from '../lib/network-links';
+import { networks } from '../config/networks';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { useMemo, useState, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -270,8 +271,8 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                 </Tooltip>
                 {(() => {
                   const chainId = walletClient?.chain?.id || 11155111;
-                  const nftMarketplaceUrl = chainManager.nftMarketplaceUrl(chainId, token, amountOrId.toString());
-                  return nftMarketplaceUrl && !chainManager.isTestnetChain(chainId) && (
+                  const nftMarketplaceUrl = networkLinks.nft(chainId, token, amountOrId.toString());
+                  return nftMarketplaceUrl && !networks.byChainId(chainId)?.isTestnet && (
                     <Tooltip content="View on NFT marketplace">
                       <a
                       href={nftMarketplaceUrl}

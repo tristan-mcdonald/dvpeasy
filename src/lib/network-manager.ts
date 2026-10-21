@@ -1,6 +1,6 @@
 import { ContractConfigWithNetwork } from '../config/contracts';
 import { contractConfigManager } from '../config/contracts/manager';
-import { chainManager } from './chain-manager';
+import { networks } from '../config/networks';
 
 /**
  * Network management system for application network operations.
@@ -14,7 +14,7 @@ export const networkManager = {
     const allConfigs = contractConfigManager.getAvailableConfigs();
 
     return Object.entries(allConfigs).filter(([, config]) => {
-      const isTestnet = chainManager.isTestnetChain(config.chainId);
+      const isTestnet = Boolean(networks.byChainId(config.chainId)?.isTestnet);
       // Show mainnets always, testnets only if showTestNetworks is true.
       return !isTestnet || showTestNetworks;
     });
@@ -32,7 +32,7 @@ export const networkManager = {
 
     for (const config of configs) {
       const [, configData] = config;
-      const isTestnet = chainManager.isTestnetChain(configData.chainId);
+      const isTestnet = Boolean(networks.byChainId(configData.chainId)?.isTestnet);
 
       if (isTestnet) {
         testnetConfigs.push(config);
@@ -103,7 +103,7 @@ export const networkManager = {
     // Fall back to first available mainnet.
     const allConfigs = contractConfigManager.getAvailableConfigs();
     const mainnetConfigs = Object.values(allConfigs).filter(
-      config => !chainManager.isTestnetChain(config.chainId),
+      config => !networks.byChainId(config.chainId)?.isTestnet,
     );
 
     if (mainnetConfigs.length > 0) {
@@ -123,12 +123,12 @@ export const networkManager = {
    * Check if a network supports a specific feature.
    */
   networkSupportsFeature (chainId: number, feature: 'nft' | 'faucet' | 'explorer'): boolean {
-    const chainConfig = chainManager.chainConfig(chainId);
+    const chainConfig = networks.byChainId(chainId);
     if (!chainConfig) return false;
 
     switch (feature) {
       case 'nft':
-        return Boolean(chainConfig.nftMarketplaceUrl);
+        return Boolean(chainConfig.nftUrlTemplate);
       case 'faucet':
         return Boolean(chainConfig.faucetUrl);
       case 'explorer':
@@ -145,8 +145,8 @@ export const networkManager = {
     const allConfigs = contractConfigManager.getAvailableConfigs();
     const configs = Object.values(allConfigs);
 
-    const mainnetCount = configs.filter(c => !chainManager.isTestnetChain(c.chainId)).length;
-    const testnetCount = configs.filter(c => chainManager.isTestnetChain(c.chainId)).length;
+    const mainnetCount = configs.filter(c => !networks.byChainId(c.chainId)?.isTestnet).length;
+    const testnetCount = configs.filter(c => Boolean(networks.byChainId(c.chainId)?.isTestnet)).length;
 
     return {
       totalNetworks: configs.length,
@@ -167,8 +167,8 @@ export const networkManager = {
     }
 
     // Check if switching between mainnet and testnet.
-    const fromIsTestnet = chainManager.isTestnetChain(fromChainId);
-    const toIsTestnet = chainManager.isTestnetChain(toChainId);
+    const fromIsTestnet = Boolean(networks.byChainId(fromChainId)?.isTestnet);
+    const toIsTestnet = Boolean(networks.byChainId(toChainId)?.isTestnet);
 
     if (fromIsTestnet !== toIsTestnet) {
       return {

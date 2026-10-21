@@ -1,4 +1,5 @@
 import { Address } from 'viem';
+import type { NetworkId } from '../networks';
 import type { DvpAbi, DvpHelperAbi } from './abis';
 
 /**
@@ -15,7 +16,7 @@ export interface ContractVersion {
  * Contract configuration interface focused on contract-specific data.
  */
 export interface ContractConfig {
-  networkId: string; // References a key in the NETWORKS object.
+  networkId: NetworkId;
   dvpAddress: Address;
   dvpHelperAddress: Address;
   dvpAbi: DvpAbi;
@@ -38,5 +39,4 @@ export interface NetworkContractVersions {
 export interface ContractConfigWithNetwork extends ContractConfig {
   name: string;
   chainId: number;
-  iconUrl: string | null;
 }

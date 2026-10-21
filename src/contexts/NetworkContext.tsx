@@ -1,13 +1,13 @@
 import React, { createContext, useEffect, useState, ReactNode } from 'react';
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import { contractConfigManager, ContractConfigWithNetwork } from '../config/contracts';
-import { networkConfigManager, NetworkMetadata } from '../config/networks';
+import { Network, networks } from '../config/networks';
 import { useAppKitNetwork } from '@reown/appkit/react';
 import { useChainId } from 'wagmi';
 
 export interface NetworkContextValue {
   chainId: number | undefined;
-  network: NetworkMetadata | undefined;
+  network: Network | undefined;
   contractConfig: ContractConfigWithNetwork;
   switchNetwork: ((network: AppKitNetwork) => Promise<void>) | undefined;
   isLoading: boolean;
@@ -39,7 +39,7 @@ export function NetworkProvider ({ children }: NetworkProviderProps) {
     return wagmiChainId;
   })();
 
-  const network = effectiveChainId ? networkConfigManager.byChainId(effectiveChainId) : undefined;
+  const network = effectiveChainId ? networks.byChainId(effectiveChainId) : undefined;
 
   useEffect(() => {
     // Subscribe to contract configuration changes.

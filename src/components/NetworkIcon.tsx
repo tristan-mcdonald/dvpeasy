@@ -1,9 +1,9 @@
 import { BaseIcon, EthereumIcon } from './NetworkIcons';
-import { NetworkMetadata } from '../config/networks';
+import { Network } from '../config/networks';
 import { useNetwork } from '../hooks/useNetwork';
 
 interface NetworkIconProps {
-  network?: NetworkMetadata | undefined;
+  network?: Network | undefined;
   className?: string;
   useCurrentNetwork?: boolean;
 }

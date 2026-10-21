@@ -1,4 +1,4 @@
-import { CHAIN_ID_TO_NETWORK_ID, NETWORKS } from '../config/networks';
+import { CHAIN_ID_TO_NETWORK_ID, networks } from '../config/networks';
 import { VERSIONED_CONTRACT_CONFIGS } from '../config/contracts';
 
 /**
@@ -62,7 +62,7 @@ export const urlManager = {
     const networkId = this.slugToNetworkId(network);
 
     // Validate network exists.
-    if (!NETWORKS[networkId]) {
+    if (!networks.byId(networkId)) {
       return null;
     }
 
@@ -134,7 +134,7 @@ export const urlManager = {
    * Get the chain ID for a network.
    */
   chainIdForNetwork (networkId: string): number | null {
-    const network = NETWORKS[networkId];
+    const network = networks.byId(networkId);
     return network?.chainId || null;
   },
 

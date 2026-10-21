@@ -1,5 +1,5 @@
 import FiltersApplied from './FiltersApplied';
-import { chainManager } from '../../../lib/chain-manager';
+import { networkLinks } from '../../../lib/network-links';
 import { ExternalLink, SlidersHorizontal } from 'lucide-react';
 import { useAppKitNetworkState } from '../../../hooks/useAppKitNetwork';
 import { useContractAddresses } from '../../../hooks/useContractConfig';
@@ -13,7 +13,7 @@ interface DashboardHeaderProps {
 export default function DashboardHeader ({ onShowFilters, filters }: DashboardHeaderProps) {
   const { chainId } = useAppKitNetworkState();
   const { dvpAddress } = useContractAddresses();
-  const blockExplorerUrl = chainId ? chainManager.blockExplorerAddressUrl(chainId, dvpAddress) : undefined;
+  const blockExplorerUrl = chainId ? networkLinks.address(chainId, dvpAddress) : undefined;
 
   return (
     <div className="space-y-2 max-w-full w-full">

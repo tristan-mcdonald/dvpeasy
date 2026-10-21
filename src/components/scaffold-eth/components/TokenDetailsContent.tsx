@@ -1,7 +1,7 @@
 import Tooltip from '../../Tooltip';
 import { AssetType } from '../../../lib/token-manager';
 import { Check, Copy, ExternalLink } from 'lucide-react';
-import { chainManager } from '../../../lib/chain-manager';
+import { networkLinks } from '../../../lib/network-links';
 import { logger } from '../../../lib/logger';
 import { memo, useState } from 'react';
 import { TOKEN_BUTTON_CLASSES } from '../utils/tokenSizeUtils';
@@ -106,7 +106,7 @@ export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
   };
 
   // Get the block explorer URL for the current chain and token address.
-  const blockExplorerUrl = chainManager.blockExplorerAddressUrl(chainId, debouncedAddress);
+  const blockExplorerUrl = networkLinks.address(chainId, debouncedAddress);
 
   return (
     <div className="flex items-center justify-start gap-2 px-4 py-2">

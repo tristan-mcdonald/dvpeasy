@@ -1,7 +1,7 @@
 import NetworkIcon from './NetworkIcon';
 import NetworkSelectionModal from './NetworkSelectionModal';
 import Tooltip from './Tooltip';
-import { NETWORKS, networkConfigManager } from '../config/networks';
+import { networks } from '../config/networks';
 import { useContractConfig } from '../hooks/useContractConfig';
 import { useState } from 'react';
 
@@ -15,8 +15,8 @@ export default function NetworkButton () {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Get the network metadata from the contract config's networkId.
-  const currentNetwork = config.networkId ? NETWORKS[config.networkId] : undefined;
-  const displayName = currentNetwork ? networkConfigManager.displayName(currentNetwork, false) : 'Select network';
+  const currentNetwork = networks.byId(config.networkId);
+  const displayName = currentNetwork ? networks.displayName(currentNetwork, false) : 'Select network';
 
   const tooltipText = `Current network: ${displayName}`;
 
