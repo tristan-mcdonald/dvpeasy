@@ -132,21 +132,26 @@ export const errorManager = {
   },
 
   /**
-   * Format an error for user display.
+   * Format an error for user display. Kinds which `parse` recognises reliably get their plain
+   * message; anything else gets the one-line summary from viem or wagmi where there is one, so
+   * that details such as a revert reason aren't replaced by a guess.
    */
   formatUserMessage (error: ContractErrorType): string {
-    // Handle cases where error might not have toUserMessage method.
-    if (error && typeof error.toUserMessage === 'function') {
-      return error.toUserMessage();
+    const hasReliableMessage = error instanceof UserRejectionError ||
+      error instanceof NetworkError ||
+      error instanceof RateLimitError;
+    if (hasReliableMessage) return error.userMessage;
+
+    const { originalError } = error;
+    if (
+      originalError instanceof Error &&
+      'shortMessage' in originalError &&
+      typeof originalError.shortMessage === 'string'
+    ) {
+      return originalError.shortMessage;
     }
 
-    // Fallback for regular Error objects.
-    if (error instanceof Error) {
-      return error.message;
-    }
-
-    // Fallback for other types.
-    return typeof error === 'string' ? error : 'An unknown error occurred';
+    return error.userMessage;
   },
 
   /**
