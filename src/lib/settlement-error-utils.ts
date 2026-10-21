@@ -4,7 +4,7 @@ import { TokenDetectionError } from '../lib/token-manager';
 /**
  * Common error messages for settlement creation operations.
  */
-export const SETTLEMENT_ERROR_MESSAGES: Record<string, string> = {
+const SETTLEMENT_ERROR_MESSAGES: Record<string, string> = {
   'CallerNotInvolved': 'You must be a participant in the settlement.',
   'CutoffDatePassed': 'The cutoff date has already passed. Please choose a future date.',
   'execution reverted': 'Transaction failed. Please check your inputs and try again.',

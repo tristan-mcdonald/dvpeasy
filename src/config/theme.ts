@@ -77,60 +77,7 @@ export const graphColors = {
   },
 } as const;
 
-/**
- * Semantic color mappings that reference CSS custom properties.
- * These provide JavaScript access to the design system colors.
- */
-export const semanticColors = {
-  // Primary brand colors.
-  primary: 'var(--color-primary)',
-  primaryInteraction: 'var(--color-primary-interaction)',
-  primarySubtle: 'var(--color-primary-subtle)',
-
-  // Secondary colors.
-  secondary: 'var(--color-secondary)',
-
-  // Attention/warning colors.
-  attention: 'var(--color-attention)',
-  attentionSubtle: 'var(--color-attention-subtle)',
-
-  // Interface colors.
-  interfaceDark: 'var(--color-interface-dark)',
-  interfaceLow: 'var(--color-interface-low)',
-  interfaceBlack: 'var(--color-interface-black)',
-  interfaceBorder: 'var(--color-interface-border)',
-
-  // Text colors.
-  textAnchor: 'var(--color-text-anchor)',
-  textBody: 'var(--color-text-body)',
-  textDisabled: 'var(--color-text-disabled)',
-  textHeading: 'var(--color-text-heading)',
-  textLabel: 'var(--color-text-label)',
-
-  // Background colors.
-  bodyBackground: 'var(--color-body-background)',
-  cardBackground: 'var(--color-card-background)',
-  inputBackground: 'var(--color-input-background)',
-
-  // Input field colors.
-  inputBorder: 'var(--color-input-border)',
-  inputBorderFocus: 'var(--color-input-border-focus)',
-  inputOutline: 'var(--color-input-outline)',
-  inputPlaceholder: 'var(--color-input-placeholder)',
-
-  // Button colors.
-  primaryButtonBorder: 'var(--color-primary-button-border)',
-  primaryButtonBackground: 'var(--color-primary-button-background)',
-
-  // Logo colors.
-  logoMain: 'var(--color-logo-main)',
-  logoHighlight: 'var(--color-logo-highlight)',
-} as const;
-
 // Type definitions.
-export type ToastColors = typeof toastColors;
-export type GraphColors = typeof graphColors;
-export type SemanticColors = typeof semanticColors;
 export type NodeGradient = typeof graphColors.nodeGradients[0];
 
 // Utility function to get node colors by index (cycles through available colors).

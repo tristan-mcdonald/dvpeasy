@@ -3,7 +3,6 @@ import { logger } from '../lib/logger';
 import { sepoliaTokens } from '../data/testnet-tokens/sepolia';
 import { TokenMetadata } from '../lib/token-api';
 import { tokenStorage } from '../lib/custom-token-storage';
-import { useDebounce } from 'use-debounce';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -413,55 +412,5 @@ export function useTokenData (chainId: number, limit: number = 100) {
     refetch,
     /** Custom tokens for current chain */
     customTokens,
-  };
-}
-
-/**
- * Hook for debounced token search using the unified data source.
- */
-export function useTokenSearch (
-  query: string,
-  chainId: number,
-  options: {
-    enabled?: boolean;
-    debounceDelay?: number;
-    maxResults?: number;
-    includeCustomTokens?: boolean;
-  } = {},
-) {
-  const {
-    enabled = true,
-    debounceDelay = 300,
-    maxResults = 20,
-    includeCustomTokens = true,
-  } = options;
-
-  // Debounce the query.
-  const [debouncedQuery] = useDebounce(query.trim(), debounceDelay);
-
-  // Get the unified token data.
-  const { searchTokens, isLoading: isLoadingTokens, error } = useTokenData(chainId);
-
-  // Perform search with debounced query.
-  const searchResult = useMemo(() => {
-    if (!enabled || !debouncedQuery || debouncedQuery.length < 1) {
-      return {
-        tokens: [],
-        query: debouncedQuery,
-        totalResults: 0,
-        counts: { api: 0, custom: 0 },
-      };
-    }
-
-    return searchTokens(debouncedQuery, {
-      limit: maxResults,
-      includeCustomTokens,
-    });
-  }, [searchTokens, debouncedQuery, enabled, maxResults, includeCustomTokens]);
-
-  return {
-    data: searchResult,
-    isLoading: isLoadingTokens,
-    error,
   };
 }

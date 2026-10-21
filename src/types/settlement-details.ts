@@ -35,26 +35,6 @@ export interface FormattedFlow extends Flow {
   formattedAmount: string
 }
 
-export interface SettlementDataState {
-  settlement: Settlement | null
-  formattedFlows: FormattedFlow[]
-  isLoading: boolean
-  error: ContractErrorType | null
-}
-
-export interface PartyStatusState {
-  partyStatus: PartyStatus | null
-  isLoading: boolean
-  error: ContractErrorType | null
-}
-
-export interface ApprovalStatusState {
-  allPartiesApproved: boolean
-  allApprovalsComplete: boolean
-  isLoading: boolean
-  error: ContractErrorType | null
-}
-
 export interface ValidationState {
   isParticipant: boolean
   networkError: ContractErrorType | null

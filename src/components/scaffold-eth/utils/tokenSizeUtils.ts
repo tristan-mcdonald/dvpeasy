@@ -12,7 +12,7 @@ export type TokenSizeVariant = 'sm' | 'md' | 'lg';
  * CSS class mappings for different token component sizes.
  * Used consistently across token logos, icons, and other sized elements.
  */
-export const TOKEN_SIZE_CLASSES: Record<TokenSizeVariant, string> = {
+const TOKEN_SIZE_CLASSES: Record<TokenSizeVariant, string> = {
   sm: 'size-6',
   md: 'size-8',
   lg: 'size-10',
@@ -22,7 +22,7 @@ export const TOKEN_SIZE_CLASSES: Record<TokenSizeVariant, string> = {
  * CSS class mappings for icon sizes within token components.
  * Used for icons displayed inside token logo containers.
  */
-export const TOKEN_ICON_SIZE_CLASSES: Record<TokenSizeVariant, string> = {
+const TOKEN_ICON_SIZE_CLASSES: Record<TokenSizeVariant, string> = {
   sm: 'size-4',
   md: 'size-5',
   lg: 'size-6',
@@ -51,7 +51,7 @@ export const TOKEN_CONTAINER_CLASSES = {
  * Symbol mapping for wrapped/testnet tokens.
  * Maps token symbols to their canonical counterparts for icon resolution.
  */
-export const TOKEN_SYMBOL_MAP: Record<string, string> = {
+const TOKEN_SYMBOL_MAP: Record<string, string> = {
   taave: 'aave',
   tdai: 'dai',
   tlink: 'link',

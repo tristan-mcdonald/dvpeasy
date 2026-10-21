@@ -103,22 +103,6 @@ export interface PollingState {
 }
 
 /**
- * Hook return type for data fetching with polling.
- */
-export interface DataFetchingHookResult<T> extends DataFetchingState<T> {
-  /** Manually trigger a data refresh */
-  refresh: () => Promise<void>
-  /** Force refresh ignoring cache */
-  forceRefresh: () => Promise<void>
-  /** Start polling */
-  startPolling: () => void
-  /** Stop polling */
-  stopPolling: () => void
-  /** Reset all state */
-  reset: () => void
-}
-
-/**
  * Default configurations.
  */
 export const DEFAULT_POLLING_CONFIG: PollingConfig = {

@@ -34,7 +34,7 @@ const IPFS_GATEWAYS = [
   'https://gateway.ipfs.io/ipfs/',
 ];
 
-export class NFTMetadataError extends Error {
+class NFTMetadataError extends Error {
   constructor (message: string, public tokenAddress: string, public tokenId: string) {
     super(message);
     this.name = 'NFTMetadataError';

@@ -32,17 +32,6 @@ export interface TokenMetadata {
   isTestnetFallback?: boolean;
 }
 
-// Branded type for token addresses to prevent mixing with other addresses.
-export type TokenAddress = Address & { readonly _brand: 'TokenAddress' };
-
-// Helper function to create branded token address.
-export function createTokenAddress (address: string): TokenAddress {
-  if (!contractValidationManager.isValidAddress(address)) {
-    throw new ContractValidationError('Invalid token address format', address, 'TokenAddress');
-  }
-  return address as TokenAddress;
-}
-
 const ERC20_ABI = [
   {
     name: 'decimals',
@@ -182,9 +171,8 @@ const CHAIN_DATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in millisecon
 /**
  * Fetches native currency information from chainid.network for a specific chain ID.
  * Uses caching to minimize API calls and improve performance.
- * Exported for testing purposes.
  */
-export async function fetchChainNativeCurrency (chainId: number): Promise<ChainIdNetworkNativeCurrency | undefined> {
+async function fetchChainNativeCurrency (chainId: number): Promise<ChainIdNetworkNativeCurrency | undefined> {
   // Check if we have cached data that's still fresh.
   const now = Date.now();
   if (chainDataCache.has(chainId) && (now - chainDataFetchTime) < CHAIN_DATA_CACHE_DURATION) {
