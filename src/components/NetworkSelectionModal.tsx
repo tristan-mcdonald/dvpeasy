@@ -1,7 +1,6 @@
 import NetworkIcon from './NetworkIcon';
 import React from 'react';
 import { networks } from '../config/networks';
-import { networkManager } from '../lib/network-manager';
 import { useAccount } from 'wagmi';
 import { useNetworkManager } from '../hooks/useNetworkManager';
 import { useLocation } from 'react-router-dom';
@@ -58,14 +57,13 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
     setShowTestNetworks(event.target.checked);
   };
 
-  const {
-    mainnetConfigs,
-    testnetConfigs,
-    hasNoNetworks,
-    hasMainnetNetworks,
-    hasTestnetNetworks,
-  } = networkManager.networkSelectionData(showTestNetworks);
-
+  const visibleNetworks = networks.all()
+    .filter(network => showTestNetworks || !network.isTestnet)
+    .sort((first, second) => first.displayName.localeCompare(second.displayName));
+  const networkGroups = [
+    { title: 'Mainnet networks', networks: visibleNetworks.filter(network => !network.isTestnet) },
+    { title: 'Test networks', networks: visibleNetworks.filter(network => network.isTestnet) },
+  ].filter(group => group.networks.length > 0);
 
   return (
     <div
@@ -111,24 +109,22 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
         </div>
 
         {/* Network list */}
-        {hasNoNetworks ? (
+        {networkGroups.length === 0 ? (
           <div className="text-center">
             <p className="pt-6">No networks available.</p>
             <p className="text-sm mt-2">Enable test networks to see more options.</p>
           </div>
         ) : (
           <div className="pt-4">
-            {/* Mainnet networks */}
-            {hasMainnetNetworks && (
-              <>
-                <h3 className="text-base font-medium mb-2">Mainnet networks</h3>
+            {networkGroups.map((group, groupIndex) => (
+              <React.Fragment key={group.title}>
+                <h3 className={`text-base font-medium ${groupIndex > 0 ? 'mt-4 ' : ''}mb-2`}>{group.title}</h3>
                 <ul className="space-y-1">
-                  {mainnetConfigs.map(([key, config]) => {
-                    const isUrlNetwork = config.networkId === urlNetworkId;
-                    const network = networks.byId(config.networkId);
+                  {group.networks.map((network) => {
+                    const isUrlNetwork = network.id === urlNetworkId;
 
                     return (
-                      <li key={key}>
+                      <li key={network.id}>
                         <button
                         className={`transition-colors flex items-center gap-3 w-full rounded-lg border p-3 ${
                           isUrlNetwork
@@ -136,11 +132,11 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                             : 'border-transparent hover:border-primary-subtle hover:shadow-standard hover:bg-white'
                         }`}
                         disabled={isUrlNetwork || isLoading}
-                        onClick={() => handleNetworkSelect(config.networkId)}
+                        onClick={() => handleNetworkSelect(network.id)}
                         type="button">
                           <NetworkIcon network={network} />
                           <div className="flex-1 text-left">
-                            <span className="text-primary">{network && networks.displayName(network, false)}</span>
+                            <span className="text-primary">{network.displayName}</span>
                           </div>
                           {isUrlNetwork && (
                             <span className="text-sm text-success">Connected</span>
@@ -150,43 +146,8 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                     );
                   })}
                 </ul>
-              </>
-            )}
-
-            {/* Test networks */}
-            {showTestNetworks && hasTestnetNetworks && (
-              <>
-                <h3 className="text-base font-medium mt-4 mb-2">Test networks</h3>
-                <ul className="space-y-1">
-                  {testnetConfigs.map(([key, config]) => {
-                    const isUrlNetwork = config.networkId === urlNetworkId;
-                    const network = networks.byId(config.networkId);
-
-                    return (
-                      <li key={key}>
-                        <button
-                        className={`transition-colors flex items-center gap-3 w-full rounded-lg border p-3 ${
-                          isUrlNetwork
-                            ? 'border-interface-border bg-card-background'
-                            : 'border-transparent hover:border-primary-subtle hover:shadow-standard hover:bg-white'
-                        }`}
-                        disabled={isUrlNetwork || isLoading}
-                        onClick={() => handleNetworkSelect(config.networkId)}
-                        type="button">
-                          <NetworkIcon network={network} />
-                          <div className="flex-1 text-left">
-                            <span className="text-primary">{network && networks.displayName(network, false)}</span>
-                          </div>
-                          {isUrlNetwork && (
-                            <span className="text-sm text-success">Connected</span>
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            )}
+              </React.Fragment>
+            ))}
           </div>
         )}
       </div>
