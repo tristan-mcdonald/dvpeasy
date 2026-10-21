@@ -12,11 +12,12 @@ import {
   mainnet as viemMainnet,
   sepolia as viemSepolia,
 } from 'viem/chains';
+import { SEPOLIA_TEST_TOKENS } from '../data/testnet-tokens/sepolia';
 import { zeroAddress } from 'viem';
 
 export type NetworkId = 'base' | 'baseSepolia' | 'mainnet' | 'sepolia';
 
-export interface NativeToken {
+export interface TokenDetails {
   address: Address;
   decimals: number;
   name: string;
@@ -32,10 +33,12 @@ export interface Network {
   displayName: string;
   faucetUrl?: string;
   isTestnet: boolean;
-  nativeToken: NativeToken;
+  nativeToken: TokenDetails;
   /** OpenSea's page for an NFT, with `{contract}` and `{token}` placeholders. */
   nftUrlTemplate: string;
   rpcUrl: string;
+  /** The tokens offered on a test network, which token APIs don't list. */
+  testTokens?: TokenDetails[];
   /** The chain's folder in Trust Wallet's assets repository, which serves token logos. */
   trustWalletFolder: string;
 }
@@ -43,7 +46,7 @@ export interface Network {
 /**
  * The native token of every supported network.
  */
-const ETHER: NativeToken = {
+const ETHER: TokenDetails = {
   address: zeroAddress,
   decimals: 18,
   name: 'Ethereum',
@@ -116,6 +119,7 @@ export const NETWORKS: Record<NetworkId, Network> = {
     nativeToken: ETHER,
     nftUrlTemplate: 'https://testnets.opensea.io/assets/sepolia/{contract}/{token}',
     rpcUrl: alchemyUrl('eth-sepolia'),
+    testTokens: SEPOLIA_TEST_TOKENS,
     trustWalletFolder: 'ethereum',
   },
 };

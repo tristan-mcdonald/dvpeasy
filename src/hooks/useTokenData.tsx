@@ -1,7 +1,6 @@
 import { networkLinks } from '../lib/network-links';
-import { networks } from '../config/networks';
+import { Network, networks } from '../config/networks';
 import { logger } from '../lib/logger';
-import { sepoliaTokens } from '../data/testnet-tokens/sepolia';
 import { TokenMetadata } from '../lib/token-api';
 import { tokenStorage } from '../lib/custom-token-storage';
 import { useMemo } from 'react';
@@ -56,74 +55,19 @@ export interface TokenSearchResult {
 }
 
 /**
- * Testnet token database interface.
+ * The tokens offered on a test network: its list of test tokens, or only its native token.
  */
-interface TestnetTokenDatabase {
-  readonly chainId: number;
-  readonly chainName: string;
-  readonly faucetUrl: string;
-  readonly tokens: ReadonlyArray<{
-    readonly address: string;
-    readonly symbol: string;
-    readonly name: string;
-    readonly decimals: number;
-  }>;
-}
-
-/**
- * Load testnet tokens from TypeScript files based on chain ID.
- */
-function loadTestnetTokens (chainId: number): TestnetTokenDatabase | null {
-  switch (chainId) {
-    case 11155111: // Sepolia.
-      return sepoliaTokens;
-    default:
-      return null;
-  }
-}
-
-/**
- * Get testnet-specific tokens for fallback purposes.
- */
-function getTestnetTokens (chainId: number): TokenMetadata[] {
-  try {
-    const testnetData = loadTestnetTokens(chainId);
-
-    if (!testnetData) {
-      // Fallback to basic ETH token if no data found.
-      return [{
-        address: '0x0000000000000000000000000000000000000000',
-        symbol: 'ETH',
-        name: 'Ethereum',
-        chainId,
-        decimals: 18,
-        trustWalletLogoUrl: networkLinks.tokenLogo(chainId, '0x0000000000000000000000000000000000000000'),
-        lastUpdated: Date.now(),
-      }];
-    }
-
-    return testnetData.tokens.map((token) => ({
-      address: token.address,
-      symbol: token.symbol,
-      name: token.name,
-      chainId,
-      decimals: token.decimals,
-      trustWalletLogoUrl: networkLinks.tokenLogo(chainId, token.address),
-      lastUpdated: Date.now(),
-    }));
-  } catch (error) {
-    logger.warn(`Failed to load testnet tokens for chain ${chainId}:`, error);
-    // Fallback to basic ETH token.
-    return [{
-      address: '0x0000000000000000000000000000000000000000',
-      symbol: 'ETH',
-      name: 'Ethereum',
-      chainId,
-      decimals: 18,
-      trustWalletLogoUrl: networkLinks.tokenLogo(chainId, '0x0000000000000000000000000000000000000000'),
-      lastUpdated: Date.now(),
-    }];
-  }
+function getTestnetTokens (network: Network): TokenMetadata[] {
+  const tokens = network.testTokens ?? [network.nativeToken];
+  return tokens.map((token) => ({
+    address: token.address,
+    symbol: token.symbol,
+    name: token.name,
+    chainId: network.chainId,
+    decimals: token.decimals,
+    trustWalletLogoUrl: networkLinks.tokenLogo(network.chainId, token.address),
+    lastUpdated: Date.now(),
+  }));
 }
 
 /**
@@ -327,7 +271,7 @@ export function useTokenData (chainId: number, limit: number = 100) {
 
       // Handle testnets.
       if (network.isTestnet) {
-        return getTestnetTokens(chainId);
+        return getTestnetTokens(network);
       }
 
       // Handle mainnets with 1Inch API.
