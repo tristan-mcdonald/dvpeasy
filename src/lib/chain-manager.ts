@@ -53,7 +53,7 @@ export interface ChainConfig {
 /**
  * Supported blockchain networks configuration.
  */
-export const CHAIN_CONFIG: Record<number, ChainConfig> = {
+const CHAIN_CONFIG: Record<number, ChainConfig> = {
   1: {
     name: 'Ethereum Mainnet',
     trustWalletFolder: 'ethereum',
@@ -138,39 +138,8 @@ export const CHAIN_CONFIG: Record<number, ChainConfig> = {
  * Chain configuration object with bound methods for chain-specific operations.
  * Provides object-oriented access to chain operations.
  */
-export class ChainConfigObject {
-  constructor (
-    private chainId: number,
-    private config: ChainConfig,
-  ) {}
-
-  /**
-   * The basic chain configuration.
-   */
-  configuration (): ChainConfig {
-    return this.config;
-  }
-
-  /**
-   * The chain ID.
-   */
-  id (): number {
-    return this.chainId;
-  }
-
-  /**
-   * The chain name.
-   */
-  name (): string {
-    return this.config.name;
-  }
-
-  /**
-   * Check if this is a testnet.
-   */
-  isTestnet (): boolean {
-    return this.config.isTestnet;
-  }
+class ChainConfigObject {
+  constructor (private config: ChainConfig) {}
 
   /**
    * TrustWallet logo URL for a token.
@@ -226,43 +195,13 @@ export class ChainConfigObject {
 
     return `${nftMarketplaceUrl}${url}`;
   }
-
-  /**
-   * Validate if a token address format is valid.
-   */
-  isValidTokenAddress (address: string): boolean {
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    return ethAddressRegex.test(address);
-  }
-
-  /**
-   * Native token information.
-   */
-  nativeToken () {
-    return this.config.nativeToken;
-  }
-
-  /**
-   * Block explorer base URL.
-   */
-  blockExplorerUrl (): string {
-    return this.config.blockExplorerUrl;
-  }
-
-  /**
-   * NFT marketplace base URL.
-   */
-  nftMarketplaceUrl (): string {
-    return this.config.nftMarketplaceUrl;
-  }
-
 }
 
 /**
  * Chain management system.
  * Provides centralized access to blockchain configuration and utilities.
  */
-export class ChainManager {
+class ChainManager {
   private static instance: ChainManager;
   private chainConfigObjectCache = new Map<number, ChainConfigObject>();
 
@@ -319,16 +258,9 @@ export class ChainManager {
     }
 
     // Create new instance and cache it.
-    const configObject = new ChainConfigObject(chainId, config);
+    const configObject = new ChainConfigObject(config);
     this.chainConfigObjectCache.set(chainId, configObject);
     return configObject;
-  }
-
-  /**
-   * All supported chain IDs.
-   */
-  supportedChainIds (): number[] {
-    return Object.keys(CHAIN_CONFIG).map(Number);
   }
 
   /**
@@ -371,28 +303,6 @@ export class ChainManager {
     const configObject = this.chainConfigObject(chainId);
     return configObject?.nftUrl(contractAddress, tokenId);
   }
-
-  /**
-   * Validate if a token address format is valid for EVM chains.
-   */
-  isValidTokenAddress (address: string): boolean {
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    return ethAddressRegex.test(address);
-  }
-
-  /**
-   * Chains filtered by testnet status.
-   */
-  chainsByTestnetStatus (includeTestnets: boolean, includeMainnets: boolean): ChainConfigObject[] {
-    return this.supportedChainIds()
-      .map(chainId => this.chainConfigObject(chainId))
-      .filter((config): config is ChainConfigObject => {
-        if (!config) return false;
-        const isTestnet = config.isTestnet();
-        return (includeTestnets && isTestnet) || (includeMainnets && !isTestnet);
-      });
-  }
-
 
   /**
    * Validate chain configuration integrity on module load.
