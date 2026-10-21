@@ -19,7 +19,7 @@ interface ContractVersionModalProps {
  * Displays available versions for the current network.
  */
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
-  const { config, availableVersions, currentVersion, getVersionContractAddresses } = useContractConfig();
+  const { config, availableDeployments, currentVersion } = useContractConfig();
   const { changeVersion } = useNetworkManager();
   const { chainId } = useAppKitNetworkState();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -55,8 +55,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
     }
   };
 
-  const hasMultipleVersions = availableVersions.length > 1;
-  const versionAddresses = getVersionContractAddresses();
+  const hasMultipleVersions = availableDeployments.length > 1;
 
   return (
     <div
@@ -85,9 +84,9 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
         <div className="pt-4">
           <h3 className="text-base font-medium">Contract versions</h3>
             <ul className="mt-3 space-y-3">
-              {availableVersions.map((version) => {
+              {availableDeployments.map((deployment) => {
+                const { version } = deployment;
                 const isSelected = version.tag === currentVersion;
-                const addresses = versionAddresses[version.tag];
                 return (
                   <li key={version.tag}>
                     <div
@@ -97,77 +96,71 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                     onClick={!isSelected ? () => handleVersionSelect(version.tag) : undefined}>
                       <span className="font-bold text-primary">v{version.tag.replace('v', '')}</span>
                       <div className="flex-1 text-left">
-                        {(version.deploymentDate || addresses) && (
-                          <dl className="mt-[.3rem] text-xs text-text-label">
-                            <ContractDeploymentDate version={version} />
-                            {addresses && (
-                              <>
-                                <div className="mt-2 flex gap-2">
-                                  <dt className="flex-[0_0_5.8rem] font-medium">DVP contract:</dt>
-                                  <dd className="flex flex-1 items-center gap-2">
-                                    <span className="block mr-auto">{utilityManager.shortenAddress(addresses.dvpAddress)}</span>
-                                    <Tooltip content="Copy address">
-                                      <button
-                                      className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        copyToClipboard(addresses.dvpAddress);
-                                      }}
-                                      type="button">
-                                        {copiedAddress === addresses.dvpAddress ? (
-                                          <Check className="size-3 text-success" />
-                                        ) : (
-                                          <Copy className="transition-colors size-3" />
-                                        )}
-                                      </button>
-                                    </Tooltip>
-                                    <Tooltip content="View on block explorer">
-                                      <a
-                                      className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                      href={chainId ? networkLinks.address(chainId, addresses.dvpAddress) : '#'}
-                                      rel="noopener noreferrer"
-                                      target="_blank"
-                                      onClick={(event) => event.stopPropagation()}>
-                                        <ExternalLink className="transition-colors size-3"/>
-                                      </a>
-                                    </Tooltip>
-                                  </dd>
-                                </div>
-                                <div className=" mt-2 flex gap-2">
-                                  <dt className="flex-[0_0_5.8rem] font-medium">Helper contract:</dt>
-                                  <dd className="flex flex-1 items-center gap-2">
-                                    <span className="block mr-auto">{utilityManager.shortenAddress(addresses.dvpHelperAddress)}</span>
-                                    <Tooltip content="Copy address">
-                                      <button
-                                      className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        copyToClipboard(addresses.dvpHelperAddress);
-                                      }}
-                                      type="button">
-                                        {copiedAddress === addresses.dvpHelperAddress ? (
-                                          <Check className="size-3 text-success" />
-                                        ) : (
-                                          <Copy className="transition-colors size-3" />
-                                        )}
-                                      </button>
-                                    </Tooltip>
-                                    <Tooltip content="View on block explorer">
-                                      <a
-                                      className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                      href={chainId ? networkLinks.address(chainId, addresses.dvpHelperAddress) : '#'}
-                                      rel="noopener noreferrer"
-                                      target="_blank"
-                                      onClick={(event) => event.stopPropagation()}>
-                                        <ExternalLink className="transition-colors size-3"/>
-                                      </a>
-                                    </Tooltip>
-                                  </dd>
-                                </div>
-                              </>
-                            )}
-                          </dl>
-                        )}
+                        <dl className="mt-[.3rem] text-xs text-text-label">
+                          <ContractDeploymentDate version={version} />
+                          <div className="mt-2 flex gap-2">
+                            <dt className="flex-[0_0_5.8rem] font-medium">DVP contract:</dt>
+                            <dd className="flex flex-1 items-center gap-2">
+                              <span className="block mr-auto">{utilityManager.shortenAddress(deployment.dvpAddress)}</span>
+                              <Tooltip content="Copy address">
+                                <button
+                                className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  copyToClipboard(deployment.dvpAddress);
+                                }}
+                                type="button">
+                                  {copiedAddress === deployment.dvpAddress ? (
+                                    <Check className="size-3 text-success" />
+                                  ) : (
+                                    <Copy className="transition-colors size-3" />
+                                  )}
+                                </button>
+                              </Tooltip>
+                              <Tooltip content="View on block explorer">
+                                <a
+                                className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
+                                href={chainId ? networkLinks.address(chainId, deployment.dvpAddress) : '#'}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                onClick={(event) => event.stopPropagation()}>
+                                  <ExternalLink className="transition-colors size-3"/>
+                                </a>
+                              </Tooltip>
+                            </dd>
+                          </div>
+                          <div className=" mt-2 flex gap-2">
+                            <dt className="flex-[0_0_5.8rem] font-medium">Helper contract:</dt>
+                            <dd className="flex flex-1 items-center gap-2">
+                              <span className="block mr-auto">{utilityManager.shortenAddress(deployment.dvpHelperAddress)}</span>
+                              <Tooltip content="Copy address">
+                                <button
+                                className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  copyToClipboard(deployment.dvpHelperAddress);
+                                }}
+                                type="button">
+                                  {copiedAddress === deployment.dvpHelperAddress ? (
+                                    <Check className="size-3 text-success" />
+                                  ) : (
+                                    <Copy className="transition-colors size-3" />
+                                  )}
+                                </button>
+                              </Tooltip>
+                              <Tooltip content="View on block explorer">
+                                <a
+                                className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
+                                href={chainId ? networkLinks.address(chainId, deployment.dvpHelperAddress) : '#'}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                onClick={(event) => event.stopPropagation()}>
+                                  <ExternalLink className="transition-colors size-3"/>
+                                </a>
+                              </Tooltip>
+                            </dd>
+                          </div>
+                        </dl>
                       </div>
                       <div className="flex-[0_0_4.8rem] mt-auto mb-auto text-right">
                         {isSelected && (

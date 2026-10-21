@@ -1,4 +1,6 @@
-import { contractConfigManager, ContractConfigWithNetwork, ContractVersion } from '../config/contracts';
+import { ContractDeployment, contracts } from '../config/contracts/deployments';
+import { contractConfigManager, ContractConfigWithNetwork } from '../config/contracts';
+import { networks } from '../config/networks';
 import { PublicClient } from 'viem';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
@@ -6,16 +8,13 @@ import { urlManager } from '../lib/url-manager';
 
 export interface UseContractConfigReturn {
   config: ContractConfigWithNetwork;
-  availableConfigs: Record<string, ContractConfigWithNetwork>;
   publicClient: PublicClient;
   isLoading: boolean;
   error: string | null;
   supportedChainIds: number[];
   currentVersion: string;
-  availableVersions: ContractVersion[];
-  setVersion: (version: string) => boolean;
+  availableDeployments: ContractDeployment[];
   isConfigReady: boolean;
-  getVersionContractAddresses: () => Record<string, { dvpAddress: string; dvpHelperAddress: string }>;
 }
 
 export function useContractConfig (): UseContractConfigReturn {
@@ -80,26 +79,15 @@ export function useContractConfig (): UseContractConfigReturn {
     }
   }, [params.network, params.version]);
 
-  const handleSetVersion = (version: string): boolean => {
-    return contractConfigManager.setVersion(config.networkId, version);
-  };
-
-  const getVersionContractAddresses = (): Record<string, { dvpAddress: string; dvpHelperAddress: string }> => {
-    return contractConfigManager.getVersionContractAddresses(config.networkId);
-  };
-
   return {
     config,
-    availableConfigs: contractConfigManager.getAvailableConfigs(),
     publicClient: contractConfigManager.getPublicClient(),
     isLoading,
     error,
-    supportedChainIds: contractConfigManager.getSupportedChainIds(),
+    supportedChainIds: networks.all().map(network => network.chainId),
     currentVersion,
-    availableVersions: contractConfigManager.getAvailableVersions(config.networkId),
-    setVersion: handleSetVersion,
+    availableDeployments: contracts.deployments(config.networkId),
     isConfigReady,
-    getVersionContractAddresses,
   };
 }
 

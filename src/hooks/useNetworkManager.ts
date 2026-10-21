@@ -1,5 +1,7 @@
 import { urlManager } from '../lib/url-manager';
-import { contractConfigManager, VERSIONED_CONTRACT_CONFIGS } from '../config/contracts';
+import { contractConfigManager } from '../config/contracts';
+import { contracts } from '../config/contracts/deployments';
+import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -76,14 +78,14 @@ class NetworkNavigationManager {
 
     try {
       // Always use the default version for the target network when switching networks.
-      const networkConfig = VERSIONED_CONTRACT_CONFIGS[networkId];
-      if (!networkConfig) {
+      const network = networks.byId(networkId);
+      if (!network) {
         logger.error(`No configuration found for network: ${networkId}`);
         return;
       }
 
       // Use provided version or default to the network's latest version.
-      const targetVersion = version || networkConfig.defaultVersion;
+      const targetVersion = version || contracts.defaultVersion(network.id);
 
       this.#navigateToSettlementOrDashboard(networkId, targetVersion);
     } catch (error) {

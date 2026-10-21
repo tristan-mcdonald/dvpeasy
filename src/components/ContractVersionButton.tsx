@@ -9,11 +9,11 @@ import { useState } from 'react';
  * Opens a version selection modal dialog on click.
  */
 export default function ContractVersionButton () {
-  const { currentVersion, availableVersions } = useContractConfig();
+  const { currentVersion, availableDeployments } = useContractConfig();
   const [ isModalOpen, setIsModalOpen ] = useState(false);
 
 
-  const currentVersionInfo = availableVersions.find(versionInfo => versionInfo.tag === currentVersion);
+  const currentVersionInfo = availableDeployments.find(deployment => deployment.version.tag === currentVersion)?.version;
   const tooltipText = `Contract version: ${currentVersionInfo?.name || currentVersion}`;
 
   return (

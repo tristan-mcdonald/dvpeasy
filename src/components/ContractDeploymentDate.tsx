@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContractVersion } from '../config/contracts/types';
+import { ContractVersion } from '../config/contracts/deployments';
 
 interface ContractDeploymentDateProps {
   version: ContractVersion;

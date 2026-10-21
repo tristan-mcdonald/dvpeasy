@@ -141,74 +141,31 @@ The application supports multiple versions of smart contracts per network, allow
 
 ### Adding a new contract version
 
-To add a new contract version after deploying an updated smart contract:
-
-#### 1. Define the version metadata
-
-In `src/config/contract.ts`, add your version definition:
+Every contract address is in `src/config/contracts/deployments.ts`, by network and version. To add
+a version, add a deployment to the network's list, newest first:
 
 ```typescript
-const MY_NEW_VERSION: ContractVersion = {
-  version: 'v2.0',
-  name: 'Feature Update',
-  isDeprecated: false,
-  releaseDate: '2024-04-01',
-  description: 'Added batch operations and gas optimizations',
-};
-```
-
-#### 2. Add the version configuration
-
-Update the `VERSIONED_CONTRACT_CONFIGS` for your network:
-
-```typescript
-export const VERSIONED_CONTRACT_CONFIGS: Record<string, NetworkContractVersions> = {
-  sepolia: {
-    networkId: 'sepolia',
-    defaultVersion: 'v2.0', // Update default if needed
-    versions: {
-      // ... existing versions ...
-      'v2.0': {
-        networkId: 'sepolia',
-        dvpAddress: '0xYourNewContractAddress',
-        dvpHelperAddress: '0xYourNewHelperAddress',
-        dvpAbi: DVP_ABI_V2, // Use new ABI if changed
-        dvpHelperAbi: DVP_HELPER_ABI_V2,
-        version: MY_NEW_VERSION,
+sepolia: {
+  defaultVersion: 'v2.0', // Update the default if the new version should be used by default.
+  deployments: [
+    {
+      version: {
+        tag: 'v2.0',
+        name: 'Feature update',
+        isDeprecated: false,
+        deploymentDate: '2026-11-01',
       },
+      dvpAddress: '0xYourNewContractAddress',
+      dvpHelperAddress: '0xYourNewHelperAddress',
     },
-  },
-};
+    // ... existing deployments ...
+  ],
+},
 ```
 
-#### 3. Handle ABI changes (if applicable)
-
-If your new contract has a different ABI:
-
-```typescript
-// Define the new ABI
-const DVP_ABI_V2_DEFINITION = [...] as const;
-export const DVP_ABI_V2 = DVP_ABI_V2_DEFINITION;
-
-// Use it in your version config
-'v2.0': {
-  // ...
-  dvpAbi: DVP_ABI_V2,
-  // ...
-}
-```
-
-#### 4. Mark old versions as deprecated (optional)
-
-```typescript
-const OLD_VERSION: ContractVersion = {
-  version: 'v1.0',
-  name: 'Initial Release',
-  isDeprecated: true, // Mark as deprecated
-  releaseDate: '2024-01-01',
-  description: 'Initial version - please upgrade to v2.0',
-};
-```
+Set `isDeprecated: true` on an older version to mark it as deprecated in the version picker. Every
+version shares the ABIs in `src/config/contracts/abis/`; a contract with a different ABI needs them
+to be given per version.
 
 ### Version persistence
 

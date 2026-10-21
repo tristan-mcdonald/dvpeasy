@@ -1,20 +1,28 @@
-import type { ContractConfig, ContractConfigWithNetwork, ContractVersion } from './types';
-import { CHAIN_ID_TO_NETWORK_ID, NETWORKS, networks } from '../networks';
+import { ContractDeployment, contracts } from './deployments';
 import { createPublicClient, http, PublicClient } from 'viem';
+import { DVP_ABI, DVP_HELPER_ABI } from './abis';
 import { logger } from '../../lib/logger';
-import { VERSIONED_CONTRACT_CONFIGS } from './networks';
+import { NetworkId, NETWORKS, networks } from '../networks';
 
 /**
  * Default configuration key.
  */
-const DEFAULT_CONFIG_KEY = 'sepolia';
+const DEFAULT_CONFIG_KEY: NetworkId = 'sepolia';
+
+export interface ContractConfigWithNetwork extends ContractDeployment {
+  chainId: number;
+  dvpAbi: typeof DVP_ABI;
+  dvpHelperAbi: typeof DVP_HELPER_ABI;
+  name: string;
+  networkId: NetworkId;
+}
 
 /**
  * Contract configuration manager.
  * Manages current contract configuration and handles network/version switching.
  */
 class ContractConfigManager {
-  private currentConfig: ContractConfig;
+  private currentNetworkId: NetworkId;
   private currentVersion: string;
   private publicClient: PublicClient;
   private listeners: ((config: ContractConfigWithNetwork) => void)[] = [];
@@ -23,13 +31,13 @@ class ContractConfigManager {
 
   constructor () {
     // Start with default config, but try to restore from AppKit's persisted state.
-    const { config, version } = this.getInitialConfig();
-    this.currentConfig = config;
+    const { networkId, version } = this.getInitialConfig();
+    this.currentNetworkId = networkId;
     this.currentVersion = version;
     this.publicClient = this.createPublicClient();
   }
 
-  private getInitialConfig (): { config: ContractConfig; version: string } {
+  private getInitialConfig (): { networkId: NetworkId; version: string } {
     let networkId = DEFAULT_CONFIG_KEY;
 
     // Try to get the persisted network from AppKit's localStorage.
@@ -40,32 +48,14 @@ class ContractConfigManager {
         const chainId = parsedState?.caipNetwork?.id;
         if (chainId) {
           const numericChainId = typeof chainId === 'string' ? parseInt(chainId) : chainId;
-          const configKey = CHAIN_ID_TO_NETWORK_ID[numericChainId];
-          if (configKey && VERSIONED_CONTRACT_CONFIGS[configKey]) {
-            networkId = configKey;
-          }
+          networkId = networks.byChainId(numericChainId)?.id ?? networkId;
         }
       }
     } catch (error) {
       logger.warn('Failed to restore network from AppKit state:', error);
     }
 
-    // Get the default version for the network.
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (!networkVersions || !networkVersions.defaultVersion) {
-      logger.error(`No contract configuration found for network ${networkId}, falling back to default network`);
-      // Fall back to the default network configuration.
-      networkId = DEFAULT_CONFIG_KEY;
-    }
-
-    // Ensure we have a valid configuration for the network.
-    const selectedNetworkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (!selectedNetworkVersions || !selectedNetworkVersions.defaultVersion) {
-      // This should never happen unless configuration is completely broken.
-      throw new Error(`Critical: No contract configuration available for network ${networkId}`);
-    }
-
-    let version = selectedNetworkVersions.defaultVersion;
+    let version = contracts.defaultVersion(networkId);
 
     // Try to restore version from localStorage.
     try {
@@ -73,7 +63,7 @@ class ContractConfigManager {
       if (versionState) {
         const parsedVersionState = JSON.parse(versionState);
         const networkVersion = parsedVersionState?.[networkId];
-        if (networkVersion && this.isValidVersion(networkId, networkVersion)) {
+        if (networkVersion && contracts.deployment(networkId, networkVersion)) {
           version = networkVersion;
         }
       }
@@ -81,14 +71,11 @@ class ContractConfigManager {
       logger.warn('Failed to restore contract version from localStorage:', error);
     }
 
-    return {
-      config: this.getConfigForNetworkAndVersion(networkId, version),
-      version,
-    };
+    return { networkId, version };
   }
 
   private createPublicClient () {
-    const network = NETWORKS[this.currentConfig.networkId];
+    const network = NETWORKS[this.currentNetworkId];
     return createPublicClient({
       chain: network.chain,
       transport: http(network.rpcUrl),
@@ -96,47 +83,53 @@ class ContractConfigManager {
   }
 
   /**
+   * The current deployment, or the network's default one if the current version isn't deployed
+   * on it.
+   */
+  private currentDeployment (): ContractDeployment {
+    const networkId = this.currentNetworkId;
+    return contracts.deployment(networkId, this.currentVersion)
+      ?? contracts.deployment(networkId, contracts.defaultVersion(networkId))!;
+  }
+
+  /**
    * Get the current configuration with network metadata.
    */
   getCurrentConfig (): ContractConfigWithNetwork {
-    const network = NETWORKS[this.currentConfig.networkId];
+    const network = NETWORKS[this.currentNetworkId];
     return {
-      ...this.currentConfig,
-      name: networks.displayName(network),
+      ...this.currentDeployment(),
       chainId: network.chainId,
+      dvpAbi: DVP_ABI,
+      dvpHelperAbi: DVP_HELPER_ABI,
+      name: networks.displayName(network),
+      networkId: network.id,
     };
   }
 
   setConfigByChainId (chainId: number, version?: string): void {
-    const configKey = CHAIN_ID_TO_NETWORK_ID[chainId];
+    const networkId = networks.byChainId(chainId)?.id;
 
-    if (!configKey || !VERSIONED_CONTRACT_CONFIGS[configKey]) {
+    if (!networkId) {
       logger.warn(`No contract configuration found for chain ID ${chainId}, using default`);
       return;
     }
 
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[configKey];
-
     // Use provided version, or fall back to persisted/default version.
-    const targetVersion = version || this.getPersistedVersion(configKey) || networkVersions?.defaultVersion;
-
-    if (!targetVersion) {
-      logger.error(`Unable to determine contract version for network ${configKey}`);
-      return;
-    }
+    const targetVersion = version || this.getPersistedVersion(networkId) || contracts.defaultVersion(networkId);
 
     // Check if we need to update configuration.
-    const needsUpdate = this.currentConfig.networkId !== configKey || this.currentVersion !== targetVersion;
+    const needsUpdate = this.currentNetworkId !== networkId || this.currentVersion !== targetVersion;
 
     if (needsUpdate) {
-      this.currentConfig = this.getConfigForNetworkAndVersion(configKey, targetVersion);
+      this.currentNetworkId = networkId;
       this.currentVersion = targetVersion;
       this.publicClient = this.createPublicClient();
 
-      logger.info(`Switched to network ${configKey} version ${targetVersion}`);
+      logger.info(`Switched to network ${networkId} version ${targetVersion}`);
 
       // Notify network change listeners for cache invalidation.
-      this.networkChangeListeners.forEach(listener => listener(configKey, chainId));
+      this.networkChangeListeners.forEach(listener => listener(networkId, chainId));
     }
 
     // Always notify listeners when setConfigByChainId is called.
@@ -145,31 +138,8 @@ class ContractConfigManager {
     this.listeners.forEach(listener => listener(configWithNetwork));
   }
 
-  getSupportedChainIds (): number[] {
-    return Object.keys(CHAIN_ID_TO_NETWORK_ID).map(Number);
-  }
-
   getPublicClient () {
     return this.publicClient;
-  }
-
-  /**
-   * Get all available configurations with network metadata.
-   */
-  getAvailableConfigs (): Record<string, ContractConfigWithNetwork> {
-    const configsWithNetwork: Record<string, ContractConfigWithNetwork> = {};
-    for (const [key, networkVersions] of Object.entries(VERSIONED_CONTRACT_CONFIGS)) {
-      const defaultConfig = networkVersions.versions[networkVersions.defaultVersion];
-      const network = NETWORKS[defaultConfig.networkId];
-      if (network) {
-        configsWithNetwork[key] = {
-          ...defaultConfig,
-          name: networks.displayName(network),
-          chainId: network.chainId,
-            };
-      }
-    }
-    return configsWithNetwork;
   }
 
   onConfigChange (listener: (config: ContractConfigWithNetwork) => void): () => void {
@@ -188,16 +158,12 @@ class ContractConfigManager {
    * Version management methods.
    */
   setVersion (networkId: string, version: string): boolean {
-    if (!this.isValidVersion(networkId, version)) {
+    if (!contracts.deployment(networkId, version)) {
       logger.warn(`Invalid version ${version} for network ${networkId}`);
       return false;
     }
 
-    const newConfig = this.getConfigForNetworkAndVersion(networkId, version);
-    const wasCurrentNetwork = this.currentConfig.networkId === networkId;
-
-    if (wasCurrentNetwork) {
-      this.currentConfig = newConfig;
+    if (this.currentNetworkId === networkId) {
       this.currentVersion = version;
       this.publicClient = this.createPublicClient();
 
@@ -217,18 +183,6 @@ class ContractConfigManager {
 
   getCurrentVersion (): string {
     return this.currentVersion;
-  }
-
-  getAvailableVersions (networkId: string): ContractVersion[] {
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (!networkVersions) {
-      return [];
-    }
-
-    return Object.values(networkVersions.versions)
-      .map(config => config.version)
-      .filter((version): version is ContractVersion => Boolean(version))
-      .sort((a, b) => b.tag.localeCompare(a.tag)); // Newest first
   }
 
   onVersionChange (listener: (networkId: string, version: string) => void): () => void {
@@ -255,25 +209,6 @@ class ContractConfigManager {
     };
   }
 
-  /**
-   * Private helper methods.
-   */
-  private isValidVersion (networkId: string, version: string): boolean {
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    return Boolean(networkVersions?.versions[version]);
-  }
-
-  private getConfigForNetworkAndVersion (networkId: string, version: string): ContractConfig {
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (networkVersions?.versions[version]) {
-      return networkVersions.versions[version];
-    }
-
-    // Fallback to default version for the network, or sepolia as last resort.
-    const fallbackNetworkVersions = VERSIONED_CONTRACT_CONFIGS[networkId] || VERSIONED_CONTRACT_CONFIGS[DEFAULT_CONFIG_KEY];
-    return fallbackNetworkVersions.versions[fallbackNetworkVersions.defaultVersion];
-  }
-
   private persistVersion (networkId: string, version: string): void {
     try {
       const existing = localStorage.getItem('DVP_CONTRACT_VERSION');
@@ -296,30 +231,6 @@ class ContractConfigManager {
       logger.warn('Failed to get persisted contract version:', error);
     }
     return null;
-  }
-
-  /**
-   * Gets contract addresses for all versions on a given network.
-   *
-   * @param networkId - Network identifier
-   * @returns Map of version to contract addresses
-   */
-  getVersionContractAddresses (networkId: string): Record<string, { dvpAddress: string; dvpHelperAddress: string }> {
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (!networkVersions) {
-      return {};
-    }
-
-    const addresses: Record<string, { dvpAddress: string; dvpHelperAddress: string }> = {};
-
-    for (const [version, config] of Object.entries(networkVersions.versions)) {
-      addresses[version] = {
-        dvpAddress: config.dvpAddress,
-        dvpHelperAddress: config.dvpHelperAddress,
-      };
-    }
-
-    return addresses;
   }
 }
 

@@ -1,5 +1,5 @@
 import { CHAIN_ID_TO_NETWORK_ID, networks } from '../config/networks';
-import { VERSIONED_CONTRACT_CONFIGS } from '../config/contracts';
+import { contracts } from '../config/contracts/deployments';
 
 /**
  * URL management system for application routing.
@@ -61,14 +61,8 @@ export const urlManager = {
     // Convert kebab-case URL slug back to camelCase network ID.
     const networkId = this.slugToNetworkId(network);
 
-    // Validate network exists.
-    if (!networks.byId(networkId)) {
-      return null;
-    }
-
-    // Validate version exists for this network.
-    const networkVersions = VERSIONED_CONTRACT_CONFIGS[networkId];
-    if (!networkVersions || !networkVersions.versions[version]) {
+    // Validate that the version is deployed on this network, which also validates the network.
+    if (!contracts.deployment(networkId, version)) {
       return null;
     }
 
@@ -91,14 +85,14 @@ export const urlManager = {
         const chainId = parsedState?.caipNetwork?.id;
         if (chainId) {
           const numericChainId = typeof chainId === 'string' ? parseInt(chainId) : chainId;
-          const networkId = CHAIN_ID_TO_NETWORK_ID[numericChainId];
-          if (networkId && VERSIONED_CONTRACT_CONFIGS[networkId]) {
+          const networkId = networks.byChainId(numericChainId)?.id;
+          if (networkId) {
             const versionState = localStorage.getItem('DVP_CONTRACT_VERSION');
-            let version = VERSIONED_CONTRACT_CONFIGS[networkId].defaultVersion;
+            let version = contracts.defaultVersion(networkId);
             if (versionState) {
               const parsedVersionState = JSON.parse(versionState);
               const storedVersion = parsedVersionState?.[networkId];
-              if (storedVersion && VERSIONED_CONTRACT_CONFIGS[networkId].versions[storedVersion]) {
+              if (storedVersion && contracts.deployment(networkId, storedVersion)) {
                 version = storedVersion;
               }
             }
@@ -116,7 +110,7 @@ export const urlManager = {
 
     // Default to Sepolia testnet with latest version.
     const defaultNetworkId = 'sepolia';
-    const defaultVersion = VERSIONED_CONTRACT_CONFIGS.sepolia?.defaultVersion || 'v1.0';
+    const defaultVersion = contracts.defaultVersion(defaultNetworkId);
     return {
       networkId: this.networkIdToSlug(defaultNetworkId),
       version: defaultVersion,
