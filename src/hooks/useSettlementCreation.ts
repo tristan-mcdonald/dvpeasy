@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount, useWalletClient } from 'wagmi';
 import { simulateContract, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
-import { keccak256, toHex } from 'viem';
+import { isAddressEqual, keccak256, toHex } from 'viem';
 import { config } from '../config/wagmi';
 import { contractConfigManager } from '../config/contracts';
 import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
@@ -159,7 +159,9 @@ export function useSettlementCreation () {
 
       const eventSignature = 'SettlementCreated(uint256,address)';
       const eventTopic = keccak256(toHex(eventSignature));
-      const settlementCreatedEvent = receipt.logs.find(log => log.topics[0] === eventTopic);
+      const settlementCreatedEvent = receipt.logs.find(log =>
+        isAddressEqual(log.address, dvpAddress) && log.topics[0] === eventTopic,
+      );
 
       if (settlementCreatedEvent?.topics[1]) {
         try {
