@@ -1,7 +1,5 @@
-import type { ContractConfig, ContractConfigWithNetwork, ContractVersion, VersionedContractConfigWithNetwork } from './types';
+import type { ContractConfig, ContractConfigWithNetwork, ContractVersion } from './types';
 import { CHAIN_ID_TO_NETWORK_ID, networkConfigManager, NETWORKS } from '../networks';
-import { chainManager } from '../../lib/chain-manager';
-import { contractVersionManager } from './version-manager';
 import { createPublicClient, http, PublicClient } from 'viem';
 import { logger } from '../../lib/logger';
 import { VERSIONED_CONTRACT_CONFIGS } from './networks';
@@ -10,79 +8,6 @@ import { VERSIONED_CONTRACT_CONFIGS } from './networks';
  * Default configuration key.
  */
 const DEFAULT_CONFIG_KEY = 'sepolia';
-
-/**
- * Contract configuration object that provides methods tied to a specific configuration.
- */
-export class ContractConfigObject {
-  constructor (
-    private config: ContractConfigWithNetwork,
-    private manager: ContractConfigManager,
-  ) {}
-
-  /**
-   * Get the network identifier.
-   */
-  get networkId (): string {
-    return this.config.networkId;
-  }
-
-  /**
-   * Get the chain ID.
-   */
-  get chainId (): number {
-    return this.config.chainId;
-  }
-
-  /**
-   * Get the DVP contract address.
-   */
-  get dvpAddress (): string {
-    return this.config.dvpAddress;
-  }
-
-  /**
-   * Get the DVP helper contract address.
-   */
-  get dvpHelperAddress (): string {
-    return this.config.dvpHelperAddress;
-  }
-
-  /**
-   * Get the human-readable network name.
-   */
-  get name (): string {
-    return this.config.name;
-  }
-
-  /**
-   * Get the network icon URL.
-   */
-  get iconUrl (): string {
-    return this.config.iconUrl;
-  }
-
-  /**
-   * Get contract addresses for all versions on this network.
-   */
-  getVersionContractAddresses (): Record<string, { dvpAddress: string; dvpHelperAddress: string }> {
-    return this.manager.getVersionContractAddresses(this.networkId);
-  }
-
-  /**
-   * Get chain configuration object for chain-specific operations.
-   */
-  getChainConfig () {
-    return chainManager.chainConfigObject(this.chainId);
-  }
-
-  /**
-   * Get the underlying configuration data.
-   */
-  getRawConfig (): ContractConfigWithNetwork {
-    return this.config;
-  }
-}
 
 /**
  * Contract configuration manager.
@@ -95,7 +20,6 @@ class ContractConfigManager {
   private listeners: ((config: ContractConfigWithNetwork) => void)[] = [];
   private versionListeners: ((networkId: string, version: string) => void)[] = [];
   private networkChangeListeners: ((networkId: string, chainId: number) => void)[] = [];
-  private configObjectCache = new Map<string, ContractConfigObject>();
 
   constructor () {
     // Start with default config, but try to restore from AppKit's persisted state.
@@ -184,13 +108,6 @@ class ContractConfigManager {
     };
   }
 
-  /**
-   * Get raw contract configuration without network metadata.
-   */
-  getRawConfig (): ContractConfig {
-    return this.currentConfig;
-  }
-
   setConfigByChainId (chainId: number, version?: string): void {
     const configKey = CHAIN_ID_TO_NETWORK_ID[chainId];
 
@@ -216,9 +133,6 @@ class ContractConfigManager {
       this.currentConfig = this.getConfigForNetworkAndVersion(configKey, targetVersion);
       this.currentVersion = targetVersion;
       this.publicClient = this.createPublicClient();
-
-      // Clear config object cache since configuration changed.
-      this.clearConfigObjectCache();
 
       logger.info(`Switched to network ${configKey} version ${targetVersion}`);
 
@@ -289,9 +203,6 @@ class ContractConfigManager {
       this.currentVersion = version;
       this.publicClient = this.createPublicClient();
 
-      // Clear config object cache since configuration changed.
-      this.clearConfigObjectCache();
-
       // Notify config listeners if this is the current network.
       const configWithNetwork = this.getCurrentConfig();
       this.listeners.forEach(listener => listener(configWithNetwork));
@@ -320,26 +231,6 @@ class ContractConfigManager {
       .map(config => config.version)
       .filter((version): version is ContractVersion => Boolean(version))
       .sort((a, b) => b.tag.localeCompare(a.tag)); // Newest first
-  }
-
-  getVersionedConfig (networkId: string, version: string): VersionedContractConfigWithNetwork | null {
-    const config = this.getConfigForNetworkAndVersion(networkId, version);
-    if (!config || !config.version) {
-      return null;
-    }
-
-    const network = NETWORKS[config.networkId];
-    if (!network) {
-      return null;
-    }
-
-    return {
-      ...config,
-      version: config.version,
-      name: networkConfigManager.displayName(network),
-      chainId: network.chainId,
-      iconUrl: network.iconUrl,
-    } as VersionedContractConfigWithNetwork;
   }
 
   onVersionChange (listener: (networkId: string, version: string) => void): () => void {
@@ -431,113 +322,6 @@ class ContractConfigManager {
     }
 
     return addresses;
-  }
-
-
-  /**
-   * Version management access methods.
-   * Delegates to ContractVersionManager for version-related operations.
-   */
-
-  /**
-   * Get version manager instance.
-   */
-  public getVersionManager () {
-    return contractVersionManager;
-  }
-
-  /**
-   * Compare two version strings.
-   */
-  public compareVersions (v1: string, v2: string): number {
-    return contractVersionManager.compareVersions(v1, v2);
-  }
-
-  /**
-   * Check if a version is compatible with a minimum version.
-   */
-  public isVersionCompatible (version: ContractVersion, minVersion?: string): boolean {
-    return contractVersionManager.isVersionCompatible(version, minVersion);
-  }
-
-  /**
-   * Sort versions in descending order (newest first).
-   */
-  public sortVersionsDescending (versions: ContractVersion[]): ContractVersion[] {
-    return contractVersionManager.sortVersionsDescending(versions);
-  }
-
-  /**
-   * Get the latest stable version from available versions for a network.
-   */
-  public LatestStableVersionForNetwork (networkId: string): ContractVersion | null {
-    const versions = this.getAvailableVersions(networkId);
-    return contractVersionManager.LatestStableVersion(versions);
-  }
-
-
-  /**
-   * Fluent interface for version operations on the current version.
-   */
-  public forCurrentVersion () {
-    return contractVersionManager.forVersion(this.currentConfig.version);
-  }
-
-  /**
-   * Fluent interface for version operations on available versions for a network.
-   */
-  public forNetworkVersions (networkId: string) {
-    const versions = this.getAvailableVersions(networkId);
-    return contractVersionManager.forVersions(versions);
-  }
-
-  /**
-   * Get the current configuration as an object with methods.
-   */
-  CurrentConfigObject (): ContractConfigObject {
-    const config = this.getCurrentConfig();
-    const cacheKey = `${config.networkId}-${this.currentVersion}`;
-
-    // Check cache first.
-    if (this.configObjectCache.has(cacheKey)) {
-      return this.configObjectCache.get(cacheKey)!;
-    }
-
-    // Create new instance and cache it.
-    const configObject = new ContractConfigObject(config, this);
-    this.configObjectCache.set(cacheKey, configObject);
-    return configObject;
-  }
-
-  /**
-   * Get all available configurations as objects with methods.
-   */
-  AvailableConfigObjects (): Record<string, ContractConfigObject> {
-    const configsWithNetwork = this.getAvailableConfigs();
-    const configObjects: Record<string, ContractConfigObject> = {};
-
-    for (const [key, config] of Object.entries(configsWithNetwork)) {
-      const cacheKey = `${key}-default`;
-
-      // Check cache first.
-      if (this.configObjectCache.has(cacheKey)) {
-        configObjects[key] = this.configObjectCache.get(cacheKey)!;
-      } else {
-        // Create new instance and cache it.
-        const configObject = new ContractConfigObject(config, this);
-        this.configObjectCache.set(cacheKey, configObject);
-        configObjects[key] = configObject;
-      }
-    }
-
-    return configObjects;
-  }
-
-  /**
-   * Clear config object cache when configuration changes.
-   */
-  private clearConfigObjectCache (): void {
-    this.configObjectCache.clear();
   }
 }
 

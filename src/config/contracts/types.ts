@@ -40,12 +40,3 @@ export interface ContractConfigWithNetwork extends ContractConfig {
   chainId: number;
   iconUrl: string | null;
 }
-
-/**
- * Extended contract configuration with network metadata.
- */
-export interface VersionedContractConfigWithNetwork extends ContractConfig {
-  name: string;
-  chainId: number;
-  iconUrl: string | null;
-}

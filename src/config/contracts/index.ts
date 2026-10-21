@@ -12,7 +12,6 @@ export type {
   ContractConfig,
   NetworkContractVersions,
   ContractConfigWithNetwork,
-  VersionedContractConfigWithNetwork,
 } from './types';
 
 // Export network configurations.
