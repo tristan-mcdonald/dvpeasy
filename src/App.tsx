@@ -20,7 +20,7 @@ import { WagmiProvider } from 'wagmi';
 
 // Lazy load page components for better code splitting.
 const CreateSettlement = lazy(() => import('./pages/CreateSettlement'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Error404 = lazy(() => import('./pages/Error404'));
 const Help = lazy(() => import('./pages/Help'));
 const SettlementDetails = lazy(() => import('./pages/SettlementDetails'));
