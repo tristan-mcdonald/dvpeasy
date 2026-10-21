@@ -146,7 +146,7 @@ export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
                 <a
                 className={`${TOKEN_BUTTON_CLASSES.base} ${TOKEN_BUTTON_CLASSES.primary}`}
                 href={blockExplorerUrl}
-                rel="noopener,noreferrer"
+                rel="noopener noreferrer"
                 target="_blank">
                   <ExternalLink className="transition-colors size-4"/>
                 </a>

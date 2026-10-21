@@ -113,7 +113,7 @@ const Address = memo(({
             <a
             className="transition-colors flex cursor-pointer p-1 text-primary hover:text-primary-interaction"
             href={blockExplorerUrl}
-            rel="noopener,noreferrer"
+            rel="noopener noreferrer"
             target="_blank">
               <ExternalLink className="transition-colors size-4"/>
             </a>

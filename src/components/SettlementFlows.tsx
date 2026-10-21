@@ -276,7 +276,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                       <a
                       href={nftMarketplaceUrl}
                       target="_blank"
-                      rel="noopener,noreferrer"
+                      rel="noopener noreferrer"
                       className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction">
                         <ExternalLink className="transition-colors size-4" />
                       </a>

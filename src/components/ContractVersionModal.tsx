@@ -125,7 +125,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                       <a
                                       className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
                                       href={chainId ? chainManager.blockExplorerAddressUrl(chainId, addresses.dvpAddress) : '#'}
-                                      rel="noopener,noreferrer"
+                                      rel="noopener noreferrer"
                                       target="_blank"
                                       onClick={(event) => event.stopPropagation()}>
                                         <ExternalLink className="transition-colors size-3"/>
@@ -156,7 +156,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                       <a
                                       className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
                                       href={chainId ? chainManager.blockExplorerAddressUrl(chainId, addresses.dvpHelperAddress) : '#'}
-                                      rel="noopener,noreferrer"
+                                      rel="noopener noreferrer"
                                       target="_blank"
                                       onClick={(event) => event.stopPropagation()}>
                                         <ExternalLink className="transition-colors size-3"/>
