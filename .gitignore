@@ -37,3 +37,6 @@ claude/*
 /playwright/.cache/
 /.pw-user-data/
 /.cache-synpress
+
+# Browser automation output
+/.playwright-mcp/
