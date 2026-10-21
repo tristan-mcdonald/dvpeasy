@@ -1,6 +1,6 @@
 import { Address } from 'viem';
 import { logger } from './logger';
-import { publicClient } from '../config/contracts';
+import { contractConfigManager } from '../config/contracts';
 
 const ERC721_ABI = [
   {
@@ -93,7 +93,7 @@ export const nftManager = {
    */
   async getTokenURI (tokenAddress: string, tokenId: string): Promise<string> {
     try {
-      const uri = await publicClient.readContract({
+      const uri = await contractConfigManager.getPublicClient().readContract({
         address: tokenAddress as Address,
         abi: ERC721_ABI,
         functionName: 'tokenURI',
