@@ -1,19 +1,10 @@
 import React from 'react';
-import { twMerge } from 'tailwind-merge';
-import { type ClassValue, clsx } from 'clsx';
 
 /**
  * Utility manager for general utility functions.
- * Provides methods for styling, input handling, address formatting, date formatting, and comparison.
+ * Provides methods for input handling, address formatting, date formatting, and comparison.
  */
 export const utilityManager = {
-  /**
-   * Merge class names with Tailwind CSS utilities.
-   */
-  cn (...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-  },
-
   /**
    * Handle trimming whitespace from input values on blur.
    */
