@@ -18,7 +18,7 @@ import { useTokenMetadata } from '../hooks/useTokenMetadata';
 
 export default function SettlementDetails () {
   const navigate = useNavigate();
-  const { config } = useContractConfig();
+  const { config, currentVersion } = useContractConfig();
 
   const {
     settlementId,
@@ -96,13 +96,13 @@ export default function SettlementDetails () {
     if (!isLoading && error && !settlement) {
       // Wait a brief moment to show the error, then redirect.
       const timer = setTimeout(() => {
-        const dashboardUrl = urlManager.buildDashboardUrl(config.networkId, config.currentVersion);
+        const dashboardUrl = urlManager.buildDashboardUrl(config.networkId, currentVersion);
         navigate(dashboardUrl, { replace: true });
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [isLoading, error, settlement, config.networkId, config.currentVersion, navigate]);
+  }, [isLoading, error, settlement, config.networkId, currentVersion, navigate]);
 
   if (isLoading) {
     return (
