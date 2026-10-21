@@ -9,7 +9,7 @@ import { contractConfigManager } from '../config/contracts';
 import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
 import { logger } from '../lib/logger';
 import { settlementErrorManager } from '../lib/settlement-error-utils';
-import { AssetType, tokenManager } from '../lib/token-manager';
+import { AssetType, TokenDetectionError, tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
 import { Flow } from '../types/settlement';
 import { useContractAddresses } from './useContractConfig';
@@ -51,6 +51,7 @@ export function useSettlementCreation () {
       };
     } catch (error) {
       logger.error('Error parsing flow:', error);
+      if (error instanceof TokenDetectionError) throw error;
       throw new Error(`Failed to parse flow for token ${flow.token}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };

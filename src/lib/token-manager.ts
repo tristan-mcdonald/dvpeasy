@@ -404,11 +404,14 @@ export const tokenManager = {
         };
       } else {
         const [decimals, symbol, name] = await Promise.all([
+          // Decimals have no safe default: a wrong guess scales every amount by a power of ten.
           publicClient.readContract({
             address: tokenAddress as Address,
             abi: ERC20_ABI,
             functionName: 'decimals',
-          }).catch(() => 18),
+          }).catch((error) => {
+            throw new TokenDetectionError('Could not read the token\'s decimals; please try again', tokenAddress, error);
+          }),
           publicClient.readContract({
             address: tokenAddress as Address,
             abi: ERC20_ABI,
@@ -421,7 +424,7 @@ export const tokenManager = {
           }).catch(() => 'Unknown Token'),
         ]);
         metadata = {
-          decimals: decimals || 18,
+          decimals,
           symbol: symbol || 'TOKEN',
           name: name || 'Unknown Token',
           isNFT: false,
@@ -431,19 +434,10 @@ export const tokenManager = {
       tokenCache.set(normalizedAddress, metadata);
       return metadata;
     } catch (error) {
-      if (error instanceof ContractValidationError) {
+      if (error instanceof ContractValidationError || error instanceof TokenDetectionError) {
         throw error;
       }
-      logger.warn(`Could not read metadata for token ${tokenAddress}, using defaults:`, error);
-      // Default to 18 decimals and a placeholder symbol.
-      const metadata: TokenMetadata = {
-        decimals: 18,
-        symbol: 'TOKEN',
-        name: 'Unknown Token',
-        isNFT: false,
-      };
-      tokenCache.set(normalizedAddress, metadata);
-      return metadata;
+      throw new TokenDetectionError('Could not read the token\'s details; please try again', tokenAddress, error);
     }
   },
 
@@ -486,7 +480,7 @@ export const tokenManager = {
       return `${formatted} ${symbol}`;
     } catch (error) {
       logger.error('Error formatting token amount:', error);
-      return `${formatUnits(amount, 18)} TOKEN`;
+      return `${amount.toString()} base units`;
     }
   },
 
@@ -519,7 +513,7 @@ export const tokenManager = {
         return parsedAmount;
       }
     } catch (error) {
-      if (error instanceof ContractValidationError) {
+      if (error instanceof ContractValidationError || error instanceof TokenDetectionError) {
         throw error;
       }
       logger.error('Error parsing token amount:', error);
