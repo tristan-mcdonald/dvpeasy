@@ -179,7 +179,7 @@ export const errorManager = {
       type: error.type,
       message: error.message,
       isRetryable: error.isRetryable,
-      userMessage: error.toUserMessage(),
+      userMessage: error.userMessage,
       timestamp: new Date().toISOString(),
       stack: error.stack,
       originalError: error.originalError,
