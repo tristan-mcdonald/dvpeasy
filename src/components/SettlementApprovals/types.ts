@@ -27,7 +27,6 @@ export interface SettlementApprovalsProps {
   partyStatuses: PartyApprovalStatus[];
   isLoading: boolean;
   hasEverLoaded: boolean;
-  error: ContractErrorType | null;
   isExpired: boolean;
   isSettled: boolean;
   onApproveToken: (tokenAddress: string, amount: bigint) => void;

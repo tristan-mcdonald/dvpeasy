@@ -7,11 +7,10 @@ import SettlementHeader from '../components/SettlementHeader';
 import SettlementOverview from '../components/SettlementOverview';
 import { urlManager } from '../lib/url-manager';
 import { Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
 import { useSettlementActions } from '../hooks/useSettlementActions';
-import { useSettlementApprovalStatus } from '../hooks/useSettlementApprovalStatus';
 import { useSettlementDetails } from '../hooks/useSettlementDetails';
 import { useTokenMetadata } from '../hooks/useTokenMetadata';
 
@@ -21,19 +20,21 @@ export default function SettlementDetails () {
 
   const {
     settlementId,
-    isLoading,
-    isManualRefreshing,
     settlement,
     formattedFlows,
-    partyStatus,
+    isLoading,
     error,
+    isRefreshing,
+    refresh,
+    partyStatuses,
+    hasLoadedPartyStatuses,
+    currentPartyStatus,
     allApprovalsComplete,
+    isExpired,
     isParticipant,
-    walletClient,
     address,
     isConnected,
-    refreshData,
-    manualRefresh,
+    walletClient,
   } = useSettlementDetails();
 
   /**
@@ -47,25 +48,6 @@ export default function SettlementDetails () {
   }, [settlement?.flows]);
 
   const tokenMetadata = useTokenMetadata(flowsForTokenMetadata);
-
-
-  const {
-    partyStatuses,
-    isLoading: isLoadingApprovalStatus,
-    hasEverLoaded: hasEverLoadedApprovalStatus,
-    error: approvalStatusError,
-    refetch: refetchApprovalStatus,
-  } = useSettlementApprovalStatus(settlementId, settlement);
-
-  const handleRefresh = useCallback(async () => {
-    await manualRefresh();
-    await refetchApprovalStatus();
-  }, [manualRefresh, refetchApprovalStatus]);
-
-  const handleActionSuccess = useCallback(async () => {
-    await refreshData();
-    await refetchApprovalStatus();
-  }, [refreshData, refetchApprovalStatus]);
 
   const {
     isApproving,
@@ -83,8 +65,8 @@ export default function SettlementDetails () {
     settlementId,
     address,
     walletClient,
-    partyStatus,
-    onSuccess: handleActionSuccess,
+    partyStatus: currentPartyStatus,
+    onSuccess: refresh,
   });
 
   // Auto-redirect to dashboard if settlement is not found after loading completes.
@@ -117,14 +99,11 @@ export default function SettlementDetails () {
     );
   }
 
-  const cutoffDate = new Date(Number(settlement.cutoffDate) * 1000);
-  const isExpired = cutoffDate.getTime() < Date.now();
-
   return (
     <div className="mx-auto w-full">
       <SettlementHeader
-      isRefreshing={isManualRefreshing}
-      onRefresh={handleRefresh}
+      isRefreshing={isRefreshing}
+      onRefresh={refresh}
       settlementId={settlementId}
       settlementReference={settlement.settlementReference} />
       <div className="space-y-8">
@@ -138,11 +117,10 @@ export default function SettlementDetails () {
         <SettlementApprovals
         approvingToken={approvingToken}
         currentUserAddress={address}
-        error={approvalStatusError}
         flows={settlement.flows}
-        hasEverLoaded={hasEverLoadedApprovalStatus}
+        hasEverLoaded={hasLoadedPartyStatuses}
         isExpired={isExpired}
-        isLoading={isLoadingApprovalStatus}
+        isLoading={isRefreshing}
         isRevoking={isRevoking}
         isSettled={settlement.isSettled}
         isWithdrawing={isWithdrawing}
@@ -161,7 +139,7 @@ export default function SettlementDetails () {
         isSettled={settlement.isSettled}
         onApprove={handleApprove}
         onExecute={handleExecuteSettlement}
-        partyStatus={partyStatus} />
+        partyStatus={currentPartyStatus} />
       </div>
     </div>
   );

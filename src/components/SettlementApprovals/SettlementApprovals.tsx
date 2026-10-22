@@ -1,23 +1,15 @@
 import ErrorBoundary from '../ErrorBoundary';
 import HeadingAndTotal from '../HeadingAndTotal';
 import PartyApprovalCard from './PartyApprovalCard';
-import { Loader2, X } from 'lucide-react';
-import { ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
 import { SettlementApprovalsProps } from './types';
 import { useFilteredParties } from './hooks/useFilteredParties';
 import { useLoadingState } from './hooks/useLoadingState';
-
-const CardContainer = ({ children }: { children: ReactNode }) => (
-  <div className="block w-full shadow-standard rounded-lg bg-input-background border border-input-border p-4 space-y-4">
-    {children}
-  </div>
-);
 
 export default function SettlementApprovals ({
   partyStatuses,
   isLoading,
   hasEverLoaded,
-  error,
   isExpired,
   isSettled,
   onApproveToken,
@@ -37,18 +29,6 @@ export default function SettlementApprovals ({
   );
 
   const filteredPartyStatuses = useFilteredParties(partyStatuses);
-
-  if (error) {
-    return (
-      <CardContainer>
-        <div className="flex items-center gap-2 mb-4">
-          <X className="size-5 text-error" />
-          <h2>Settlement approval status</h2>
-        </div>
-        <p className="text-error">{String(error)}</p>
-      </CardContainer>
-    );
-  }
 
   return (
     <div className="space-y-4 last:pb-12">

@@ -33,12 +33,3 @@ export interface Settlement {
 export interface FormattedFlow extends Flow {
   formattedAmount: string
 }
-
-export interface ValidationState {
-  isParticipant: boolean
-}
-
-export interface PollingState {
-  isRefreshing: boolean
-  isManualRefreshing: boolean
-}
