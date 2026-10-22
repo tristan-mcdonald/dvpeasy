@@ -5,7 +5,7 @@ import NFTIcon from './NFTIcon';
 import { ArrowDownRight, ArrowUpRight, Coins, Copy, Edit, ExternalLink, GripVertical, Hash, Loader2, Trash2, TriangleRight } from 'lucide-react';
 import { Flow } from '../types/settlement';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
-import { WalletClient } from 'viem';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 interface TokenMetadata {
   symbol: string;
@@ -18,7 +18,6 @@ interface TokenMetadata {
 interface FlowDragOverlayProps {
   activeFlow: Flow;
   tokenMetadata?: Record<string, TokenMetadata>;
-  walletClient?: WalletClient;
   collectionPreviews: Record<string, string>;
 }
 
@@ -28,9 +27,10 @@ interface FlowDragOverlayProps {
 export default function FlowDragOverlay ({
   activeFlow,
   tokenMetadata,
-  walletClient,
   collectionPreviews,
 }: FlowDragOverlayProps) {
+  const { chainId } = useCurrentNetwork().network;
+
   return (
     <div className="block w-full shadow-2xl rounded-lg bg-input-background border-2 border-primary p-4 relative z-50 drag-overlay">
       <div className="flex items-center justify-between mb-1 border-b border-interface-border pb-4">
@@ -56,7 +56,7 @@ export default function FlowDragOverlay ({
                       address: activeFlow.token,
                       symbol: tokenMetadata[activeFlow.token.toLowerCase()].symbol,
                       name: tokenMetadata[activeFlow.token.toLowerCase()].symbol,
-                      chainId: walletClient?.chain?.id || 11155111,
+                      chainId,
                       logoUrl: tokenMetadata[activeFlow.token.toLowerCase()].logoUrl,
                       trustWalletLogoUrl: tokenMetadata[activeFlow.token.toLowerCase()].trustWalletLogoUrl,
                     }}

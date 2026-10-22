@@ -131,8 +131,7 @@ export default function SettlementDetails () {
         <SettlementOverview settlement={settlement} />
         <SettlementFlows
         formattedFlows={formattedFlows}
-        tokenMetadata={tokenMetadata}
-        walletClient={walletClient} />
+        tokenMetadata={tokenMetadata} />
         <SettlementGraph
         flows={formattedFlows}
         tokenMetadata={tokenMetadata} />

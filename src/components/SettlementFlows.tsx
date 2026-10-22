@@ -14,11 +14,10 @@ import { flowsManager } from '../lib/flow-utils';
 import { CSS } from '@dnd-kit/utilities';
 import { Flow } from '../types/settlement';
 import { networkLinks } from '../lib/network-links';
-import { networks } from '../config/networks';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useMemo, useState, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import { WalletClient } from 'viem';
 
 interface FormattedFlow {
   token: string;
@@ -41,7 +40,6 @@ interface SettlementFlowsProps {
   formattedFlows?: FormattedFlow[];
   flows?: Flow[];
   tokenMetadata?: Record<string, TokenMetadata>;
-  walletClient?: WalletClient;
   isEditMode?: boolean;
   onEditFlow?: (index: number) => void;
   onRemoveFlow?: (index: number) => void;
@@ -55,7 +53,6 @@ interface SortableFlowItemProps {
   index: number;
   isEditMode: boolean;
   tokenMetadata?: Record<string, TokenMetadata>;
-  walletClient?: WalletClient;
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
   copiedNftId: string | null;
@@ -69,7 +66,6 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   index,
   isEditMode,
   tokenMetadata,
-  walletClient,
   onEdit,
   onRemove,
   copiedNftId,
@@ -77,6 +73,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   setShowNftModal,
   collectionPreviews,
 }: SortableFlowItemProps) {
+  const { network } = useCurrentNetwork();
   const flowId = `flow-${index}`;
   const {
     attributes,
@@ -141,7 +138,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                       address: token,
                       symbol: tokenMetadata[token.toLowerCase()].symbol,
                       name: tokenMetadata[token.toLowerCase()].symbol,
-                      chainId: walletClient?.chain?.id || 11155111,
+                      chainId: network.chainId,
                       logoUrl: tokenMetadata[token.toLowerCase()].logoUrl,
                       trustWalletLogoUrl: tokenMetadata[token.toLowerCase()].trustWalletLogoUrl,
                     }}/>
@@ -205,7 +202,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                     address: token,
                     symbol: tokenMetadata[token.toLowerCase()].symbol,
                     name: tokenMetadata[token.toLowerCase()].symbol,
-                    chainId: walletClient?.chain?.id || 11155111,
+                    chainId: network.chainId,
                     logoUrl: tokenMetadata[token.toLowerCase()].logoUrl,
                     trustWalletLogoUrl: tokenMetadata[token.toLowerCase()].trustWalletLogoUrl,
                   }}/>
@@ -270,9 +267,8 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                   </button>
                 </Tooltip>
                 {(() => {
-                  const chainId = walletClient?.chain?.id || 11155111;
-                  const nftMarketplaceUrl = networkLinks.nft(chainId, token, amountOrId.toString());
-                  return nftMarketplaceUrl && !networks.byChainId(chainId)?.isTestnet && (
+                  const nftMarketplaceUrl = networkLinks.nft(network.chainId, token, amountOrId.toString());
+                  return nftMarketplaceUrl && !network.isTestnet && (
                     <Tooltip content="View on NFT marketplace">
                       <a
                       href={nftMarketplaceUrl}
@@ -301,7 +297,6 @@ export default function SettlementFlows ({
   formattedFlows,
   flows,
   tokenMetadata,
-  walletClient,
   isEditMode = false,
   onEditFlow,
   onRemoveFlow,
@@ -388,8 +383,7 @@ export default function SettlementFlows ({
       onRemove={onRemoveFlow}
       setCopiedNftId={setCopiedNftId}
       setShowNftModal={setShowNftModal}
-      tokenMetadata={tokenMetadata}
-      walletClient={walletClient} />
+      tokenMetadata={tokenMetadata} />
     </ErrorBoundary>
   ));
 
@@ -413,8 +407,7 @@ export default function SettlementFlows ({
                 <FlowDragOverlay
                 activeFlow={activeFlow}
                 collectionPreviews={collectionPreviews}
-                tokenMetadata={tokenMetadata}
-                walletClient={walletClient} />
+                tokenMetadata={tokenMetadata} />
               )}
             </DragOverlay>
           </DndContext>

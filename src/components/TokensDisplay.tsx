@@ -6,13 +6,12 @@ import { logger } from '../lib/logger';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { TokensDisplayProps, TokenInfo } from '../types/components';
-import { useChainId } from 'wagmi';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useTokenData } from '../hooks/useTokenData';
 
 function TokensDisplay ({ flows }: TokensDisplayProps) {
-  const chainId = useChainId();
   const networkDeployment = useCurrentNetwork();
+  const { chainId } = networkDeployment.network;
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
 
   // Get token data from API.

@@ -3,7 +3,7 @@ import { isAddress } from 'viem';
 import { TokenMetadata } from '../../../lib/token-api';
 import { tokenStorage } from '../../../lib/custom-token-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useChainId } from 'wagmi';
+import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 
 /**
  * Internal interface for stored token data.
@@ -84,7 +84,7 @@ export const useTokenSelection = ({
   value,
   onChange,
 }: UseTokenSelectionProps): UseTokenSelectionReturn => {
-  const chainId = useChainId();
+  const { chainId } = useCurrentNetwork().network;
 
   // State for UI and token selection.
   const [inputValue, setInputValue] = useState(value);

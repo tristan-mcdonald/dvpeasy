@@ -1,6 +1,5 @@
 import { logger } from '../lib/logger';
 import { tokenManager } from '../lib/token-manager';
-import { useChainId } from 'wagmi';
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useTokenData } from './useTokenData';
@@ -14,8 +13,8 @@ interface TokenMetadata {
 }
 
 export function useTokenMetadata (flows: Array<{ token: string }> = []) {
-  const chainId = useChainId();
   const networkDeployment = useCurrentNetwork();
+  const { chainId } = networkDeployment.network;
   const [tokenMetadata, setTokenMetadata] = useState<Record<string, TokenMetadata>>({});
 
   // Create a stable string key from flows to avoid unnecessary recalculations.

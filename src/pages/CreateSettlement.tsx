@@ -9,11 +9,8 @@ import { useNetworkSync } from '../hooks/useNetworkSync';
 import { useSettlementCreation } from '../hooks/useSettlementCreation';
 import { useSettlementForm } from '../hooks/useSettlementForm';
 import { useTokenMetadata } from '../hooks/useTokenMetadata';
-import { useWalletClient } from 'wagmi';
 
 export default function CreateSettlement () {
-  const { data: walletClient } = useWalletClient();
-
   // Handle network/version synchronization from URL with auto-sync enabled.
   useNetworkSync({ autoSync: true });
   // Custom hooks for managing different aspects of the component.
@@ -103,8 +100,7 @@ export default function CreateSettlement () {
           onEditFlow={flowManagement.handleEditFlow}
           onRemoveFlow={flowManagement.handleRemoveFlow}
           onReorderFlows={flowManagement.handleReorderFlows}
-          tokenMetadata={tokenMetadata}
-          walletClient={walletClient} />
+          tokenMetadata={tokenMetadata} />
         </div>
 
         <SettlementDetailsForm

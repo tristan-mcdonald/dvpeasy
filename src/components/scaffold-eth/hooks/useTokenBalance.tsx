@@ -86,6 +86,7 @@ export const useTokenBalance = ({
    */
   const { data: userBalance, isLoading: isLoadingBalance } = useBalance({
     address: balanceAddress as `0x${string}` | undefined,
+    chainId: networkDeployment.network.chainId,
     token: normalizedAddress && normalizedAddress !== '0x0000000000000000000000000000000000000000'
       ? normalizedAddress as `0x${string}`
       : undefined,

@@ -7,7 +7,8 @@ import { isAddress } from 'viem';
 import { networks } from '../../config/networks';
 import { TokenMetadata } from '../../lib/token-api';
 import { tokenStorage } from '../../lib/custom-token-storage';
-import { useAccount, useChainId } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 import { useDebounce } from 'use-debounce';
 import { useTokenData } from '../../hooks/useTokenData';
 
@@ -76,7 +77,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   error,
 }, ref) => {
   const { address } = useAccount();
-  const chainId = useChainId();
+  const { chainId } = useCurrentNetwork().network;
 
   // Use addressForBalance if provided, otherwise fall back to connected address.
   const balanceAddress = addressForBalance || address;
