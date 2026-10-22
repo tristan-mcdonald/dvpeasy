@@ -138,6 +138,7 @@ export function useSettlementCreation () {
           functionName: 'createSettlement',
           args: [parsedFlows, validatedSettlement.reference, validatedSettlement.cutoffTimestamp, validatedSettlement.isAutoSettled],
           account: address,
+          chainId: network.chainId,
         });
 
         hash = await writeContract(config, request);
@@ -150,7 +151,7 @@ export function useSettlementCreation () {
 
       let receipt;
       try {
-        receipt = await waitForTransactionReceipt(config, { hash });
+        receipt = await waitForTransactionReceipt(config, { hash, chainId: network.chainId });
       } catch (error) {
         const errorMessage = 'Failed to confirm transaction; please check your wallet for status.';
         logger.error(errorMessage, error);

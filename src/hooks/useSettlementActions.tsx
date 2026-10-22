@@ -28,6 +28,7 @@ export function useSettlementActions ({
 }: UseSettlementActionsProps) {
   const networkDeployment = useCurrentNetwork();
   const { dvpAddress } = networkDeployment.deployment;
+  const { chainId } = networkDeployment.network;
   const [isApproving, setIsApproving] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
@@ -66,10 +67,10 @@ export function useSettlementActions ({
         functionName: 'approveSettlements',
         args: [[validatedSettlementId]],
         account: address,
-        chainId: walletClient.chain?.id,
+        chainId,
         value: partyStatus?.etherRequired || 0n,
       });
-      await waitForTransactionReceipt(config, { hash: result });
+      await waitForTransactionReceipt(config, { hash: result, chainId });
 
       toast.success('Settlement approved successfully!', { id: toastId });
       onSuccess?.();
@@ -84,7 +85,7 @@ export function useSettlementActions ({
     } finally {
       setIsApproving(false);
     }
-  }, [settlementId, address, walletClient, partyStatus, onSuccess, dvpAddress]);
+  }, [settlementId, address, walletClient, partyStatus, onSuccess, dvpAddress, chainId]);
 
   const handleExecuteSettlement = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -118,9 +119,9 @@ export function useSettlementActions ({
         functionName: 'executeSettlement',
         args: [validatedSettlementId],
         account: address,
-        chainId: walletClient.chain?.id,
+        chainId,
       });
-      await waitForTransactionReceipt(config, { hash: result });
+      await waitForTransactionReceipt(config, { hash: result, chainId });
 
       toast.success('Settlement executed successfully!', { id: toastId });
       onSuccess?.();
@@ -135,7 +136,7 @@ export function useSettlementActions ({
     } finally {
       setIsExecuting(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress, chainId]);
 
   const handleApproveToken = useCallback(async (tokenAddress: string, amount: bigint) => {
     if (!address || !walletClient) {
@@ -230,9 +231,9 @@ export function useSettlementActions ({
         functionName: 'revokeApprovals',
         args: [[BigInt(settlementId)]],
         account: address as `0x${string}`,
-        chainId: walletClient.chain?.id,
+        chainId,
       });
-      await waitForTransactionReceipt(config, { hash: result });
+      await waitForTransactionReceipt(config, { hash: result, chainId });
 
       toast.success('Approval revoked successfully!', { id: toastId });
       onSuccess?.();
@@ -243,7 +244,7 @@ export function useSettlementActions ({
     } finally {
       setIsRevoking(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress, chainId]);
 
   const handleWithdrawETH = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -261,9 +262,9 @@ export function useSettlementActions ({
         functionName: 'withdrawETH',
         args: [[BigInt(settlementId)]],
         account: address as `0x${string}`,
-        chainId: walletClient.chain?.id,
+        chainId,
       });
-      await waitForTransactionReceipt(config, { hash: result });
+      await waitForTransactionReceipt(config, { hash: result, chainId });
 
       toast.success('ETH withdrawn successfully', { id: toastId });
       onSuccess?.();
@@ -274,7 +275,7 @@ export function useSettlementActions ({
     } finally {
       setIsWithdrawing(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress, chainId]);
 
   return {
     isApproving,

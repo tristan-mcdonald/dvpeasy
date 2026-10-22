@@ -467,8 +467,9 @@ export const tokenManager = {
         ? [spender as Address, amount]
         : [spender as Address, amount],
       account: account as Address,
+      chainId: networkDeployment.network.chainId,
     });
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(config, { hash, chainId: networkDeployment.network.chainId });
     return hash;
   },
 };
