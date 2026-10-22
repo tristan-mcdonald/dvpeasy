@@ -21,10 +21,10 @@ export function useDashboardData (dashboardState: UseDashboardState): DashboardD
     const settlementId = settlementIdFilter.trim();
 
     return allSettlements.filter(settlement => (
-      (!isTokenFiltering || isWalletFiltering || settlement.flows.some(flow => flow.token.toLowerCase() === token)) &&
+      (!isTokenFiltering || settlement.flows.some(flow => flow.token.toLowerCase() === token)) &&
       (!isSettlementIdFiltering || settlement.id.includes(settlementId))
     ));
-  }, [allSettlements, tokenFilter, settlementIdFilter, isTokenFiltering, isWalletFiltering, isSettlementIdFiltering]);
+  }, [allSettlements, tokenFilter, settlementIdFilter, isTokenFiltering, isSettlementIdFiltering]);
 
   return {
     settlements,
