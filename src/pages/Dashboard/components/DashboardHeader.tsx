@@ -1,7 +1,6 @@
 import FiltersApplied from './FiltersApplied';
 import { networkLinks } from '../../../lib/network-links';
 import { ExternalLink, SlidersHorizontal } from 'lucide-react';
-import { useAppKitNetworkState } from '../../../hooks/useAppKitNetwork';
 import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 import { UseDashboardState } from '../hooks/useDashboardState';
 
@@ -11,9 +10,8 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader ({ onShowFilters, filters }: DashboardHeaderProps) {
-  const { chainId } = useAppKitNetworkState();
-  const { dvpAddress } = useCurrentNetwork().deployment;
-  const blockExplorerUrl = chainId ? networkLinks.address(chainId, dvpAddress) : undefined;
+  const { deployment, network } = useCurrentNetwork();
+  const blockExplorerUrl = networkLinks.address(network.chainId, deployment.dvpAddress);
 
   return (
     <div className="space-y-2 max-w-full w-full">

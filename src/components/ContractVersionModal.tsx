@@ -5,7 +5,6 @@ import { Copy, Check, ExternalLink, X } from 'lucide-react';
 import { networkLinks } from '../lib/network-links';
 import { logger } from '../lib/logger';
 import { utilityManager } from '../lib/utils';
-import { useAppKitNetworkState } from '../hooks/useAppKitNetwork';
 import { contracts } from '../config/contracts/deployments';
 import { networks } from '../config/networks';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
@@ -23,7 +22,6 @@ interface ContractVersionModalProps {
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
   const { deployment: currentDeployment, network } = useCurrentNetwork();
   const { changeVersion } = useNetworkNavigation();
-  const { chainId } = useAppKitNetworkState();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   if (!isOpen) {
@@ -123,7 +121,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                               <Tooltip content="View on block explorer">
                                 <a
                                 className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                href={chainId ? networkLinks.address(chainId, deployment.dvpAddress) : '#'}
+                                href={networkLinks.address(network.chainId, deployment.dvpAddress)}
                                 rel="noopener noreferrer"
                                 target="_blank"
                                 onClick={(event) => event.stopPropagation()}>
@@ -154,7 +152,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                               <Tooltip content="View on block explorer">
                                 <a
                                 className="transition-colors flex cursor-pointer text-primary hover:text-primary-interaction"
-                                href={chainId ? networkLinks.address(chainId, deployment.dvpHelperAddress) : '#'}
+                                href={networkLinks.address(network.chainId, deployment.dvpHelperAddress)}
                                 rel="noopener noreferrer"
                                 target="_blank"
                                 onClick={(event) => event.stopPropagation()}>

@@ -6,7 +6,7 @@ import { isAddress } from 'viem';
 import { logger } from '../../lib/logger';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { utilityManager } from '../../lib/utils';
-import { useAppKitNetworkState } from '../../hooks/useAppKitNetwork';
+import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 import { useEnsName } from 'wagmi';
 
 interface AddressProps {
@@ -27,7 +27,7 @@ const Address = memo(({
 
   const [copied, setCopied] = useState(false);
   const hasInitiallyLoadedRef = useRef(false);
-  const { chainId } = useAppKitNetworkState();
+  const { chainId } = useCurrentNetwork().network;
 
   // ENS resolution with safeguards to prevent infinite loops.
   const { data: ensName, isLoading: ensLoading } = useEnsName({
@@ -74,7 +74,7 @@ const Address = memo(({
   };
 
   // Get the block explorer URL for the current chain and address.
-  const blockExplorerUrl = chainId ? networkLinks.address(chainId, address) : undefined;
+  const blockExplorerUrl = networkLinks.address(chainId, address);
 
   // Only show loading spinner on initial load, not during background refetches.
   if (isLoading && !hasInitiallyLoadedRef.current) {
