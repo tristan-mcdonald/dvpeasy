@@ -5,14 +5,9 @@ import { urlManager } from '../lib/url-manager';
 import { useEffect } from 'react';
 import { useNetworkSync } from '../hooks/useNetworkSync';
 
-export interface NetworkContextValue {
-  networkId: string;
-  version: string;
-}
-
 /**
  * Wrapper component for network-scoped routes.
- * Validates network/version from URL params and provides context to child routes.
+ * Validates the network and version in the URL, and keeps the wallet in step with them.
  */
 export default function NetworkWrapper () {
   const params = useParams<{ network?: string; version?: string }>();
@@ -63,11 +58,5 @@ export default function NetworkWrapper () {
     );
   }
 
-  // Provide network context to child routes.
-  const context: NetworkContextValue = {
-    networkId: parsedParams.networkId,
-    version: parsedParams.version,
-  };
-
-  return <Outlet context={context} />;
+  return <Outlet />;
 }

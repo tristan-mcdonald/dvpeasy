@@ -9,7 +9,6 @@ import { config } from './config/wagmi';
 import { IStaticMethods } from 'flyonui/flyonui';
 import { lazy } from 'react';
 import { logger } from './lib/logger';
-import { NetworkProvider } from './contexts/NetworkContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RedirectToDefaultCreate, RedirectToDefaultDashboard, RedirectToDefaultSettlement } from './components/RedirectHelpers';
 import { toastColors } from './config/theme';
@@ -194,9 +193,7 @@ function App () {
               description="There was an error with page navigation. Please refresh the page."
               showRetryButton={true}
               title="Router error">
-                <NetworkProvider>
-                  <AppContent />
-                </NetworkProvider>
+                <AppContent />
               </ErrorBoundary>
               <Toaster
               position="top-right"

@@ -1,11 +1,9 @@
 import { BaseIcon, EthereumIcon } from './NetworkIcons';
 import { Network } from '../config/networks';
-import { useNetwork } from '../hooks/useNetwork';
 
 interface NetworkIconProps {
   network?: Network | undefined;
   className?: string;
-  useCurrentNetwork?: boolean;
 }
 
 /**
@@ -14,15 +12,8 @@ interface NetworkIconProps {
 export default function NetworkIcon ({
   network,
   className = 'size-6',
-  useCurrentNetwork = false,
 }: NetworkIconProps) {
-  // Get current network from context if useCurrentNetwork is true.
-  const { network: currentNetwork } = useNetwork();
-
-  // Use current network if requested, otherwise use the provided network.
-  const displayNetwork = useCurrentNetwork ? currentNetwork : network;
-
-  if (!displayNetwork) {
+  if (!network) {
     return (
       <div className={`${className} rounded-full bg-interface-dark flex items-center justify-center text-white text-xs font-bold`}>
         <span>?</span>
@@ -31,7 +22,7 @@ export default function NetworkIcon ({
   }
 
   // Display the appropriate icon component based on network ID.
-  switch (displayNetwork.id) {
+  switch (network.id) {
     case 'mainnet':
     case 'sepolia':
       return <EthereumIcon className={className} />;
@@ -42,7 +33,7 @@ export default function NetworkIcon ({
       // Fallback for networks without dedicated icon components.
       return (
         <div className={`${className} rounded-full bg-interface-dark flex items-center justify-center text-white text-xs font-bold`}>
-          <span>{displayNetwork.displayName.charAt(0).toUpperCase()}</span>
+          <span>{network.displayName.charAt(0).toUpperCase()}</span>
         </div>
       );
   }
