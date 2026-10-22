@@ -27,7 +27,7 @@ const wagmiAdapter = new WagmiAdapter({
 
 export const appKit = createAppKit({
   adapters: [wagmiAdapter],
-  // AppKit connects the wallet on this network; `useNetworkSync` then keeps it on the URL's.
+  // AppKit connects the wallet on this network; `useWalletNetworkSync` then keeps it on the URL's.
   defaultNetwork: NETWORKS[DEFAULT_NETWORK_ID].appKitNetwork,
   enableNetworkSwitch: false,
   networks: appKitNetworks,

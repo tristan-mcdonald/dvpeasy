@@ -5,14 +5,11 @@ import SettlementDetailsForm from '../components/CreateSettlement/SettlementDeta
 import SettlementFlows from '../components/SettlementFlows';
 import { FormEvent } from 'react';
 import { useFlowManagement } from '../hooks/useFlowManagement';
-import { useNetworkSync } from '../hooks/useNetworkSync';
 import { useSettlementCreation } from '../hooks/useSettlementCreation';
 import { useSettlementForm } from '../hooks/useSettlementForm';
 import { useTokenMetadata } from '../hooks/useTokenMetadata';
 
 export default function CreateSettlement () {
-  // Handle network/version synchronization from URL with auto-sync enabled.
-  useNetworkSync({ autoSync: true });
   // Custom hooks for managing different aspects of the component.
   const flowManagement = useFlowManagement();
   const settlementForm = useSettlementForm();

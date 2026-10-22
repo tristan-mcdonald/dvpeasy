@@ -1,9 +1,11 @@
 import HeaderLocal from './HeaderLocal';
+import WalletNetworkBanner from './WalletNetworkBanner';
 import { Outlet, useParams } from 'react-router-dom';
 import { savedSelection } from '../lib/saved-selection';
 import { urlManager } from '../lib/url-manager';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useEffect } from 'react';
-import { useNetworkSync } from '../hooks/useNetworkSync';
+import { useWalletNetworkSync } from '../hooks/useWalletNetwork';
 
 /**
  * Wrapper component for network-scoped routes.
@@ -14,11 +16,8 @@ export default function NetworkWrapper () {
 
   // Parse and validate network/version from URL.
   const parsedParams = urlManager.parseNetworkAndVersion(params);
-  // Handle network/version synchronization with auto-sync enabled.
-  const {
-    isNetworkSynced,
-    isLoading: isNetworkSyncing,
-  } = useNetworkSync({ autoSync: true });
+  const { network } = useCurrentNetwork();
+  const { isSwitching, isWalletOnUrlNetwork, switchWallet, walletNetwork } = useWalletNetworkSync();
 
   // Remember the version, so that the network starts on it next time.
   const networkId = parsedParams?.networkId;
@@ -37,15 +36,16 @@ export default function NetworkWrapper () {
     );
   }
 
-  // Show network sync status while switching.
-  if (!isNetworkSynced && isNetworkSyncing) {
-    return (
-      <HeaderLocal
-      centerVertically={true}
-      description="Syncing wallet to the selected network..."
-      title="Switching network" />
-    );
-  }
-
-  return <Outlet />;
+  return (
+    <>
+      {(isSwitching || !isWalletOnUrlNetwork) && (
+        <WalletNetworkBanner
+        isSwitching={isSwitching}
+        network={network}
+        onSwitch={switchWallet}
+        walletNetwork={walletNetwork} />
+      )}
+      <Outlet />
+    </>
+  );
 }
