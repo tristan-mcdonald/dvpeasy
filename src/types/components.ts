@@ -1,6 +1,4 @@
-import { Flow } from './settlement';
-import { Settlement } from './settlement';
-import { SettlementWithFlows } from '../hooks/useSettlementsWithFlows';
+import { Flow, Settlement, SettlementWithFlows } from './settlement';
 
 export interface SettlementRowProps {
   settlement: Settlement | SettlementWithFlows;

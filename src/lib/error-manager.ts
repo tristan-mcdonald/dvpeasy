@@ -155,28 +155,6 @@ export const errorManager = {
   },
 
   /**
-   * Check if an error is retryable.
-   */
-  isRetryable (error: ContractErrorType): boolean {
-    return error.isRetryable;
-  },
-
-  /**
-   * Calculate retry delay based on error type and retry count.
-   */
-  retryDelay (error: ContractErrorType, retryCount: number): number {
-    const baseDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-
-    if (error instanceof RateLimitError) {
-      return Math.min(baseDelay * 2, 60000);
-    } else if (error instanceof NetworkError) {
-      return Math.min(baseDelay, 10000);
-    }
-
-    return baseDelay;
-  },
-
-  /**
    * Enhanced error details for debugging.
    */
   debugInfo (error: ContractErrorType): Record<string, unknown> {

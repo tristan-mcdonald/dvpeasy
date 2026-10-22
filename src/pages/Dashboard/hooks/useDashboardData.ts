@@ -1,49 +1,36 @@
-import { Settlement } from '../../../types/settlement';
+import { SettlementWithFlows } from '../../../types/settlement';
 import { UseDashboardState } from './useDashboardState';
 import { useMemo } from 'react';
-import { useSettlementsByWallet } from '../../../hooks/useSettlementsByWallet';
-import { useSettlementsWithFlows } from '../../../hooks/useSettlementsWithFlows';
+import { useSettlementList } from '../../../hooks/useSettlementList';
 
 export interface DashboardData {
-  settlements: Settlement[];
+  settlements: SettlementWithFlows[];
   isLoading: boolean;
   isError: boolean;
   refetch: () => void;
-  totalSettlements?: number;
+  totalSettlements: number;
 }
 
 export function useDashboardData (dashboardState: UseDashboardState): DashboardData {
   const { tokenFilter, settlementIdFilter } = dashboardState.state;
-  const { isWalletFiltering, isSettlementIdFiltering } = dashboardState.derived;
+  const { isWalletFiltering, isTokenFiltering, isSettlementIdFiltering } = dashboardState.derived;
+  const { settlements: allSettlements, isLoading, isError, refetch } = useSettlementList({ isWalletFiltering });
 
-  // Use different hooks based on whether filtering is active.
-  const flowsData = useSettlementsWithFlows(100, tokenFilter);
-  const walletData = useSettlementsByWallet(100);
-
-  // Choose the appropriate data source.
-  const { settlements: rawSettlements, isLoading, isError, refetch } = (() => {
-    if (isWalletFiltering) {
-      return walletData;
-    } else {
-      return { ...flowsData, settlements: flowsData.settlements };
-    }
-  })();
-
-  // Apply settlement ID filtering on the results.
   const settlements = useMemo(() => {
-    if (!isSettlementIdFiltering) {
-      return rawSettlements;
-    }
-    return rawSettlements.filter(settlement =>
-      settlement.id.includes(settlementIdFilter.trim()),
-    );
-  }, [rawSettlements, isSettlementIdFiltering, settlementIdFilter]);
+    const token = tokenFilter.toLowerCase();
+    const settlementId = settlementIdFilter.trim();
+
+    return allSettlements.filter(settlement => (
+      (!isTokenFiltering || isWalletFiltering || settlement.flows.some(flow => flow.token.toLowerCase() === token)) &&
+      (!isSettlementIdFiltering || settlement.id.includes(settlementId))
+    ));
+  }, [allSettlements, tokenFilter, settlementIdFilter, isTokenFiltering, isWalletFiltering, isSettlementIdFiltering]);
 
   return {
     settlements,
     isLoading,
     isError,
     refetch,
-    totalSettlements: flowsData.totalSettlements,
+    totalSettlements: allSettlements.length,
   };
 }

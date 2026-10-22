@@ -1,15 +1,15 @@
 import { getFilterResultsText } from '../utils/filterHelpers';
-import { Settlement } from '../../../types/settlement';
+import { SettlementWithFlows } from '../../../types/settlement';
 import { TokenSelect } from '../../../components/scaffold-eth/TokenSelect';
 import { UseDashboardState } from '../hooks/useDashboardState';
-import { useSettlementsByWallet } from '../../../hooks/useSettlementsByWallet';
+import { useAccount } from 'wagmi';
 import { X } from 'lucide-react';
 
 interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   filters: UseDashboardState;
-  settlements: Settlement[];
+  settlements: SettlementWithFlows[];
   totalSettlements?: number;
 }
 
@@ -20,7 +20,7 @@ export default function FilterDrawer ({
   settlements,
   totalSettlements,
 }: FilterDrawerProps) {
-  const walletData = useSettlementsByWallet(100);
+  const { isConnected } = useAccount();
 
   if (!isOpen) {
     return null;
@@ -67,7 +67,7 @@ export default function FilterDrawer ({
             value={filters.state.settlementIdFilter}/>
           </div>
 
-          {walletData.isWalletConnected && (
+          {isConnected && (
             <div className="flex items-center gap-1.5">
               <input
               className="switch switch-primary"

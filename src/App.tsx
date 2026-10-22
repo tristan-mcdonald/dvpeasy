@@ -15,7 +15,6 @@ import { RedirectToDefaultCreate, RedirectToDefaultDashboard, RedirectToDefaultS
 import { toastColors } from './config/theme';
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
-import { useSettlementCacheManager } from './hooks/useSettlementCacheManager';
 import { WagmiProvider } from 'wagmi';
 
 // Lazy load page components for better code splitting.
@@ -48,9 +47,6 @@ const queryClient = new QueryClient({
 function AppContent () {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Initialize settlement cache manager.
-  useSettlementCacheManager();
 
   /**
    * Handle GitHub Pages SPA routing.

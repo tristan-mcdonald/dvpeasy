@@ -29,3 +29,13 @@ export interface Settlement {
   // Optional flows data for enriched settlement information.
   flows?: ContractFlow[];
 }
+
+// A settlement in the dashboard's list, with its flows.
+export interface SettlementWithFlows {
+  id: string;
+  reference: string;
+  cutoffDate: number;
+  isSettled: boolean;
+  isAutoSettled: boolean;
+  flows: Flow[];
+}

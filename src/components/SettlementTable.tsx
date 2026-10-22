@@ -1,6 +1,5 @@
 import SettlementRow from './SettlementRow';
-import { Settlement } from '../types/settlement';
-import { SettlementWithFlows } from '../hooks/useSettlementsWithFlows';
+import { Settlement, SettlementWithFlows } from '../types/settlement';
 
 interface SettlementTableProps {
   settlements: (Settlement | SettlementWithFlows)[];
