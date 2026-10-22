@@ -118,7 +118,7 @@ export const nftManager = {
    * Fetches NFT metadata from a tokenURI.
    */
   async fetchNFTMetadata (tokenAddress: string, tokenId: string, chainId: number): Promise<NFTMetadata> {
-    const cacheKey = `${tokenAddress.toLowerCase()}-${tokenId}`;
+    const cacheKey = `${chainId}:${tokenAddress.toLowerCase()}-${tokenId}`;
 
     // Check cache first.
     const cached = metadataCache.get(cacheKey);

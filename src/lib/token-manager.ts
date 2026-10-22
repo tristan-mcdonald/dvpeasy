@@ -147,7 +147,8 @@ const KNOWN_TOKENS: Record<string, TokenMetadata> = {
   },
 };
 
-// Cache for token metadata with proper typing.
+// Token metadata, keyed by chain ID and address, since an address can hold different tokens on
+// different chains.
 const tokenCache = new Map<string, TokenMetadata>();
 
 export enum AssetType {
@@ -281,8 +282,8 @@ export const tokenManager = {
       return knownToken;
     }
 
-    // Check cache.
-    const cached = tokenCache.get(normalizedAddress);
+    const cacheKey = `${networkDeployment.network.chainId}:${normalizedAddress}`;
+    const cached = tokenCache.get(cacheKey);
     if (cached) {
       return cached;
     }
@@ -340,7 +341,7 @@ export const tokenManager = {
         };
       }
 
-      tokenCache.set(normalizedAddress, metadata);
+      tokenCache.set(cacheKey, metadata);
       return metadata;
     } catch (error) {
       if (error instanceof ContractValidationError || error instanceof TokenDetectionError) {
