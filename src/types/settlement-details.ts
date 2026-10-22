@@ -1,4 +1,3 @@
-import { ContractErrorType } from './errors';
 
 export interface TokenStatus {
   tokenAddress: string
@@ -37,7 +36,6 @@ export interface FormattedFlow extends Flow {
 
 export interface ValidationState {
   isParticipant: boolean
-  networkError: ContractErrorType | null
 }
 
 export interface PollingState {

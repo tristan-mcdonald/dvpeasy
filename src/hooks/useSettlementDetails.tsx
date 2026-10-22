@@ -49,9 +49,7 @@ export function useSettlementDetails () {
 
   const {
     isParticipant,
-    networkError,
     isSettlementExpired,
-    walletChainId,
   } = useSettlementValidation(settlement, address);
 
   const callbacks = useMemo(() => ({
@@ -75,22 +73,17 @@ export function useSettlementDetails () {
   );
 
   // Determine the overall loading state and error.
-  const isLoading = isLoadingData || (networkError !== null);
-  const error = networkError || dataError || partyStatusError || approvalsError;
+  const isLoading = isLoadingData;
+  const error = dataError || partyStatusError || approvalsError;
 
   const fetchAllSettlementData = useCallback(async (showLoadingState = true) => {
     if (!settlementId) return;
-
-    // Handle network validation.
-    if (networkError) {
-      return;
-    }
 
     await fetchSettlementData(showLoadingState);
     if (address) {
       await fetchPartyStatus();
     }
-  }, [settlementId, networkError, fetchSettlementData, address, fetchPartyStatus]);
+  }, [settlementId, fetchSettlementData, address, fetchPartyStatus]);
 
 
 
@@ -98,10 +91,10 @@ export function useSettlementDetails () {
 
   // Initial data loading.
   useEffect(() => {
-    if (settlementId && walletChainId) {
+    if (settlementId) {
       fetchAllSettlementData(true);
     }
-  }, [settlementId, walletChainId, network.chainId, fetchAllSettlementData]);
+  }, [settlementId, network.chainId, fetchAllSettlementData]);
 
   // Check approvals when settlement loads.
   useEffect(() => {

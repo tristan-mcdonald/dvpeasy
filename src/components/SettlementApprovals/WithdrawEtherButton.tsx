@@ -1,4 +1,5 @@
 import { ArrowDownRight, Loader2 } from 'lucide-react';
+import { useWalletNetwork } from '../../hooks/useWalletNetwork';
 
 interface WithdrawEtherButtonProps {
   isWithdrawing: boolean
@@ -6,10 +7,12 @@ interface WithdrawEtherButtonProps {
 }
 
 export default function WithdrawEtherButton ({ isWithdrawing, onWithdraw }: WithdrawEtherButtonProps) {
+  const { isWalletOnUrlNetwork } = useWalletNetwork();
+
   return (
     <button
     className="btn btn-sm btn-outline btn-primary"
-    disabled={isWithdrawing}
+    disabled={isWithdrawing || !isWalletOnUrlNetwork}
     onClick={onWithdraw}
     type="button">
       {isWithdrawing ? (

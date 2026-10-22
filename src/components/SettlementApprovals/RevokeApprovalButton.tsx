@@ -1,4 +1,5 @@
 import { Loader2, X } from 'lucide-react';
+import { useWalletNetwork } from '../../hooks/useWalletNetwork';
 
 interface RevokeApprovalButtonProps {
   isRevoking: boolean
@@ -6,10 +7,12 @@ interface RevokeApprovalButtonProps {
 }
 
 export default function RevokeApprovalButton ({ isRevoking, onRevoke }: RevokeApprovalButtonProps) {
+  const { isWalletOnUrlNetwork } = useWalletNetwork();
+
   return (
     <button
     className="btn btn-sm btn-outline btn-error"
-    disabled={isRevoking}
+    disabled={isRevoking || !isWalletOnUrlNetwork}
     onClick={onRevoke}
     type="button">
       {isRevoking ? (

@@ -2,6 +2,7 @@ import Tooltip from '../Tooltip';
 import { Check, Infinity, Loader2 } from 'lucide-react';
 import { FormattedTokenStatus } from './types';
 import { settlementManager } from './utils';
+import { useWalletNetwork } from '../../hooks/useWalletNetwork';
 
 interface TokenApprovalButtonsProps {
   tokenStatus: FormattedTokenStatus;
@@ -16,6 +17,7 @@ export default function TokenApprovalButtons ({
   onMaxApprove,
   isApproving,
 }: TokenApprovalButtonsProps) {
+  const { isWalletOnUrlNetwork } = useWalletNetwork();
   const requiredAmount = tokenStatus.amountOrIdRequired - tokenStatus.amountOrIdApprovedForDvp;
   const shouldShowAmount = tokenStatus.amountOrIdApprovedForDvp > 0n;
 
@@ -42,6 +44,7 @@ export default function TokenApprovalButtons ({
         <Tooltip content={tokenStatus.isNFT ? 'Approve this NFT for this settlement' : 'Approve the exact amount needed for this settlement'}>
           <button
           className="btn btn-sm btn-outline btn-primary"
+          disabled={!isWalletOnUrlNetwork}
           onClick={() => onApproveToken(tokenStatus.tokenAddress, requiredAmount)}>
             <Check className="size-3" />
             <span className="text-sm font-mono">
@@ -59,6 +62,7 @@ export default function TokenApprovalButtons ({
           <Tooltip content="Give unlimited approval (no need to approve again for future transactions)">
             <button
             className="btn btn-sm btn-gradient btn-primary"
+            disabled={!isWalletOnUrlNetwork}
             onClick={() => onMaxApprove(tokenStatus.tokenAddress)}>
               <Check className="size-3" />
               <Infinity className="size-4" />

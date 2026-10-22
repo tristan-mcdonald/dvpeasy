@@ -1,22 +1,13 @@
 import { Settlement, ValidationState } from '../types/settlement-details';
 import { useCallback, useMemo } from 'react';
-import { useChainId } from 'wagmi';
-import { networks } from '../config/networks';
 
 /**
- * Handles network validation and participant checking for settlement interactions.
- *
- * @param settlement - The settlement data object.
- * @param address - The wallet address to check participation for.
- * @returns Object containing validation state, network error, and utility functions.
+ * Whether the connected address is a party to the settlement, and whether its cutoff has passed.
  */
 export function useSettlementValidation (
   settlement: Settlement | null,
   address: string | undefined,
 ) {
-  const supportedChainIds = networks.all().map(network => network.chainId);
-  const walletChainId = useChainId();
-
   // Check if settlement is expired.
   const isSettlementExpired = useCallback(() => {
     if (!settlement) return false;
@@ -32,29 +23,12 @@ export function useSettlementValidation (
     );
   }, [settlement, address]);
 
-  // Check if wallet is connected to a supported network.
-  const networkError = useMemo(() => {
-    if (!supportedChainIds.includes(walletChainId)) {
-      const supportedNetworks = supportedChainIds.map(id => {
-        if (id === 11155111) return 'Ethereum Sepolia';
-        if (id === 421614) return 'Arbitrum Sepolia';
-        if (id === 137) return 'Polygon';
-        return `Chain ${id}`;
-      }).join(', ');
-      return new Error(`Please switch to a supported network: ${supportedNetworks}`);
-    }
-    return null;
-  }, [supportedChainIds, walletChainId]);
-
   const state: ValidationState = {
     isParticipant,
-    networkError,
   };
 
   return {
     ...state,
     isSettlementExpired,
-    walletChainId,
-    supportedChainIds,
   };
 }

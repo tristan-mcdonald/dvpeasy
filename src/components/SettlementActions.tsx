@@ -1,5 +1,6 @@
 import { Check, Loader2 } from 'lucide-react';
 import ButtonLink from './ButtonLink';
+import { useWalletNetwork } from '../hooks/useWalletNetwork';
 
 interface PartyStatus {
   isApproved: boolean;
@@ -30,6 +31,8 @@ export default function SettlementActions ({
   onApprove,
   onExecute,
 }: SettlementActionsProps) {
+  const { isWalletOnUrlNetwork } = useWalletNetwork();
+
   if (isSettled || isExpired || !isConnected || !isParticipant || !partyStatus) {
     return null;
   }
@@ -39,7 +42,7 @@ export default function SettlementActions ({
       {!partyStatus.isApproved && (
         <ButtonLink
         as="button"
-        disabled={isApproving}
+        disabled={isApproving || !isWalletOnUrlNetwork}
         fullWidth
         icon={isApproving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
         onClick={onApprove}
@@ -51,7 +54,7 @@ export default function SettlementActions ({
       {allPartiesApproved && (
         <ButtonLink
         as="button"
-        disabled={isExecuting}
+        disabled={isExecuting || !isWalletOnUrlNetwork}
         fullWidth
         icon={isExecuting ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
         onClick={onExecute}
