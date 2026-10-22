@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   build:
+    # The Alchemy key is a secret of this environment, which the build needs to read it.
+    environment: github-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
