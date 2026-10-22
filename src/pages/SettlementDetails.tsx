@@ -8,7 +8,7 @@ import SettlementOverview from '../components/SettlementOverview';
 import { urlManager } from '../lib/url-manager';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useContractConfig } from '../hooks/useContractConfig';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
 import { useSettlementActions } from '../hooks/useSettlementActions';
 import { useSettlementApprovalStatus } from '../hooks/useSettlementApprovalStatus';
@@ -17,7 +17,7 @@ import { useTokenMetadata } from '../hooks/useTokenMetadata';
 
 export default function SettlementDetails () {
   const navigate = useNavigate();
-  const { config, currentVersion } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
 
   const {
     settlementId,
@@ -92,13 +92,13 @@ export default function SettlementDetails () {
     if (!isLoading && error && !settlement) {
       // Wait a brief moment to show the error, then redirect.
       const timer = setTimeout(() => {
-        const dashboardUrl = urlManager.buildDashboardUrl(config.networkId, currentVersion);
+        const dashboardUrl = urlManager.buildDashboardUrl(network.id, deployment.version.tag);
         navigate(dashboardUrl, { replace: true });
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [isLoading, error, settlement, config.networkId, currentVersion, navigate]);
+  }, [isLoading, error, settlement, network.id, deployment.version.tag, navigate]);
 
   if (isLoading) {
     return (

@@ -3,7 +3,8 @@ import { errorManager } from '../lib/error-manager';
 import { readContract } from 'wagmi/actions';
 import { TokenStatus, Settlement } from '../types/settlement-details';
 import { useCallback, useState } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useDataFetcher } from './useDataFetcher';
 
 export interface ApprovalStatusData {
@@ -22,8 +23,7 @@ export function useSettlementApprovals (
   settlementId: string | undefined,
   settlement: Settlement | null,
 ) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config: contractConfig } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
 
   const [localState, setLocalState] = useState({
     allPartiesApproved: false,
@@ -35,26 +35,26 @@ export function useSettlementApprovals (
 
     // Check if the settlement is approved by all parties.
     const isApproved = await readContract(config, {
-      address: dvpAddress,
-      abi: dvpAbi,
+      address: deployment.dvpAddress,
+      abi: DVP_ABI,
       functionName: 'isSettlementApproved',
       args: [BigInt(settlementId)],
-      chainId: contractConfig.chainId,
+      chainId: network.chainId,
     });
 
     return isApproved as boolean;
-  }, [settlementId, settlement, dvpAddress, dvpAbi, contractConfig.chainId]);
+  }, [settlementId, settlement, deployment.dvpAddress, network.chainId]);
 
   const checkAllApprovalsCompleteInternal = useCallback(async (): Promise<boolean> => {
     if (!settlementId || !settlement) return false;
 
     // First check if all parties approved the settlement.
     const isSettlementApproved = await readContract(config, {
-      address: dvpAddress,
-      abi: dvpAbi,
+      address: deployment.dvpAddress,
+      abi: DVP_ABI,
       functionName: 'isSettlementApproved',
       args: [BigInt(settlementId)],
-      chainId: contractConfig.chainId,
+      chainId: network.chainId,
     });
 
     if (!isSettlementApproved) {
@@ -71,11 +71,11 @@ export function useSettlementApprovals (
     // Check each party's token approvals.
     for (const partyAddress of parties) {
       const partyStatusData = await readContract(config, {
-        address: dvpAddress,
-        abi: dvpAbi,
+        address: deployment.dvpAddress,
+        abi: DVP_ABI,
         functionName: 'getSettlementPartyStatus',
         args: [BigInt(settlementId), partyAddress as `0x${string}`],
-        chainId: contractConfig.chainId,
+        chainId: network.chainId,
       });
 
       if (partyStatusData) {
@@ -95,7 +95,7 @@ export function useSettlementApprovals (
     }
 
     return true;
-  }, [settlementId, settlement, dvpAddress, dvpAbi, contractConfig.chainId]);
+  }, [settlementId, settlement, deployment.dvpAddress, network.chainId]);
 
   const partiesApprovedFetcher = useDataFetcher(checkAllPartiesApprovedInternal, {
     deduplication: {

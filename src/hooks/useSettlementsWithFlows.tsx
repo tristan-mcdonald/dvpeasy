@@ -1,5 +1,6 @@
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
 import { Flow } from '../types/settlement';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useReadContract, useReadContracts } from 'wagmi';
 import { useMemo } from 'react';
 import { logger } from '../lib/logger';
@@ -26,11 +27,11 @@ export interface SettlementWithFlows {
  * Hook to fetch settlements with detailed flow data for filtering purposes.
  */
 export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config, isConfigReady } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
+  const { dvpAddress } = deployment;
 
   // Create a unique query key based on network and contract address.
-  const queryKeyBase = `flows-settlements-${config.networkId}-${config.chainId}-${dvpAddress}`;
+  const queryKeyBase = `flows-settlements-${network.id}-${network.chainId}-${dvpAddress}`;
 
   // Network-specific cache invalidation is handled by useSettlementCacheManager.
 
@@ -43,11 +44,10 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
     refetch: refetchCounter,
   } = useReadContract({
     address: dvpAddress,
-    abi: dvpAbi,
+    abi: DVP_ABI,
     functionName: 'settlementIdCounter',
-    chainId: config.chainId,
+    chainId: network.chainId,
     query: {
-      enabled: isConfigReady,
       queryKey: [`${queryKeyBase}-counter`],
     },
   });
@@ -70,13 +70,13 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
   } = useReadContracts({
     contracts: settlementIds.map((id) => ({
       address: dvpAddress,
-      abi: dvpAbi,
+      abi: DVP_ABI,
       functionName: 'getSettlement',
       args: [id],
-      chainId: config.chainId,
+      chainId: network.chainId,
     })),
     query: {
-      enabled: isConfigReady && settlementIds.length > 0,
+      enabled: settlementIds.length > 0,
     },
   });
 
@@ -93,10 +93,9 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
       isLoadingData,
       isErrorData,
       dataError: dataError?.message,
-      isConfigReady,
-      chainId: config.chainId,
+      chainId: network.chainId,
       dvpAddress,
-      networkId: config.networkId,
+      networkId: network.id,
     });
 
     if (!settlementDatas) {
@@ -132,7 +131,7 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
         })),
       };
     });
-  }, [settlementDatas, settlementIds, counter, isLoadingCounter, isErrorCounter, counterError, isLoadingData, isErrorData, dataError, isConfigReady, config.chainId, config.networkId, dvpAddress]);
+  }, [settlementDatas, settlementIds, counter, isLoadingCounter, isErrorCounter, counterError, isLoadingData, isErrorData, dataError, network.chainId, network.id, dvpAddress]);
 
   // Filter settlements by token if specified.
   const filteredSettlements = useMemo(() => {
@@ -149,7 +148,7 @@ export function useSettlementsWithFlows (maxFetch = 50, tokenFilter?: string) {
   }, [settlementsWithFlows, tokenFilter]);
 
   // Combined loading & error states.
-  const isLoading = !isConfigReady || isLoadingCounter || isLoadingData;
+  const isLoading = isLoadingCounter || isLoadingData;
   const isError = isErrorCounter || isErrorData;
 
   // Refetch all.

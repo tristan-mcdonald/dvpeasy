@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { logger } from '../lib/logger';
 import { nftManager } from '../lib/nft';
 import NFTIcon from './NFTIcon';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 interface NFTImageProps {
   tokenAddress: string;
@@ -26,6 +27,7 @@ export const NFTImage: FC<NFTImageProps> = ({
   className = '',
   showTokenId = false,
 }) => {
+  const { chainId } = useCurrentNetwork().network;
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -43,7 +45,7 @@ export const NFTImage: FC<NFTImageProps> = ({
       setImageUrl(null);
 
       try {
-        const url = await nftManager.fetchNFTImage(tokenAddress, tokenId);
+        const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
 
         if (url) {
           // Preload the image to check if it's accessible.
@@ -66,7 +68,7 @@ export const NFTImage: FC<NFTImageProps> = ({
     };
 
     loadNFTImage();
-  }, [tokenAddress, tokenId]);
+  }, [tokenAddress, tokenId, chainId]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);

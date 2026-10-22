@@ -9,6 +9,7 @@ import { Flow } from '../../types/settlement';
 import LabelWithIcon from '../LabelWithIcon';
 import NFTImage from '../NFTImage';
 import { TokenSelect } from './TokenSelect';
+import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 
 interface FlowInputProps {
   flow: Flow;
@@ -23,6 +24,7 @@ export const FlowInput: FC<FlowInputProps> = ({
   onChange,
   onValidationChange,
 }) => {
+  const networkDeployment = useCurrentNetwork();
   const [amountError, setAmountError] = useState<string | null>(null);
   const [assetType, setAssetType] = useState<AssetType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export const FlowInput: FC<FlowInputProps> = ({
     const checkAssetTypeAndSymbol = async () => {
       if (flow.token) {
         try {
-          const type = await tokenManager.detectAssetType(flow.token);
+          const type = await tokenManager.detectAssetType(flow.token, networkDeployment);
           setAssetType(type);
           setError(null);
           setAmountError(null); // Clear amount errors when asset type changes.
@@ -46,7 +48,7 @@ export const FlowInput: FC<FlowInputProps> = ({
           // Fetch token symbol for ERC20 and native tokens.
           if (type === AssetType.ERC20 || type === AssetType.ETH) {
             try {
-              const symbol = await tokenManager.tokenSymbol(flow.token);
+              const symbol = await tokenManager.tokenSymbol(flow.token, networkDeployment);
               setTokenSymbol(symbol);
             } catch (symbolError) {
               logger.warn('Failed to fetch token symbol:', symbolError);
@@ -72,7 +74,7 @@ export const FlowInput: FC<FlowInputProps> = ({
       }
     };
     checkAssetTypeAndSymbol();
-  }, [flow, onChange]); // Include all dependencies used within the effect.
+  }, [flow, onChange, networkDeployment]);
 
   useEffect(() => {
     // Validate amount when it changes or when asset type changes.

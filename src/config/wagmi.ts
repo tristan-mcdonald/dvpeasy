@@ -1,5 +1,6 @@
 import { createAppKit } from '@reown/appkit/react';
 import { fallback } from 'wagmi';
+import { getPublicClient } from 'wagmi/actions';
 import { networks } from './networks';
 import { http } from 'viem';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
@@ -43,3 +44,12 @@ createAppKit({
 });
 
 export const config = wagmiAdapter.wagmiConfig;
+
+/**
+ * The client wagmi keeps for reading from a network, whichever chain the wallet is on.
+ */
+export function publicClientFor (chainId: number) {
+  const publicClient = getPublicClient(config, { chainId });
+  if (!publicClient) throw new Error(`Chain ${chainId} is not configured`);
+  return publicClient;
+}

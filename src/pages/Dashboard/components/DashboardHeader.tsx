@@ -2,7 +2,7 @@ import FiltersApplied from './FiltersApplied';
 import { networkLinks } from '../../../lib/network-links';
 import { ExternalLink, SlidersHorizontal } from 'lucide-react';
 import { useAppKitNetworkState } from '../../../hooks/useAppKitNetwork';
-import { useContractAddresses } from '../../../hooks/useContractConfig';
+import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 import { UseDashboardState } from '../hooks/useDashboardState';
 
 interface DashboardHeaderProps {
@@ -12,7 +12,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader ({ onShowFilters, filters }: DashboardHeaderProps) {
   const { chainId } = useAppKitNetworkState();
-  const { dvpAddress } = useContractAddresses();
+  const { dvpAddress } = useCurrentNetwork().deployment;
   const blockExplorerUrl = chainId ? networkLinks.address(chainId, dvpAddress) : undefined;
 
   return (

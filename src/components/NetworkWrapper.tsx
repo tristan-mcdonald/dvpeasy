@@ -1,8 +1,9 @@
 import HeaderLocal from './HeaderLocal';
 import { Outlet, useParams } from 'react-router-dom';
+import { savedSelection } from '../lib/saved-selection';
 import { urlManager } from '../lib/url-manager';
+import { useEffect } from 'react';
 import { useNetworkSync } from '../hooks/useNetworkSync';
-import { useContractConfig } from '../hooks/useContractConfig';
 
 export interface NetworkContextValue {
   networkId: string;
@@ -25,8 +26,12 @@ export default function NetworkWrapper () {
     isLoading: isNetworkSyncing,
   } = useNetworkSync({ autoSync: true });
 
-  // Handle contract configuration loading state.
-  const { isLoading: isConfigLoading, isConfigReady } = useContractConfig();
+  // Remember the version, so that the network starts on it next time.
+  const networkId = parsedParams?.networkId;
+  const version = parsedParams?.version;
+  useEffect(() => {
+    if (networkId && version) savedSelection.saveVersion(networkId, version);
+  }, [networkId, version]);
 
   // Show error if URL network/version is invalid.
   if (!parsedParams) {
@@ -55,16 +60,6 @@ export default function NetworkWrapper () {
       centerVertically={true}
       description="Syncing wallet to the selected network..."
       title="Switching network" />
-    );
-  }
-
-  // Show loading state while contract configuration is updating.
-  if (isConfigLoading || !isConfigReady) {
-    return (
-      <HeaderLocal
-      centerVertically={true}
-      description="Loading network configuration..."
-      title="Configuring network" />
     );
   }
 

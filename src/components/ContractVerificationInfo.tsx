@@ -1,29 +1,22 @@
 import Address from './scaffold-eth/Address';
-import { networks } from '../config/networks';
-import { useContractConfig } from '../hooks/useContractConfig';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 /**
  * Component that displays smart contract addresses for verification.
  * Shows DVP and DVP Helper contract addresses with links to block explorers.
  */
 export default function ContractVerificationInfo () {
-  const { config } = useContractConfig();
-  const network = networks.byId(config.networkId);
-
-  if (!network || !config.version) {
-    return null;
-  }
-
+  const { deployment, network } = useCurrentNetwork();
 
   const contractLinks = [
     {
       name: 'DVP Contract',
-      address: config.dvpAddress,
+      address: deployment.dvpAddress,
       description: 'Main settlement contract handling all DVP logic',
     },
     {
       name: 'DVP Helper Contract',
-      address: config.dvpHelperAddress,
+      address: deployment.dvpHelperAddress,
       description: 'Helper contract for batch operations and utilities',
     },
   ];
@@ -38,11 +31,11 @@ export default function ContractVerificationInfo () {
         </div>
         <div className="mt-2 flex flex-row gap-2">
           <dt className="flex-[0_0_6rem] font-medium">Version:</dt>
-          <dd>{config.version.tag}</dd>
+          <dd>{deployment.version.tag}</dd>
         </div>
         <div className="mt-2 flex flex-row gap-2">
           <dt className="flex-[0_0_6rem] font-medium">Deployed:</dt>
-          <dd>{config.version.deploymentDate}</dd>
+          <dd>{deployment.version.deploymentDate}</dd>
         </div>
       </dl>
 

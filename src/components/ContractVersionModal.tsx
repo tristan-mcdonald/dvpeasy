@@ -6,7 +6,9 @@ import { networkLinks } from '../lib/network-links';
 import { logger } from '../lib/logger';
 import { utilityManager } from '../lib/utils';
 import { useAppKitNetworkState } from '../hooks/useAppKitNetwork';
-import { useContractConfig } from '../hooks/useContractConfig';
+import { contracts } from '../config/contracts/deployments';
+import { networks } from '../config/networks';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNetworkManager } from '../hooks/useNetworkManager';
 
 interface ContractVersionModalProps {
@@ -19,7 +21,7 @@ interface ContractVersionModalProps {
  * Displays available versions for the current network.
  */
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
-  const { config, availableDeployments, currentVersion } = useContractConfig();
+  const { deployment: currentDeployment, network } = useCurrentNetwork();
   const { changeVersion } = useNetworkManager();
   const { chainId } = useAppKitNetworkState();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
     }
   };
 
+  const availableDeployments = contracts.deployments(network.id);
   const hasMultipleVersions = availableDeployments.length > 1;
 
   return (
@@ -77,7 +80,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
 
         {hasMultipleVersions && (
           <div className="py-4 border-b border-interface-border">
-            <p className="text-text-label">Select which version of the DVP contract to use on {config.name}.</p>
+            <p className="text-text-label">Select which version of the DVP contract to use on {networks.nameWithEnvironment(network)}.</p>
           </div>
         )}
 
@@ -86,7 +89,7 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
             <ul className="mt-3 space-y-3">
               {availableDeployments.map((deployment) => {
                 const { version } = deployment;
-                const isSelected = version.tag === currentVersion;
+                const isSelected = version.tag === currentDeployment.version.tag;
                 return (
                   <li key={version.tag}>
                     <div

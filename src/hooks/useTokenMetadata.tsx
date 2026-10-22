@@ -2,6 +2,7 @@ import { logger } from '../lib/logger';
 import { tokenManager } from '../lib/token-manager';
 import { useChainId } from 'wagmi';
 import { useEffect, useRef, useMemo, useState } from 'react';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useTokenData } from './useTokenData';
 
 interface TokenMetadata {
@@ -14,6 +15,7 @@ interface TokenMetadata {
 
 export function useTokenMetadata (flows: Array<{ token: string }> = []) {
   const chainId = useChainId();
+  const networkDeployment = useCurrentNetwork();
   const [tokenMetadata, setTokenMetadata] = useState<Record<string, TokenMetadata>>({});
 
   // Create a stable string key from flows to avoid unnecessary recalculations.
@@ -140,7 +142,7 @@ export function useTokenMetadata (flows: Array<{ token: string }> = []) {
                     };
                   } else {
                     // Fall back to contract metadata.
-                    const metadata = await tokenManager.tokenMetadata(address);
+                    const metadata = await tokenManager.tokenMetadata(address, networkDeployment);
                     return {
                       symbol: metadata.symbol,
                       isLoading: false,
@@ -192,7 +194,7 @@ export function useTokenMetadata (flows: Array<{ token: string }> = []) {
     return () => {
       abortController.abort();
     };
-  }, [flowsKey, isLoadingTokenData, chainId, tokenDataKey]);
+  }, [flowsKey, isLoadingTokenData, chainId, tokenDataKey, networkDeployment]);
 
   // Cleanup on unmount.
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useAccount, useWalletClient } from 'wagmi';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useContractConfig } from './useContractConfig';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useParams } from 'react-router-dom';
 import { usePartyStatus } from './usePartyStatus';
 import { useSettlementApprovals } from './useSettlementApprovals';
@@ -18,7 +18,7 @@ export function useSettlementDetails () {
   const { settlementId } = useParams();
   const { isConnected, address } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const { config: contractConfig } = useContractConfig();
+  const { network } = useCurrentNetwork();
 
 
   // Initialise all hooks.
@@ -101,7 +101,7 @@ export function useSettlementDetails () {
     if (settlementId && walletChainId) {
       fetchAllSettlementData(true);
     }
-  }, [settlementId, walletChainId, contractConfig.chainId, fetchAllSettlementData]);
+  }, [settlementId, walletChainId, network.chainId, fetchAllSettlementData]);
 
   // Check approvals when settlement loads.
   useEffect(() => {

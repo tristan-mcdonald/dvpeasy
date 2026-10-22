@@ -2,6 +2,7 @@ import { AssetType, tokenManager } from '../../../lib/token-manager';
 import { isAddress } from 'viem';
 import { logger } from '../../../lib/logger';
 import { useBalance } from 'wagmi';
+import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 import { useEffect, useState } from 'react';
 
 /**
@@ -68,6 +69,7 @@ export const useTokenBalance = ({
   storedTokenData,
 }: UseTokenBalanceProps): UseTokenBalanceReturn => {
   const normalizedAddress = address;
+  const networkDeployment = useCurrentNetwork();
 
   // Token metadata state.
   const [tokenSymbol, setTokenSymbol] = useState<string>('');
@@ -119,14 +121,14 @@ export const useTokenBalance = ({
 
         setIsLoadingSymbol(true);
         try {
-          const detectedAssetType = await tokenManager.detectAssetType(normalizedAddress);
+          const detectedAssetType = await tokenManager.detectAssetType(normalizedAddress, networkDeployment);
           setAssetType(detectedAssetType);
 
           if (detectedAssetType === AssetType.ETH) {
             setTokenSymbol('ETH');
           } else {
             // For both ERC20 and ERC721, try to get the symbol.
-            const symbol = await tokenManager.tokenSymbol(normalizedAddress);
+            const symbol = await tokenManager.tokenSymbol(normalizedAddress, networkDeployment);
             setTokenSymbol(symbol);
           }
         } catch (error) {
@@ -154,7 +156,7 @@ export const useTokenBalance = ({
     };
 
     fetchTokenSymbol();
-  }, [normalizedAddress, storedTokenData]);
+  }, [normalizedAddress, storedTokenData, networkDeployment]);
 
   /**
    * Fetch NFT balance for ERC721 tokens.
@@ -165,7 +167,7 @@ export const useTokenBalance = ({
       if (balanceAddress && isAddress(normalizedAddress) && assetType === AssetType.ERC721) {
         setIsLoadingNftBalance(true);
         try {
-          const balance = await tokenManager.nftBalance(normalizedAddress, balanceAddress);
+          const balance = await tokenManager.nftBalance(normalizedAddress, balanceAddress, networkDeployment.network.chainId);
           setNftBalance(balance);
         } catch (error) {
           logger.warn('Failed to fetch NFT balance:', error);
@@ -180,7 +182,7 @@ export const useTokenBalance = ({
     };
 
     fetchNFTBalance();
-  }, [balanceAddress, normalizedAddress, assetType]);
+  }, [balanceAddress, normalizedAddress, assetType, networkDeployment]);
 
   return {
     tokenSymbol,

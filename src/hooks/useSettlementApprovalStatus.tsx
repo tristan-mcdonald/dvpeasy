@@ -6,7 +6,8 @@ import { logger } from '../lib/logger';
 import { errorManager } from '../lib/error-manager';
 import { readContract } from 'wagmi/actions';
 import { useCallback, useEffect, useState } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
+import { useCurrentNetwork } from './useCurrentNetwork';
 
 interface TokenStatus {
   tokenAddress: string;
@@ -47,8 +48,8 @@ export function useSettlementApprovalStatus (
   settlementId: string | undefined,
   settlement: Settlement | null,
 ) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config: contractConfig } = useContractConfig();
+  const networkDeployment = useCurrentNetwork();
+  const { deployment, network } = networkDeployment;
   const [partyStatuses, setPartyStatuses] = useState<PartyApprovalStatus[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasEverLoaded, setHasEverLoaded] = useState(false);
@@ -67,10 +68,11 @@ export function useSettlementApprovalStatus (
   // Format token status with proper decimals and symbols.
   const formatTokenStatus = useCallback(async (tokenStatus: TokenStatus): Promise<FormattedTokenStatus> => {
     try {
-      const formattedRequired = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdRequired, tokenStatus.tokenAddress);
-      const formattedApproved = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdApprovedForDvp, tokenStatus.tokenAddress);
-      const formattedHeld = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdHeldByParty, tokenStatus.tokenAddress);
-      const symbol = await tokenManager.tokenSymbol(tokenStatus.tokenAddress);
+      const { tokenAddress } = tokenStatus;
+      const formattedRequired = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdRequired, tokenAddress, networkDeployment);
+      const formattedApproved = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdApprovedForDvp, tokenAddress, networkDeployment);
+      const formattedHeld = await tokenManager.formatTokenAmount(tokenStatus.amountOrIdHeldByParty, tokenAddress, networkDeployment);
+      const symbol = await tokenManager.tokenSymbol(tokenAddress, networkDeployment);
 
       return {
         ...tokenStatus,
@@ -91,7 +93,7 @@ export function useSettlementApprovalStatus (
         isMaxApproval: settlementManager.isMaxApproval(tokenStatus.amountOrIdApprovedForDvp),
       };
     }
-  }, []);
+  }, [networkDeployment]);
 
   // Fetch approval status for a single party.
   const fetchPartyStatus = useCallback(async (partyAddress: string): Promise<PartyApprovalStatus> => {
@@ -110,11 +112,11 @@ export function useSettlementApprovalStatus (
 
     try {
       const partyStatusData = await readContract(config, {
-        address: dvpAddress,
-        abi: dvpAbi,
+        address: deployment.dvpAddress,
+        abi: DVP_ABI,
         functionName: 'getSettlementPartyStatus',
         args: [BigInt(settlementId), partyAddress as `0x${string}`],
-        chainId: contractConfig.chainId,
+        chainId: network.chainId,
       });
 
       if (!partyStatusData) {
@@ -151,7 +153,7 @@ export function useSettlementApprovalStatus (
         error: parsedError,
       };
     }
-  }, [settlementId, formatTokenStatus, dvpAddress, dvpAbi, contractConfig.chainId]);
+  }, [settlementId, formatTokenStatus, deployment.dvpAddress, network.chainId]);
 
   // Fetch approval status for all parties.
   const fetchAllPartyStatuses = useCallback(async () => {

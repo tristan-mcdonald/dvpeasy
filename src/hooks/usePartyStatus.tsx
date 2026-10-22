@@ -4,7 +4,8 @@ import { logger } from '../lib/logger';
 import { readContract } from 'wagmi/actions';
 import { PartyStatus, TokenStatus } from '../types/settlement-details';
 import { useCallback, useEffect, useState } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useDataFetcher } from './useDataFetcher';
 
 /**
@@ -18,8 +19,7 @@ export function usePartyStatus (
   settlementId: string | undefined,
   address: string | undefined,
 ) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config: contractConfig } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
 
   const fetchPartyStatusInternal = useCallback(async (): Promise<PartyStatus | null> => {
     if (!settlementId || !address) {
@@ -27,11 +27,11 @@ export function usePartyStatus (
     }
 
     const partyStatusData = await readContract(config, {
-      address: dvpAddress,
-      abi: dvpAbi,
+      address: deployment.dvpAddress,
+      abi: DVP_ABI,
       functionName: 'getSettlementPartyStatus',
       args: [BigInt(settlementId), address],
-      chainId: contractConfig.chainId,
+      chainId: network.chainId,
     });
 
     if (!partyStatusData) {
@@ -63,7 +63,7 @@ export function usePartyStatus (
       etherDeposited,
       tokenStatuses: tokenStatusesArray,
     };
-  }, [settlementId, address, dvpAddress, dvpAbi, contractConfig.chainId]);
+  }, [settlementId, address, deployment.dvpAddress, network.chainId]);
 
   const {
     data: partyStatus,

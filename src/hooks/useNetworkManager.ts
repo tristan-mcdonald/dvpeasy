@@ -1,11 +1,11 @@
 import { urlManager } from '../lib/url-manager';
-import { contractConfigManager } from '../config/contracts';
 import { contracts } from '../config/contracts/deployments';
 import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { NavigateFunction } from 'react-router-dom';
+import { useCurrentNetwork } from './useCurrentNetwork';
 
 export interface NetworkManagerState {
   // Current network ID from URL.
@@ -94,30 +94,6 @@ class NetworkNavigationManager {
       this.setIsLoading(false);
     }
   };
-
-  /**
-   * Change the current contract version and preserve settlement ID if on a settlement page.
-   */
-  changeVersion = (version: string): void => {
-    this.setIsLoading(true);
-
-    try {
-      // Get current network from contract config manager.
-      const currentConfig = contractConfigManager.getCurrentConfig();
-      const currentNetworkId = currentConfig.networkId;
-
-      if (!currentNetworkId) {
-        logger.warn('Cannot change version without a current network');
-        return;
-      }
-
-      this.#navigateToSettlementOrDashboard(currentNetworkId, version);
-    } catch (error) {
-      logger.error('Failed to change version:', error);
-    } finally {
-      this.setIsLoading(false);
-    }
-  };
 }
 
 /**
@@ -128,6 +104,7 @@ class NetworkNavigationManager {
 export function useNetworkManager (): UseNetworkManagerReturn {
   const params = useParams<{ network?: string; version?: string }>();
   const navigate = useNavigate();
+  const { network } = useCurrentNetwork();
   const [isLoading, setIsLoading] = useState(false);
 
   // Parse current URL parameters.
@@ -160,7 +137,7 @@ export function useNetworkManager (): UseNetworkManagerReturn {
 
     // Actions - delegate to class methods.
     changeNetwork: navigationManager.changeNetwork,
-    changeVersion: navigationManager.changeVersion,
+    changeVersion: (version: string) => navigationManager.changeNetwork(network.id, version),
     navigateToNetwork,
   };
 }

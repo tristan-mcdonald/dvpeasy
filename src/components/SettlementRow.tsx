@@ -1,13 +1,14 @@
 import TokensDisplay from './TokensDisplay';
 import { urlManager } from '../lib/url-manager';
 import { Check, Hourglass, X } from 'lucide-react';
-import { contractConfigManager } from '../config/contracts';
 import { memo } from 'react';
 import { SettlementRowProps } from '../types/components';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
 
 const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRowProps) {
   const navigate = useNavigate();
+  const { deployment, network } = useCurrentNetwork();
 
   const getSettlementStatus = () => {
     if (settlement.isSettled) {
@@ -24,9 +25,7 @@ const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRow
   const status = getSettlementStatus();
 
   const handleRowClick = () => {
-    const currentConfig = contractConfigManager.getCurrentConfig();
-    const currentVersion = contractConfigManager.getCurrentVersion();
-    navigate(urlManager.buildSettlementUrl(currentConfig.networkId, currentVersion, settlement.id));
+    navigate(urlManager.buildSettlementUrl(network.id, deployment.version.tag, settlement.id));
   };
 
   return (

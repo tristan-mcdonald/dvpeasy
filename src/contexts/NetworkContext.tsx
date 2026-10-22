@@ -1,6 +1,5 @@
-import React, { createContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode } from 'react';
 import type { AppKitNetwork } from '@reown/appkit/networks';
-import { contractConfigManager, ContractConfigWithNetwork } from '../config/contracts';
 import { Network, networks } from '../config/networks';
 import { useAppKitNetwork } from '@reown/appkit/react';
 import { useChainId } from 'wagmi';
@@ -8,7 +7,6 @@ import { useChainId } from 'wagmi';
 export interface NetworkContextValue {
   chainId: number | undefined;
   network: Network | undefined;
-  contractConfig: ContractConfigWithNetwork;
   switchNetwork: ((network: AppKitNetwork) => Promise<void>) | undefined;
   isLoading: boolean;
   error: string | null;
@@ -27,9 +25,8 @@ interface NetworkProviderProps {
 export function NetworkProvider ({ children }: NetworkProviderProps) {
   const { caipNetwork, switchNetwork } = useAppKitNetwork();
   const wagmiChainId = useChainId();
-  const [contractConfig, setContractConfig] = useState<ContractConfigWithNetwork>(contractConfigManager.getCurrentConfig());
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<string | null>(null);
 
   // Determine the effective chain ID from AppKit (preferred) or Wagmi.
   const effectiveChainId = (() => {
@@ -41,24 +38,9 @@ export function NetworkProvider ({ children }: NetworkProviderProps) {
 
   const network = effectiveChainId ? networks.byChainId(effectiveChainId) : undefined;
 
-  useEffect(() => {
-    // Subscribe to contract configuration changes.
-    const unsubscribe = contractConfigManager.onConfigChange((newConfig: ContractConfigWithNetwork) => {
-      setContractConfig(newConfig);
-      setError(null);
-      setIsLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  // Note: Configuration updates are handled by useContractConfig based on URL params.
-  // NetworkContext only provides the current state, not updates.
-
   const value: NetworkContextValue = {
     chainId: effectiveChainId,
     network,
-    contractConfig,
     switchNetwork,
     isLoading,
     error,

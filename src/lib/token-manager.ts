@@ -1,9 +1,9 @@
 import { Address, formatUnits, parseUnits } from 'viem';
-import { networks } from '../config/networks';
-import { config } from '../config/wagmi';
-import { contractConfigManager } from '../config/contracts';
+import { config, publicClientFor } from '../config/wagmi';
 import { ContractValidationError, contractValidationManager } from './contract-validation';
+import { DVP_ABI } from '../config/contracts/abis';
 import { logger } from './logger';
+import { NetworkDeployment } from '../config/contracts/deployments';
 import { TokenDetectionError } from '../types/errors';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 
@@ -165,7 +165,7 @@ export const tokenManager = {
    * Asset type detection for token addresses.
    * Determines if a token is ETH, ERC20, or ERC721.
    */
-  async detectAssetType (tokenAddress: string): Promise<AssetType> {
+  async detectAssetType (tokenAddress: string, networkDeployment: NetworkDeployment): Promise<AssetType> {
     // Validate input address format.
     if (!tokenAddress || !contractValidationManager.isValidAddress(tokenAddress)) {
       throw new ContractValidationError('Invalid token address format', tokenAddress, 'tokenAddress');
@@ -179,12 +179,11 @@ export const tokenManager = {
     const knownToken = KNOWN_TOKENS[normalizedAddress];
 
     try {
-      const currentConfig = contractConfigManager.getCurrentConfig();
-      const publicClient = contractConfigManager.getPublicClient();
-      const chainId = await publicClient.getChainId();
+      const { deployment, network } = networkDeployment;
+      const publicClient = publicClientFor(network.chainId);
 
       // Skip DVP validation for testnet fallback tokens on testnets.
-      if (knownToken?.isTestnetFallback && networks.byChainId(chainId)?.isTestnet) {
+      if (knownToken?.isTestnetFallback && network.isTestnet) {
         // Use direct interface detection instead of DVP validation.
         try {
           // Try to call ERC20 functions first (most common).
@@ -217,14 +216,14 @@ export const tokenManager = {
       // Use DVP validation for non-testnet-fallback tokens or on mainnets.
       const [isERC721, isERC20] = await Promise.all([
         publicClient.readContract({
-          address: currentConfig.dvpAddress,
-          abi: currentConfig.dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'isERC721',
           args: [tokenAddress as Address],
         }),
         publicClient.readContract({
-          address: currentConfig.dvpAddress,
-          abi: currentConfig.dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'isERC20',
           args: [tokenAddress as Address],
         }),
@@ -257,7 +256,7 @@ export const tokenManager = {
    * Token metadata retrieval for token addresses.
    * Returns comprehensive metadata including decimals, symbol, name, and type.
    */
-  async tokenMetadata (tokenAddress: string): Promise<TokenMetadata> {
+  async tokenMetadata (tokenAddress: string, networkDeployment: NetworkDeployment): Promise<TokenMetadata> {
     // Validate input address format.
     if (!contractValidationManager.isValidAddress(tokenAddress)) {
       throw new ContractValidationError('Invalid token address format', tokenAddress, 'tokenAddress');
@@ -267,23 +266,11 @@ export const tokenManager = {
 
     // Special handling for native token (0x0000...0000).
     if (normalizedAddress === '0x0000000000000000000000000000000000000000') {
-      const publicClient = contractConfigManager.getPublicClient();
-      const chainId = await publicClient.getChainId();
-      const network = networks.byChainId(chainId);
-
-      if (network) {
-        return {
-          decimals: network.nativeToken.decimals,
-          symbol: network.nativeToken.symbol,
-          name: network.nativeToken.name,
-          isNFT: false,
-        };
-      }
-
+      const { nativeToken } = networkDeployment.network;
       return {
-        decimals: 18,
-        symbol: 'ETH',
-        name: 'Native token',
+        decimals: nativeToken.decimals,
+        symbol: nativeToken.symbol,
+        name: nativeToken.name,
         isNFT: false,
       };
     }
@@ -301,8 +288,8 @@ export const tokenManager = {
     }
 
     try {
-      const assetType = await this.detectAssetType(tokenAddress);
-      const publicClient = contractConfigManager.getPublicClient();
+      const assetType = await this.detectAssetType(tokenAddress, networkDeployment);
+      const publicClient = publicClientFor(networkDeployment.network.chainId);
       let metadata: TokenMetadata;
 
       if (assetType === AssetType.ERC721) {
@@ -367,8 +354,8 @@ export const tokenManager = {
    * Token symbol for a given address.
    * Returns just the symbol property from token metadata.
    */
-  async tokenSymbol (tokenAddress: string): Promise<string> {
-    const metadata = await this.tokenMetadata(tokenAddress);
+  async tokenSymbol (tokenAddress: string, networkDeployment: NetworkDeployment): Promise<string> {
+    const metadata = await this.tokenMetadata(tokenAddress, networkDeployment);
     return metadata.symbol;
   },
 
@@ -376,9 +363,8 @@ export const tokenManager = {
    * NFT balance for a given owner address.
    * Uses ERC721 balanceOf method to check how many NFTs an address owns.
    */
-  async nftBalance (tokenAddress: string, ownerAddress: string): Promise<bigint> {
-    const publicClient = contractConfigManager.getPublicClient();
-    return await publicClient.readContract({
+  async nftBalance (tokenAddress: string, ownerAddress: string, chainId: number): Promise<bigint> {
+    return await publicClientFor(chainId).readContract({
       address: tokenAddress as Address,
       abi: ERC721_ABI,
       functionName: 'balanceOf',
@@ -390,9 +376,13 @@ export const tokenManager = {
    * Format token amount for display.
    * Converts raw token amounts to human-readable format with symbol.
    */
-  async formatTokenAmount (amount: bigint, tokenAddress: string): Promise<string> {
+  async formatTokenAmount (
+    amount: bigint,
+    tokenAddress: string,
+    networkDeployment: NetworkDeployment,
+  ): Promise<string> {
     try {
-      const metadata = await this.tokenMetadata(tokenAddress);
+      const metadata = await this.tokenMetadata(tokenAddress, networkDeployment);
       const { decimals, symbol } = metadata;
       const isNFT = metadata.isNFT || false;
       if (isNFT) {
@@ -410,7 +400,11 @@ export const tokenManager = {
    * Parse token amount from string input.
    * Converts human-readable amounts to raw token amounts.
    */
-  async parseTokenAmount (amount: string, tokenAddress: string): Promise<bigint> {
+  async parseTokenAmount (
+    amount: string,
+    tokenAddress: string,
+    networkDeployment: NetworkDeployment,
+  ): Promise<bigint> {
     // Validate inputs.
     if (!amount || typeof amount !== 'string') {
       throw new ContractValidationError('Invalid amount format', amount, 'amount');
@@ -421,7 +415,7 @@ export const tokenManager = {
     }
 
     try {
-      const metadata = await this.tokenMetadata(tokenAddress);
+      const metadata = await this.tokenMetadata(tokenAddress, networkDeployment);
       const { decimals, isNFT } = metadata;
 
       if (isNFT) {
@@ -451,13 +445,20 @@ export const tokenManager = {
    * Approve token spending for contracts.
    * Handles both ERC20 and ERC721 approval flows, and resolves once the approval is mined.
    */
-  async approveToken (
-    tokenAddress: string,
-    spender: string,
-    amount: bigint,
-    account: string,
-  ): Promise<string> {
-    const assetType = await this.detectAssetType(tokenAddress);
+  async approveToken ({
+    account,
+    amount,
+    networkDeployment,
+    spender,
+    tokenAddress,
+  }: {
+    account: string;
+    amount: bigint;
+    networkDeployment: NetworkDeployment;
+    spender: string;
+    tokenAddress: string;
+  }): Promise<string> {
+    const assetType = await this.detectAssetType(tokenAddress, networkDeployment);
     const hash = await writeContract(config, {
       address: tokenAddress as Address,
       abi: assetType === AssetType.ERC721 ? ERC721_ABI : ERC20_ABI,

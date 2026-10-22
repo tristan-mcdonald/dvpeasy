@@ -3,10 +3,11 @@ import { useCallback, useState } from 'react';
 import { Address, WalletClient } from 'viem';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { config } from '../config/wagmi';
+import { DVP_ABI } from '../config/contracts/abis';
 import { ContractValidationError, contractValidationManager, PartyStatus as ValidatedPartyStatus } from '../lib/contract-validation';
 import { errorManager } from '../lib/error-manager';
 import { tokenManager } from '../lib/token-manager';
-import { useContractAddresses } from './useContractConfig';
+import { useCurrentNetwork } from './useCurrentNetwork';
 
 type PartyStatus = ValidatedPartyStatus;
 
@@ -25,7 +26,8 @@ export function useSettlementActions ({
   partyStatus,
   onSuccess,
 }: UseSettlementActionsProps) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
+  const networkDeployment = useCurrentNetwork();
+  const { dvpAddress } = networkDeployment.deployment;
   const [isApproving, setIsApproving] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
@@ -60,7 +62,7 @@ export function useSettlementActions ({
       const validatedSettlementId = contractValidationManager.validateSettlementId(settlementId);
       const result = await writeContract(config, {
         address: dvpAddress,
-        abi: dvpAbi,
+        abi: DVP_ABI,
         functionName: 'approveSettlements',
         args: [[validatedSettlementId]],
         account: address,
@@ -82,7 +84,7 @@ export function useSettlementActions ({
     } finally {
       setIsApproving(false);
     }
-  }, [settlementId, address, walletClient, partyStatus, onSuccess, dvpAddress, dvpAbi]);
+  }, [settlementId, address, walletClient, partyStatus, onSuccess, dvpAddress]);
 
   const handleExecuteSettlement = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -112,7 +114,7 @@ export function useSettlementActions ({
       const validatedSettlementId = contractValidationManager.validateSettlementId(settlementId);
       const result = await writeContract(config, {
         address: dvpAddress,
-        abi: dvpAbi,
+        abi: DVP_ABI,
         functionName: 'executeSettlement',
         args: [validatedSettlementId],
         account: address,
@@ -133,7 +135,7 @@ export function useSettlementActions ({
     } finally {
       setIsExecuting(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress, dvpAbi]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
 
   const handleApproveToken = useCallback(async (tokenAddress: string, amount: bigint) => {
     if (!address || !walletClient) {
@@ -163,12 +165,13 @@ export function useSettlementActions ({
     const toastId = toast.loading('Approving token…');
 
     try {
-      await tokenManager.approveToken(
-        tokenAddress,
-        dvpAddress,
+      await tokenManager.approveToken({
+        account: address,
         amount,
-        address,
-      );
+        networkDeployment,
+        spender: dvpAddress,
+        tokenAddress,
+      });
 
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
@@ -179,7 +182,7 @@ export function useSettlementActions ({
     } finally {
       setApprovingToken(null);
     }
-  }, [address, walletClient, onSuccess, dvpAddress]);
+  }, [address, walletClient, onSuccess, dvpAddress, networkDeployment]);
 
   const handleMaxApprove = useCallback(async (tokenAddress: string) => {
     if (!address || !walletClient) {
@@ -192,12 +195,13 @@ export function useSettlementActions ({
 
     try {
       const maxUint256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-      await tokenManager.approveToken(
+      await tokenManager.approveToken({
+        account: address,
+        amount: maxUint256,
+        networkDeployment,
+        spender: dvpAddress,
         tokenAddress,
-        dvpAddress,
-        maxUint256,
-        address,
-      );
+      });
 
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
@@ -208,7 +212,7 @@ export function useSettlementActions ({
     } finally {
       setApprovingToken(null);
     }
-  }, [address, walletClient, onSuccess, dvpAddress]);
+  }, [address, walletClient, onSuccess, dvpAddress, networkDeployment]);
 
   const handleRevokeApproval = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -222,7 +226,7 @@ export function useSettlementActions ({
     try {
       const result = await writeContract(config, {
         address: dvpAddress,
-        abi: dvpAbi,
+        abi: DVP_ABI,
         functionName: 'revokeApprovals',
         args: [[BigInt(settlementId)]],
         account: address as `0x${string}`,
@@ -239,7 +243,7 @@ export function useSettlementActions ({
     } finally {
       setIsRevoking(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress, dvpAbi]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
 
   const handleWithdrawETH = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -253,7 +257,7 @@ export function useSettlementActions ({
     try {
       const result = await writeContract(config, {
         address: dvpAddress,
-        abi: dvpAbi,
+        abi: DVP_ABI,
         functionName: 'withdrawETH',
         args: [[BigInt(settlementId)]],
         account: address as `0x${string}`,
@@ -270,7 +274,7 @@ export function useSettlementActions ({
     } finally {
       setIsWithdrawing(false);
     }
-  }, [settlementId, address, walletClient, onSuccess, dvpAddress, dvpAbi]);
+  }, [settlementId, address, walletClient, onSuccess, dvpAddress]);
 
   return {
     isApproving,

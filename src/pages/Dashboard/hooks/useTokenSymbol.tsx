@@ -2,6 +2,7 @@ import { isAddress } from 'viem';
 import { logger } from '../../../lib/logger';
 import { useEffect, useState } from 'react';
 import { tokenManager } from '../../../lib/token-manager';
+import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 
 /**
  * Hook to fetch token symbol for a given token address.
@@ -10,6 +11,7 @@ import { tokenManager } from '../../../lib/token-manager';
  * @returns Object containing the token symbol, loading state, and error state.
  */
 export function useTokenSymbol (tokenAddress: string) {
+  const networkDeployment = useCurrentNetwork();
   const [tokenSymbol, setTokenSymbol] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function useTokenSymbol (tokenAddress: string) {
       setIsLoading(true);
 
       try {
-        const symbol = await tokenManager.tokenSymbol(tokenAddress);
+        const symbol = await tokenManager.tokenSymbol(tokenAddress, networkDeployment);
         setTokenSymbol(symbol);
       } catch (error) {
         logger.warn('Failed to fetch token symbol:', error);
@@ -41,7 +43,7 @@ export function useTokenSymbol (tokenAddress: string) {
     };
 
     fetchTokenSymbol();
-  }, [tokenAddress]);
+  }, [tokenAddress, networkDeployment]);
 
   return {
     tokenSymbol,

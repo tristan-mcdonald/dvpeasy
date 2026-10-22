@@ -1,6 +1,6 @@
 import { Address } from 'viem';
 import { logger } from './logger';
-import { contractConfigManager } from '../config/contracts';
+import { publicClientFor } from '../config/wagmi';
 
 const ERC721_ABI = [
   {
@@ -91,9 +91,9 @@ export const nftManager = {
   /**
    * Fetches the tokenURI for an NFT from the blockchain.
    */
-  async getTokenURI (tokenAddress: string, tokenId: string): Promise<string> {
+  async getTokenURI (tokenAddress: string, tokenId: string, chainId: number): Promise<string> {
     try {
-      const uri = await contractConfigManager.getPublicClient().readContract({
+      const uri = await publicClientFor(chainId).readContract({
         address: tokenAddress as Address,
         abi: ERC721_ABI,
         functionName: 'tokenURI',
@@ -117,7 +117,7 @@ export const nftManager = {
   /**
    * Fetches NFT metadata from a tokenURI.
    */
-  async fetchNFTMetadata (tokenAddress: string, tokenId: string): Promise<NFTMetadata> {
+  async fetchNFTMetadata (tokenAddress: string, tokenId: string, chainId: number): Promise<NFTMetadata> {
     const cacheKey = `${tokenAddress.toLowerCase()}-${tokenId}`;
 
     // Check cache first.
@@ -128,7 +128,7 @@ export const nftManager = {
 
     try {
       // Get tokenURI from contract.
-      const tokenURI = await this.getTokenURI(tokenAddress, tokenId);
+      const tokenURI = await this.getTokenURI(tokenAddress, tokenId, chainId);
 
       // Normalize IPFS URIs.
       const normalizedURI = normalizeIPFSUri(tokenURI);
@@ -165,9 +165,9 @@ export const nftManager = {
   /**
    * Fetches just the image URL for an NFT.
    */
-  async fetchNFTImage (tokenAddress: string, tokenId: string): Promise<string | null> {
+  async fetchNFTImage (tokenAddress: string, tokenId: string, chainId: number): Promise<string | null> {
     try {
-      const metadata = await this.fetchNFTMetadata(tokenAddress, tokenId);
+      const metadata = await this.fetchNFTMetadata(tokenAddress, tokenId, chainId);
       return metadata.image || null;
     } catch (error) {
       logger.warn(`Failed to fetch NFT image for ${tokenAddress}/${tokenId}:`, error);

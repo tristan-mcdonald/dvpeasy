@@ -1,4 +1,6 @@
 import { contracts } from '../config/contracts/deployments';
+import { networks } from '../config/networks';
+import type { NetworkSelection } from './saved-selection';
 
 /**
  * URL management system for application routing.
@@ -47,26 +49,21 @@ export const urlManager = {
    * Parse network and version from URL parameters.
    * Returns null if invalid.
    */
-  parseNetworkAndVersion (params: { network?: string; version?: string }): {
-    networkId: string;
-    version: string;
-  } | null {
-    const { network, version } = params;
+  parseNetworkAndVersion (params: { network?: string; version?: string }): NetworkSelection | null {
+    const { network: slug, version } = params;
 
-    if (!network || !version) {
+    if (!slug || !version) {
       return null;
     }
 
-    // Convert kebab-case URL slug back to camelCase network ID.
-    const networkId = this.slugToNetworkId(network);
+    const network = networks.byId(this.slugToNetworkId(slug));
 
-    // Validate that the version is deployed on this network, which also validates the network.
-    if (!contracts.deployment(networkId, version)) {
+    if (!network || !contracts.deployment(network.id, version)) {
       return null;
     }
 
     return {
-      networkId,
+      networkId: network.id,
       version,
     };
   },

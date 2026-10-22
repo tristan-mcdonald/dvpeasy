@@ -7,10 +7,12 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { TokensDisplayProps, TokenInfo } from '../types/components';
 import { useChainId } from 'wagmi';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useTokenData } from '../hooks/useTokenData';
 
 function TokensDisplay ({ flows }: TokensDisplayProps) {
   const chainId = useChainId();
+  const networkDeployment = useCurrentNetwork();
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
 
   // Get token data from API.
@@ -65,7 +67,7 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
         initialTokens.map(async (token) => {
           try {
             // First, get basic metadata.
-            const metadata = await tokenManager.tokenMetadata(token.address);
+            const metadata = await tokenManager.tokenMetadata(token.address, networkDeployment);
 
             // Try to retrieve enriched data from API.
             const searchResults = searchTokens(token.address, { limit: 1 });
@@ -103,7 +105,7 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
     } else {
       setTokens([]);
     }
-  }, [flows, chainId, searchTokens]);
+  }, [flows, chainId, searchTokens, networkDeployment]);
 
   if (flows.length === 0) {
     return <span className="text-text-disabled text-sm">No tokens</span>;

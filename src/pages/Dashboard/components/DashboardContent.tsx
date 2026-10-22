@@ -1,10 +1,10 @@
 import ButtonLink from '../../../components/ButtonLink';
 import Pagination from '../../../components/Pagination';
 import SettlementTable from '../../../components/SettlementTable';
-import { contractConfigManager } from '../../../config/contracts';
 import { Plus } from 'lucide-react';
 import { Settlement } from '../../../types/settlement';
 import { urlManager } from '../../../lib/url-manager';
+import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 import { UseDashboardState } from '../hooks/useDashboardState';
 
 interface DashboardContentProps {
@@ -20,12 +20,8 @@ export default function DashboardContent ({
 }: DashboardContentProps) {
   const { currentData, validCurrentPage } = pagination.getPaginatedData(settlements);
 
-  // Get current network and version for create settlement URL.
-  const getCurrentCreateUrl = () => {
-    const currentConfig = contractConfigManager.getCurrentConfig();
-    const currentVersion = contractConfigManager.getCurrentVersion();
-    return urlManager.buildCreateUrl(currentConfig.networkId, currentVersion);
-  };
+  const { deployment, network } = useCurrentNetwork();
+  const createUrl = urlManager.buildCreateUrl(network.id, deployment.version.tag);
 
   if (settlements.length === 0) {
     return (
@@ -38,7 +34,7 @@ export default function DashboardContent ({
         <ButtonLink
         as="link"
         icon={<Plus className="size-5" />}
-        to={getCurrentCreateUrl()}
+        to={createUrl}
         variant="primary">Create settlement</ButtonLink>
       </div>
     );
@@ -57,7 +53,7 @@ export default function DashboardContent ({
         className="ml-auto"
         as="link"
         icon={<Plus className="size-5" />}
-        to={getCurrentCreateUrl()}
+        to={createUrl}
         variant="primary">Create settlement</ButtonLink>
       </div>
     </div>

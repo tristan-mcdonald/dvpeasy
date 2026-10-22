@@ -4,7 +4,8 @@ import { logger } from '../lib/logger';
 import { readContract } from 'wagmi/actions';
 import { Settlement, Flow, TokenStatus } from '../types/settlement-details';
 import { useCallback, useMemo } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { usePolling } from './usePolling';
 
 /**
@@ -40,8 +41,7 @@ export function useSettlementPolling (
   isSettlementExpired: () => boolean,
   callbacks: DynamicDataCallbacks,
 ) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config: contractConfig } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
 
   const fetchDynamicSettlementData = useCallback(async () => {
     if (!settlementId || !settlement) return;
@@ -50,25 +50,25 @@ export function useSettlementPolling (
       // Only fetch dynamic data: settlement status, party status, and approval status.
       const [settlementData, partyStatusData, approvalStatusData] = await Promise.all([
         readContract(config, {
-          address: dvpAddress,
-          abi: dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'getSettlement',
           args: [BigInt(settlementId)],
-          chainId: contractConfig.chainId,
+          chainId: network.chainId,
         }),
         address ? readContract(config, {
-          address: dvpAddress,
-          abi: dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'getSettlementPartyStatus',
           args: [BigInt(settlementId), address],
-          chainId: contractConfig.chainId,
+          chainId: network.chainId,
         }) : null,
         readContract(config, {
-          address: dvpAddress,
-          abi: dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'isSettlementApproved',
           args: [BigInt(settlementId)],
-          chainId: contractConfig.chainId,
+          chainId: network.chainId,
         }),
       ]);
 
@@ -113,7 +113,7 @@ export function useSettlementPolling (
       errorManager.log(parsedError, { settlementId, operation: 'fetchDynamicSettlementData' });
       throw parsedError; // Re-throw for polling hook to handle retries
     }
-  }, [settlementId, settlement, address, dvpAddress, dvpAbi, contractConfig.chainId, callbacks]);
+  }, [settlementId, settlement, address, deployment.dvpAddress, network.chainId, callbacks]);
 
   // Memoize the polling config to prevent infinite loops.
   const pollingConfig = useMemo(() => ({

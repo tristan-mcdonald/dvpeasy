@@ -5,14 +5,14 @@ import { useAccount, useWalletClient } from 'wagmi';
 import { simulateContract, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { isAddressEqual, keccak256, toHex } from 'viem';
 import { config } from '../config/wagmi';
-import { contractConfigManager } from '../config/contracts';
+import { DVP_ABI } from '../config/contracts/abis';
 import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
 import { logger } from '../lib/logger';
 import { settlementErrorManager } from '../lib/settlement-error-utils';
 import { AssetType, TokenDetectionError, tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
 import { Flow } from '../types/settlement';
-import { useContractAddresses } from './useContractConfig';
+import { useCurrentNetwork } from './useCurrentNetwork';
 
 /**
  * Hook for handling settlement creation logic.
@@ -22,7 +22,8 @@ export function useSettlementCreation () {
   const navigate = useNavigate();
   const { isConnected, address } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const { dvpAddress, dvpAbi } = useContractAddresses();
+  const networkDeployment = useCurrentNetwork();
+  const { deployment, network } = networkDeployment;
   const [isLoading, setIsLoading] = useState(false);
 
 
@@ -32,7 +33,7 @@ export function useSettlementCreation () {
   const verifyAndParseFlow = async (flow: Flow) => {
     try {
       // Double-check asset type detection for accuracy.
-      const assetType = await tokenManager.detectAssetType(flow.token);
+      const assetType = await tokenManager.detectAssetType(flow.token, networkDeployment);
       const detectedIsNFT = assetType === AssetType.ERC721;
 
       if (detectedIsNFT !== flow.isNFT) {
@@ -40,7 +41,7 @@ export function useSettlementCreation () {
       }
 
       // Parse the amount properly using parseTokenAmount.
-      const amountOrId = await tokenManager.parseTokenAmount(flow.amount, flow.token);
+      const amountOrId = await tokenManager.parseTokenAmount(flow.amount, flow.token, networkDeployment);
 
       return {
         token: flow.token,
@@ -64,7 +65,7 @@ export function useSettlementCreation () {
     for (let i = 0; i < flows.length; i++) {
       const flow = flows[i];
       try {
-        const assetType = await tokenManager.detectAssetType(flow.token);
+        const assetType = await tokenManager.detectAssetType(flow.token, networkDeployment);
         const detectedIsNFT = assetType === AssetType.ERC721;
 
         if (detectedIsNFT !== flow.isNFT) {
@@ -132,8 +133,8 @@ export function useSettlementCreation () {
       let hash: `0x${string}`;
       try {
         const { request } = await simulateContract(config, {
-          address: dvpAddress,
-          abi: dvpAbi,
+          address: deployment.dvpAddress,
+          abi: DVP_ABI,
           functionName: 'createSettlement',
           args: [parsedFlows, validatedSettlement.reference, validatedSettlement.cutoffTimestamp, validatedSettlement.isAutoSettled],
           account: address,
@@ -161,7 +162,7 @@ export function useSettlementCreation () {
       const eventSignature = 'SettlementCreated(uint256,address)';
       const eventTopic = keccak256(toHex(eventSignature));
       const settlementCreatedEvent = receipt.logs.find(log =>
-        isAddressEqual(log.address, dvpAddress) && log.topics[0] === eventTopic,
+        isAddressEqual(log.address, deployment.dvpAddress) && log.topics[0] === eventTopic,
       );
 
       if (settlementCreatedEvent?.topics[1]) {
@@ -169,12 +170,8 @@ export function useSettlementCreation () {
           const settlementId = contractValidationManager.validateSettlementId(BigInt(settlementCreatedEvent.topics[1]));
           const settlementIdDecimal = settlementId.toString();
 
-          // Get current network and version for URL.
-          const currentConfig = contractConfigManager.getCurrentConfig();
-          const currentVersion = contractConfigManager.getCurrentVersion();
-
           toast.success('Settlement created successfully!', { id: toastId });
-          navigate(urlManager.buildSettlementUrl(currentConfig.networkId, currentVersion, settlementIdDecimal));
+          navigate(urlManager.buildSettlementUrl(network.id, deployment.version.tag, settlementIdDecimal));
         } catch (error) {
           logger.error('Failed to validate settlement ID from event:', error);
           toast.error('Settlement created but ID validation failed.', { id: toastId });

@@ -1,6 +1,6 @@
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { urlManager } from '../lib/url-manager';
-import { contractConfigManager } from '../config/contracts';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
 import HeaderLocal from './HeaderLocal';
 
@@ -18,11 +18,10 @@ export default function SettlementHeader ({
   onRefresh,
 }: SettlementHeaderProps) {
   const navigate = useNavigate();
+  const { deployment, network } = useCurrentNetwork();
 
   const handleReturnToDashboard = () => {
-    const currentConfig = contractConfigManager.getCurrentConfig();
-    const currentVersion = contractConfigManager.getCurrentVersion();
-    navigate(urlManager.buildDashboardUrl(currentConfig.networkId, currentVersion));
+    navigate(urlManager.buildDashboardUrl(network.id, deployment.version.tag));
   };
 
   return (

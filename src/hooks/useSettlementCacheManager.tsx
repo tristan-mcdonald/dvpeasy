@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { contractConfigManager } from '../config/contracts';
 import { logger } from '../lib/logger';
+import { useCurrentNetwork } from './useCurrentNetwork';
 
 /**
  * Centralized hook for managing settlement data cache invalidation.
@@ -10,39 +10,27 @@ import { logger } from '../lib/logger';
  */
 export function useSettlementCacheManager () {
   const queryClient = useQueryClient();
+  const { network } = useCurrentNetwork();
+  const previousNetworkId = useRef(network.id);
 
   useEffect(() => {
-    // Listen for network changes from the contract config manager.
-    const unsubscribe = contractConfigManager.onNetworkChange((networkId: string, chainId: number) => {
-      logger.info('Network changed, clearing settlement cache', { networkId, chainId });
+    if (network.id === previousNetworkId.current) return;
+    previousNetworkId.current = network.id;
 
-      // Clear all settlement-related queries immediately.
-      queryClient.invalidateQueries({
-        predicate: (query) => {
-          return query.queryKey.some(key =>
-            typeof key === 'string' && (
-              key.includes('settlements-') ||
-              key.includes('wallet-settlements-') ||
-              key.includes('flows-settlements-')
-            ),
-          );
-        },
-      });
+    logger.info('Network changed, clearing settlement cache', { networkId: network.id, chainId: network.chainId });
 
-      // Also clear any stale data immediately.
-      queryClient.removeQueries({
-        predicate: (query) => {
-          return query.queryKey.some(key =>
-            typeof key === 'string' && (
-              key.includes('settlements-') ||
-              key.includes('wallet-settlements-') ||
-              key.includes('flows-settlements-')
-            ),
-          );
-        },
-      });
-    });
+    const isSettlementQuery = (queryKey: readonly unknown[]) => queryKey.some(key =>
+      typeof key === 'string' && (
+        key.includes('settlements-') ||
+        key.includes('wallet-settlements-') ||
+        key.includes('flows-settlements-')
+      ),
+    );
 
-    return unsubscribe;
-  }, [queryClient]);
+    // Clear all settlement-related queries immediately.
+    queryClient.invalidateQueries({ predicate: (query) => isSettlementQuery(query.queryKey) });
+
+    // Also clear any stale data immediately.
+    queryClient.removeQueries({ predicate: (query) => isSettlementQuery(query.queryKey) });
+  }, [network.id, network.chainId, queryClient]);
 }

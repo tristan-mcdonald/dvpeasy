@@ -7,7 +7,8 @@ import { utilityManager } from '../lib/utils';
 import { readContract } from 'wagmi/actions';
 import { SettlementNotFoundError } from '../types/errors';
 import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { DVP_ABI } from '../config/contracts/abis';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { logger } from '../lib/logger';
 import { useDataFetcher } from './useDataFetcher';
 
@@ -27,8 +28,8 @@ export interface SettlementDataResult {
  * @returns Object containing settlement data, formatted flows, loading state, error state, and control functions.
  */
 export function useSettlementData (settlementId: string | undefined) {
-  const { dvpAddress, dvpAbi } = useContractAddresses();
-  const { config: contractConfig } = useContractConfig();
+  const networkDeployment = useCurrentNetwork();
+  const { deployment, network } = networkDeployment;
 
   const prevFormattedSettlement = useRef<Settlement | null>(null);
   const prevFormattedFlowsRef = useRef<FormattedFlow[]>([]);
@@ -46,11 +47,11 @@ export function useSettlementData (settlementId: string | undefined) {
     }
 
     const settlementData = await readContract(config, {
-      address: dvpAddress,
-      abi: dvpAbi,
+      address: deployment.dvpAddress,
+      abi: DVP_ABI,
       functionName: 'getSettlement',
       args: [BigInt(settlementId)],
-      chainId: contractConfig.chainId,
+      chainId: network.chainId,
     });
 
     if (!settlementData) {
@@ -106,7 +107,7 @@ export function useSettlementData (settlementId: string | undefined) {
 
     // Format flow amounts with proper decimals.
     const formatted = await Promise.all(flowsArray.map(async (flow: Flow) => {
-      const formattedAmount = await tokenManager.formatTokenAmount(flow.amountOrId, flow.token);
+      const formattedAmount = await tokenManager.formatTokenAmount(flow.amountOrId, flow.token, networkDeployment);
       return {
         ...flow,
         formattedAmount,
@@ -120,7 +121,7 @@ export function useSettlementData (settlementId: string | undefined) {
       settlement: formattedSettlement,
       formattedFlows: formatted,
     };
-  }, [settlementId, dvpAddress, dvpAbi, contractConfig.chainId]);
+  }, [settlementId, deployment.dvpAddress, network.chainId, networkDeployment]);
 
   const {
     data,

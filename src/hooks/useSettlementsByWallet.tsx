@@ -1,8 +1,9 @@
+import { DVP_ABI, DVP_HELPER_ABI } from '../config/contracts/abis';
 import { logger } from '../lib/logger';
 import { Settlement } from '../types/settlement';
 import { useAccount, useReadContract, useReadContracts } from 'wagmi';
 import { useCallback, useMemo } from 'react';
-import { useContractAddresses, useContractConfig } from './useContractConfig';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { usePolling } from './usePolling';
 
 /**
@@ -10,11 +11,11 @@ import { usePolling } from './usePolling';
  */
 export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, pollingInterval = 30000) {
   const { address: walletAddress } = useAccount();
-  const { dvpAddress, dvpAbi, dvpHelperAddress, dvpHelperAbi } = useContractAddresses();
-  const { config, isConfigReady } = useContractConfig();
+  const { deployment, network } = useCurrentNetwork();
+  const { dvpAddress, dvpHelperAddress } = deployment;
 
   // Create a unique query key based on network, contract address, and wallet.
-  const queryKeyBase = `wallet-settlements-${config.networkId}-${config.chainId}-${dvpAddress}-${walletAddress}`;
+  const queryKeyBase = `wallet-settlements-${network.id}-${network.chainId}-${dvpAddress}-${walletAddress}`;
 
   // Network-specific cache invalidation is handled by useSettlementCacheManager.
 
@@ -26,7 +27,7 @@ export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, p
     refetch: refetchIds,
   } = useReadContract({
     address: dvpHelperAddress,
-    abi: dvpHelperAbi,
+    abi: DVP_HELPER_ABI,
     functionName: 'getSettlementsByInvolvedParty',
     args: [
       dvpAddress,
@@ -34,9 +35,9 @@ export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, p
       BigInt(0), // startCursor (0 means start from latest).
       BigInt(Math.min(maxFetch, 200)), // pageSize (max 200).
     ],
-    chainId: config.chainId,
+    chainId: network.chainId,
     query: {
-      enabled: isConfigReady && !!walletAddress, // Only run if config is ready and wallet is connected.
+      enabled: !!walletAddress,
       queryKey: [`${queryKeyBase}-ids`],
     },
   });
@@ -56,13 +57,13 @@ export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, p
   } = useReadContracts({
     contracts: settlementIds.map((id) => ({
       address: dvpAddress,
-      abi: dvpAbi,
+      abi: DVP_ABI,
       functionName: 'getSettlement',
       args: [id],
-      chainId: config.chainId,
+      chainId: network.chainId,
     })),
     query: {
-      enabled: isConfigReady && settlementIds.length > 0,
+      enabled: settlementIds.length > 0,
     },
   });
 
@@ -98,7 +99,7 @@ export function useSettlementsByWallet (maxFetch = 100, enablePolling = false, p
   });
 
   // Combined loading & error states.
-  const isLoading = !isConfigReady || isLoadingIds || isLoadingData;
+  const isLoading = isLoadingIds || isLoadingData;
   const isError = isErrorIds || isErrorData;
 
   // Refetch with error handling

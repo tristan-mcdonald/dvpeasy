@@ -3,7 +3,6 @@ import { UseDashboardState } from './useDashboardState';
 import { useMemo } from 'react';
 import { useSettlementsByWallet } from '../../../hooks/useSettlementsByWallet';
 import { useSettlementsWithFlows } from '../../../hooks/useSettlementsWithFlows';
-import { useContractConfig } from '../../../hooks/useContractConfig';
 
 export interface DashboardData {
   settlements: Settlement[];
@@ -16,7 +15,6 @@ export interface DashboardData {
 export function useDashboardData (dashboardState: UseDashboardState): DashboardData {
   const { tokenFilter, settlementIdFilter } = dashboardState.state;
   const { isWalletFiltering, isSettlementIdFiltering } = dashboardState.derived;
-  const { isConfigReady } = useContractConfig();
 
   // Use different hooks based on whether filtering is active.
   const flowsData = useSettlementsWithFlows(100, tokenFilter);
@@ -31,9 +29,6 @@ export function useDashboardData (dashboardState: UseDashboardState): DashboardD
     }
   })();
 
-  // Show loading state if config isn't ready (network switching).
-  const isLoadingWithConfig = isLoading || !isConfigReady;
-
   // Apply settlement ID filtering on the results.
   const settlements = useMemo(() => {
     if (!isSettlementIdFiltering) {
@@ -46,7 +41,7 @@ export function useDashboardData (dashboardState: UseDashboardState): DashboardD
 
   return {
     settlements,
-    isLoading: isLoadingWithConfig,
+    isLoading,
     isError,
     refetch,
     totalSettlements: flowsData.totalSettlements,

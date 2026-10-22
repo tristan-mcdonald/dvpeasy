@@ -1,5 +1,5 @@
 import type { Address } from 'viem';
-import { NetworkId, networks } from '../networks';
+import { Network, NetworkId, networks } from '../networks';
 
 export interface ContractVersion {
   tag: string;
@@ -13,6 +13,14 @@ export interface ContractDeployment {
   version: ContractVersion;
   dvpAddress: Address;
   dvpHelperAddress: Address;
+}
+
+/**
+ * A network, and the contract deployment the app is using on it.
+ */
+export interface NetworkDeployment {
+  deployment: ContractDeployment;
+  network: Network;
 }
 
 interface NetworkDeployments {

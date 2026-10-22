@@ -1,7 +1,7 @@
 import { Settlement, ValidationState } from '../types/settlement-details';
 import { useCallback, useMemo } from 'react';
 import { useChainId } from 'wagmi';
-import { useContractConfig } from './useContractConfig';
+import { networks } from '../config/networks';
 
 /**
  * Handles network validation and participant checking for settlement interactions.
@@ -14,7 +14,7 @@ export function useSettlementValidation (
   settlement: Settlement | null,
   address: string | undefined,
 ) {
-  const { supportedChainIds } = useContractConfig();
+  const supportedChainIds = networks.all().map(network => network.chainId);
   const walletChainId = useChainId();
 
   // Check if settlement is expired.
