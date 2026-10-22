@@ -1,5 +1,6 @@
 import { useCurrentNetwork } from './useCurrentNetwork';
-import { useChainId, useSwitchChain, useDisconnect } from 'wagmi';
+import { useAccount, useChainId, useSwitchChain, useDisconnect } from 'wagmi';
+import { appKit } from '../config/wagmi';
 import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
 import { useState, useCallback, useEffect } from 'react';
@@ -29,6 +30,7 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
   const { autoSync = false } = options;
   const { network: urlNetwork } = useCurrentNetwork();
   const walletChainId = useChainId();
+  const { isConnected } = useAccount();
   const { switchChainAsync, chains } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +94,11 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
       setIsLoading(false);
     }
   }, [urlNetwork, walletNetworkId, switchChainAsync, chains, disconnect]);
+
+  // AppKit asks the wallet for its own network when connecting, so keep that on the URL's.
+  useEffect(() => {
+    if (!isConnected) appKit.switchNetwork(urlNetwork.appKitNetwork);
+  }, [isConnected, urlNetwork]);
 
   // Auto-sync wallet to URL network when enabled and networks don't match.
   useEffect(() => {

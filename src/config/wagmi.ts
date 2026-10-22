@@ -1,7 +1,7 @@
 import { createAppKit } from '@reown/appkit/react';
 import { fallback } from 'wagmi';
 import { getPublicClient } from 'wagmi/actions';
-import { networks } from './networks';
+import { DEFAULT_NETWORK_ID, NETWORKS, networks } from './networks';
 import { http } from 'viem';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
@@ -25,8 +25,10 @@ const wagmiAdapter = new WagmiAdapter({
   transports,
 });
 
-createAppKit({
+export const appKit = createAppKit({
   adapters: [wagmiAdapter],
+  // AppKit connects the wallet on this network; `useNetworkSync` then keeps it on the URL's.
+  defaultNetwork: NETWORKS[DEFAULT_NETWORK_ID].appKitNetwork,
   enableNetworkSwitch: false,
   networks: appKitNetworks,
   metadata: metadata,
