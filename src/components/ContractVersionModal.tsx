@@ -9,7 +9,7 @@ import { useAppKitNetworkState } from '../hooks/useAppKitNetwork';
 import { contracts } from '../config/contracts/deployments';
 import { networks } from '../config/networks';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
-import { useNetworkManager } from '../hooks/useNetworkManager';
+import { useNetworkNavigation } from '../hooks/useNetworkNavigation';
 
 interface ContractVersionModalProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ interface ContractVersionModalProps {
  */
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
   const { deployment: currentDeployment, network } = useCurrentNetwork();
-  const { changeVersion } = useNetworkManager();
+  const { changeVersion } = useNetworkNavigation();
   const { chainId } = useAppKitNetworkState();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 

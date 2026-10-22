@@ -17,7 +17,6 @@ export default function NetworkWrapper () {
   // Handle network/version synchronization with auto-sync enabled.
   const {
     isNetworkSynced,
-    error: networkError,
     isLoading: isNetworkSyncing,
   } = useNetworkSync({ autoSync: true });
 
@@ -35,16 +34,6 @@ export default function NetworkWrapper () {
       centerVertically={true}
       description={`Invalid network "${params.network}" or version "${params.version}"`}
       title="Invalid network or version" />
-    );
-  }
-
-  // Show network error if synchronization fails.
-  if (networkError) {
-    return (
-      <HeaderLocal
-      centerVertically={true}
-      description={networkError}
-      title="Network synchronization error" />
     );
   }
 

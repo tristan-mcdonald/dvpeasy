@@ -1,10 +1,9 @@
 import NetworkIcon from './NetworkIcon';
 import React from 'react';
-import { networks } from '../config/networks';
+import { NetworkId, networks } from '../config/networks';
 import { useAccount } from 'wagmi';
-import { useNetworkManager } from '../hooks/useNetworkManager';
-import { useLocation } from 'react-router-dom';
-import { urlManager } from '../lib/url-manager';
+import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
+import { useNetworkNavigation } from '../hooks/useNetworkNavigation';
 import { useTestNetworkSetting } from '../hooks/useTestNetworkSetting';
 import { X } from 'lucide-react';
 
@@ -19,21 +18,9 @@ interface NetworkSelectionModalProps {
  */
 export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelectionModalProps) {
   const { showTestNetworks, setShowTestNetworks } = useTestNetworkSetting();
-  const { changeNetwork, isLoading } = useNetworkManager();
+  const { changeNetwork } = useNetworkNavigation();
   const { isConnected } = useAccount();
-  const location = useLocation();
-
-  // Parse current network from URL path directly to avoid useParams issues when called from header.
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  let urlNetworkId: string | null = null;
-
-  if (pathSegments.length >= 2) {
-    const parsed = urlManager.parseNetworkAndVersion({
-      network: pathSegments[0],
-      version: pathSegments[1],
-    });
-    urlNetworkId = parsed?.networkId || null;
-  }
+  const { network: currentNetwork } = useCurrentNetwork();
 
   if (!isOpen) return null;
 
@@ -43,7 +30,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
     }
   };
 
-  const handleNetworkSelect = async (networkId: string) => {
+  const handleNetworkSelect = async (networkId: NetworkId) => {
     try {
       // Change the network in the URL.
       changeNetwork(networkId);
@@ -121,7 +108,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                 <h3 className={`text-base font-medium ${groupIndex > 0 ? 'mt-4 ' : ''}mb-2`}>{group.title}</h3>
                 <ul className="space-y-1">
                   {group.networks.map((network) => {
-                    const isUrlNetwork = network.id === urlNetworkId;
+                    const isUrlNetwork = network.id === currentNetwork.id;
 
                     return (
                       <li key={network.id}>
@@ -131,7 +118,7 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
                             ? 'border-interface-border bg-card-background'
                             : 'border-transparent hover:border-primary-subtle hover:shadow-standard hover:bg-white'
                         }`}
-                        disabled={isUrlNetwork || isLoading}
+                        disabled={isUrlNetwork}
                         onClick={() => handleNetworkSelect(network.id)}
                         type="button">
                           <NetworkIcon network={network} />

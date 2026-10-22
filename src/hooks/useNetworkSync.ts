@@ -1,4 +1,4 @@
-import { useNetworkManager } from './useNetworkManager';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useChainId, useSwitchChain, useDisconnect } from 'wagmi';
 import { networks } from '../config/networks';
 import { logger } from '../lib/logger';
@@ -6,29 +6,19 @@ import { useState, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 export interface UseNetworkSyncOptions {
-  // Callback when network/version changes.
-  onNetworkVersionChange?: (networkId: string, version: string) => void;
   // Whether to auto-sync wallet to URL network.
   autoSync?: boolean;
 }
 
 export interface UseNetworkSyncReturn {
-  // Current network ID from URL.
-  urlNetworkId: string | null;
-  // Current version from URL.
-  urlVersion: string | null;
   // Current wallet network ID.
   walletNetworkId: string | null;
   // Whether URL network matches wallet network.
   isNetworkSynced: boolean;
-  // Error message if network/version is invalid.
-  error: string | null;
   // Whether the hook is processing a network change.
   isLoading: boolean;
   // Manually sync wallet to URL network.
   syncWalletToUrl: () => Promise<void>;
-  // Manually sync URL to wallet network.
-  syncUrlToWallet: () => void;
 }
 
 /**
@@ -37,7 +27,7 @@ export interface UseNetworkSyncReturn {
  */
 export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetworkSyncReturn {
   const { autoSync = false } = options;
-  const networkManager = useNetworkManager();
+  const { network: urlNetwork } = useCurrentNetwork();
   const walletChainId = useChainId();
   const { switchChainAsync, chains } = useSwitchChain();
   const { disconnect } = useDisconnect();
@@ -46,32 +36,24 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
   // Get wallet network ID from chain ID.
   const walletNetworkId = walletChainId ? networks.byChainId(walletChainId)?.id ?? null : null;
   // Check if networks are synced.
-  const isNetworkSynced = Boolean(
-    networkManager.urlNetworkId &&
-    walletNetworkId &&
-    networkManager.urlNetworkId === walletNetworkId,
-  );
+  const isNetworkSynced = urlNetwork.id === walletNetworkId;
 
   /**
    * Sync wallet to match URL network.
    */
   const syncWalletToUrl = useCallback(async () => {
-    if (!networkManager.urlNetworkId || !switchChainAsync) {
-      logger.warn('Cannot sync wallet: missing URL network or switch function');
+    if (!switchChainAsync) {
+      logger.warn('Cannot sync wallet: missing switch function');
       return;
     }
 
-    const targetChainId = networks.byId(networkManager.urlNetworkId)?.chainId;
-    if (!targetChainId) {
-      logger.error(`No chain ID found for network ${networkManager.urlNetworkId}`);
-      return;
-    }
+    const targetChainId = urlNetwork.chainId;
 
     // Check if target chain is supported.
     const targetChain = chains.find(chain => chain.id === targetChainId);
     if (!targetChain) {
       logger.error(`Chain ${targetChainId} not supported by wallet`);
-      toast.error(`Network ${networkManager.urlNetworkId} is not supported by your wallet`);
+      toast.error(`Network ${urlNetwork.id} is not supported by your wallet`);
       return;
     }
 
@@ -79,7 +61,7 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
     try {
       logger.info('Syncing wallet to URL network', {
         from: walletNetworkId,
-        to: networkManager.urlNetworkId,
+        to: urlNetwork.id,
       });
 
       await switchChainAsync({ chainId: targetChainId });
@@ -109,33 +91,20 @@ export function useNetworkSync (options: UseNetworkSyncOptions = {}): UseNetwork
     } finally {
       setIsLoading(false);
     }
-  }, [networkManager.urlNetworkId, walletNetworkId, switchChainAsync, chains, disconnect]);
-
-  /**
-   * Sync URL to match wallet network.
-   */
-  const syncUrlToWallet = useCallback(() => {
-    if (walletNetworkId) {
-      networkManager.changeNetwork(walletNetworkId);
-    }
-  }, [walletNetworkId, networkManager]);
+  }, [urlNetwork, walletNetworkId, switchChainAsync, chains, disconnect]);
 
   // Auto-sync wallet to URL network when enabled and networks don't match.
   useEffect(() => {
-    if (autoSync && !isNetworkSynced && networkManager.urlNetworkId && walletNetworkId) {
+    if (autoSync && !isNetworkSynced && walletNetworkId) {
       // Only auto-sync if we have both networks and they don't match.
       syncWalletToUrl();
     }
-  }, [autoSync, isNetworkSynced, networkManager.urlNetworkId, walletNetworkId, syncWalletToUrl]);
+  }, [autoSync, isNetworkSynced, walletNetworkId, syncWalletToUrl]);
 
   return {
-    urlNetworkId: networkManager.urlNetworkId,
-    urlVersion: networkManager.urlVersion,
     walletNetworkId,
     isNetworkSynced,
-    error: networkManager.error,
-    isLoading: isLoading || networkManager.isLoading,
+    isLoading,
     syncWalletToUrl,
-    syncUrlToWallet,
   };
 }
