@@ -16,13 +16,13 @@
        * (it is currently > 512 bytes)
        */
       const pathSegmentsToKeep = 0;
-      const location = window.location;
-      location.replace(
-        location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') +
-        location.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        location.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (location.search ? '&' + location.search.slice(1).replace(/&/g, '~and~') : '') +
-        location.hash
+      const currentLocation = window.location;
+      currentLocation.replace(
+        currentLocation.protocol + '//' + currentLocation.hostname + (currentLocation.port ? ':' + currentLocation.port : '') +
+        currentLocation.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        currentLocation.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (currentLocation.search ? '&' + currentLocation.search.slice(1).replace(/&/g, '~and~') : '') +
+        currentLocation.hash
       );
     </script>
   </head>
