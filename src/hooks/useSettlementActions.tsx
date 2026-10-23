@@ -7,7 +7,9 @@ import { DVP_ABI } from '../config/contracts/abis';
 import { ContractValidationError, contractValidationManager, PartyStatus as ValidatedPartyStatus } from '../lib/contract-validation';
 import { errorManager } from '../lib/error-manager';
 import { tokenManager } from '../lib/token-manager';
+import { tokenMetadataQuery } from '../lib/token-metadata';
 import { useCurrentNetwork } from './useCurrentNetwork';
+import { useQueryClient } from '@tanstack/react-query';
 
 type PartyStatus = ValidatedPartyStatus;
 
@@ -34,6 +36,22 @@ export function useSettlementActions ({
   const [isRevoking, setIsRevoking] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [approvingToken, setApprovingToken] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  /**
+   * Lets the DVP contract move a token, as an ERC-20 allowance or an ERC-721 approval.
+   */
+  const approveToken = useCallback(async (account: Address, tokenAddress: string, amount: bigint) => {
+    const { assetType } = await queryClient.fetchQuery(tokenMetadataQuery({ networkDeployment, tokenAddress }));
+    await tokenManager.approveToken({
+      account,
+      amount,
+      assetType,
+      networkDeployment,
+      spender: dvpAddress,
+      tokenAddress,
+    });
+  }, [queryClient, networkDeployment, dvpAddress]);
 
   const handleApprove = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {
@@ -166,13 +184,7 @@ export function useSettlementActions ({
     const toastId = toast.loading('Approving token…');
 
     try {
-      await tokenManager.approveToken({
-        account: address,
-        amount,
-        networkDeployment,
-        spender: dvpAddress,
-        tokenAddress,
-      });
+      await approveToken(address, tokenAddress, amount);
 
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
@@ -183,7 +195,7 @@ export function useSettlementActions ({
     } finally {
       setApprovingToken(null);
     }
-  }, [address, walletClient, onSuccess, dvpAddress, networkDeployment]);
+  }, [address, walletClient, onSuccess, approveToken]);
 
   const handleMaxApprove = useCallback(async (tokenAddress: string) => {
     if (!address || !walletClient) {
@@ -196,13 +208,7 @@ export function useSettlementActions ({
 
     try {
       const maxUint256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-      await tokenManager.approveToken({
-        account: address,
-        amount: maxUint256,
-        networkDeployment,
-        spender: dvpAddress,
-        tokenAddress,
-      });
+      await approveToken(address, tokenAddress, maxUint256);
 
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
@@ -213,7 +219,7 @@ export function useSettlementActions ({
     } finally {
       setApprovingToken(null);
     }
-  }, [address, walletClient, onSuccess, dvpAddress, networkDeployment]);
+  }, [address, walletClient, onSuccess, approveToken]);
 
   const handleRevokeApproval = useCallback(async () => {
     if (!settlementId || !address || !walletClient) {

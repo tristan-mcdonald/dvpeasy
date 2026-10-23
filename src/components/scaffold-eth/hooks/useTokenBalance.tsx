@@ -1,10 +1,8 @@
+import { Address, erc721Abi, isAddress, zeroAddress } from 'viem';
 import { AssetType } from '../../../lib/token-metadata';
-import { tokenManager } from '../../../lib/token-manager';
-import { isAddress } from 'viem';
-import { logger } from '../../../lib/logger';
-import { useBalance } from 'wagmi';
+import { useBalance, useReadContract } from 'wagmi';
 import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
-import { useEffect, useState } from 'react';
+import { useTokenMetadata } from '../../../hooks/useTokenMetadata';
 
 /**
  * Props for the useTokenBalance hook.
@@ -69,129 +67,54 @@ export const useTokenBalance = ({
   balanceAddress,
   storedTokenData,
 }: UseTokenBalanceProps): UseTokenBalanceReturn => {
-  const normalizedAddress = address;
-  const networkDeployment = useCurrentNetwork();
+  const { chainId } = useCurrentNetwork().network;
+  const isTokenAddress = isAddress(address);
 
-  // Token metadata state.
-  const [tokenSymbol, setTokenSymbol] = useState<string>('');
-  const [isLoadingSymbol, setIsLoadingSymbol] = useState(false);
-  const [assetType, setAssetType] = useState<AssetType | null>(null);
+  // A token picked from the dropdown already has its symbol, and is taken to be an ERC-20.
+  const storedSymbol = storedTokenData?.address.toLowerCase() === address.toLowerCase()
+    ? storedTokenData.symbol
+    : undefined;
+  const tokenMetadataQuery = useTokenMetadata(address);
+  const metadata = tokenMetadataQuery.data;
 
-  // NFT balance state.
-  const [nftBalance, setNftBalance] = useState<bigint | null>(null);
-  const [isLoadingNftBalance, setIsLoadingNftBalance] = useState(false);
+  let tokenSymbol = '';
+  let assetType: AssetType | null = null;
+  if (storedSymbol) {
+    tokenSymbol = storedSymbol;
+    assetType = AssetType.ERC20;
+  } else if (metadata) {
+    tokenSymbol = metadata.symbol;
+    assetType = metadata.assetType;
+  } else if (tokenMetadataQuery.isError) {
+    tokenSymbol = 'TOKEN';
+  }
 
-  /**
-   * Get user's ERC20/ETH balance using wagmi.
-   * Only enabled for ERC20 tokens and ETH, not for NFTs.
-   */
   const { data: userBalance, isLoading: isLoadingBalance } = useBalance({
-    address: balanceAddress as `0x${string}` | undefined,
-    chainId: networkDeployment.network.chainId,
-    token: normalizedAddress && normalizedAddress !== '0x0000000000000000000000000000000000000000'
-      ? normalizedAddress as `0x${string}`
-      : undefined,
+    address: balanceAddress as Address | undefined,
+    chainId,
+    token: isTokenAddress && address !== zeroAddress ? address : undefined,
     query: {
-      enabled: !!balanceAddress &&
-               !!normalizedAddress &&
-               isAddress(normalizedAddress) &&
-               assetType !== AssetType.ERC721,
+      enabled: !!balanceAddress && isTokenAddress && assetType !== AssetType.ERC721,
     },
   });
 
-  /**
-   * Fetch token symbol and detect asset type.
-   * Runs when the normalized address changes.
-   * Only attempts token detection for valid Ethereum addresses.
-   */
-  useEffect(() => {
-    const fetchTokenSymbol = async () => {
-      // Only proceed if we have a valid Ethereum address
-      if (normalizedAddress && isAddress(normalizedAddress)) {
-        // Check if we have stored token data for this address.
-        const hasStoredData = storedTokenData &&
-          storedTokenData.address.toLowerCase() === normalizedAddress.toLowerCase() &&
-          storedTokenData.symbol;
-
-        // If we have stored data, use it immediately and skip API calls.
-        if (hasStoredData) {
-          setTokenSymbol(storedTokenData.symbol!);
-          setAssetType(AssetType.ERC20); // Assume ERC20 for dropdown selections.
-          setIsLoadingSymbol(false);
-          return;
-        }
-
-        setIsLoadingSymbol(true);
-        try {
-          const detectedAssetType = await tokenManager.detectAssetType(normalizedAddress, networkDeployment);
-          setAssetType(detectedAssetType);
-
-          if (detectedAssetType === AssetType.ETH) {
-            setTokenSymbol('ETH');
-          } else {
-            // For both ERC20 and ERC721, try to get the symbol.
-            const symbol = await tokenManager.tokenSymbol(normalizedAddress, networkDeployment);
-            setTokenSymbol(symbol);
-          }
-        } catch (error) {
-          logger.warn('Failed to fetch token symbol:', error);
-
-          // Use stored token data as fallback if available.
-          if (storedTokenData &&
-              storedTokenData.address.toLowerCase() === normalizedAddress.toLowerCase() &&
-              storedTokenData.symbol) {
-            setTokenSymbol(storedTokenData.symbol);
-            setAssetType(AssetType.ERC20);
-          } else {
-            setTokenSymbol('TOKEN');
-            setAssetType(null);
-          }
-        }
-        setIsLoadingSymbol(false);
-      } else {
-        // Reset state for invalid or empty addresses.
-        // Don't show loading or attempt validation for non-address inputs.
-        setTokenSymbol('');
-        setAssetType(null);
-        setIsLoadingSymbol(false);
-      }
-    };
-
-    fetchTokenSymbol();
-  }, [normalizedAddress, storedTokenData, networkDeployment]);
-
-  /**
-   * Fetch NFT balance for ERC721 tokens.
-   * Only runs when we have a valid ERC721 token and balance address.
-   */
-  useEffect(() => {
-    const fetchNFTBalance = async () => {
-      if (balanceAddress && isAddress(normalizedAddress) && assetType === AssetType.ERC721) {
-        setIsLoadingNftBalance(true);
-        try {
-          const balance = await tokenManager.nftBalance(normalizedAddress, balanceAddress, networkDeployment.network.chainId);
-          setNftBalance(balance);
-        } catch (error) {
-          logger.warn('Failed to fetch NFT balance:', error);
-          setNftBalance(null);
-        }
-        setIsLoadingNftBalance(false);
-      } else {
-        // Reset NFT balance for non-ERC721 tokens.
-        setNftBalance(null);
-        setIsLoadingNftBalance(false);
-      }
-    };
-
-    fetchNFTBalance();
-  }, [balanceAddress, normalizedAddress, assetType, networkDeployment]);
+  const nftBalanceQuery = useReadContract({
+    address: isTokenAddress ? address : undefined,
+    abi: erc721Abi,
+    functionName: 'balanceOf',
+    args: balanceAddress ? [balanceAddress as Address] : undefined,
+    chainId,
+    query: {
+      enabled: !!balanceAddress && isTokenAddress && assetType === AssetType.ERC721,
+    },
+  });
 
   return {
     tokenSymbol,
-    isLoadingSymbol,
+    isLoadingSymbol: !storedSymbol && tokenMetadataQuery.isLoading,
     assetType,
-    nftBalance,
-    isLoadingNftBalance,
+    nftBalance: assetType === AssetType.ERC721 ? nftBalanceQuery.data ?? null : null,
+    isLoadingNftBalance: nftBalanceQuery.isLoading,
     userBalance,
     isLoadingBalance,
   };

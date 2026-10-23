@@ -2,14 +2,14 @@ import { FC, useEffect, useState } from 'react';
 import { isAddress } from 'viem';
 import { ArrowDownRight, ArrowUpRight, Coins, Hash, X } from 'lucide-react';
 import { AssetType } from '../../lib/token-metadata';
-import { TokenDetectionError, tokenManager } from '../../lib/token-manager';
+import { TokenDetectionError } from '../../types/errors';
 import { utilityManager } from '../../lib/utils';
 import { inputValidationManager } from '../../lib/validation';
 import { Flow } from '../../types/settlement';
 import LabelWithIcon from '../LabelWithIcon';
 import NFTImage from '../NFTImage';
 import { TokenSelect } from './TokenSelect';
-import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
+import { useTokenMetadata } from '../../hooks/useTokenMetadata';
 
 interface FlowInputProps {
   flow: Flow;
@@ -24,68 +24,19 @@ export const FlowInput: FC<FlowInputProps> = ({
   onChange,
   onValidationChange,
 }) => {
-  const networkDeployment = useCurrentNetwork();
-  const [amountError, setAmountError] = useState<string | null>(null);
-  const [assetType, setAssetType] = useState<AssetType | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showNFTModal, setShowNFTModal] = useState(false);
-  const [tokenSymbol, setTokenSymbol] = useState<string>('');
+  const tokenMetadataQuery = useTokenMetadata(flow.token);
+  const assetType = tokenMetadataQuery.data?.assetType ?? null;
+  const tokenSymbol = assetType === AssetType.ERC721 ? '' : tokenMetadataQuery.data?.symbol ?? '';
+  const error = tokenError(flow.token, tokenMetadataQuery.error);
+  const amountError = flow.amount && assetType ? amountValidationError(flow.amount, assetType) : null;
 
+  // Keep the flow's `isNFT` in step with the token's type once it's known.
   useEffect(() => {
-    const checkAssetTypeAndSymbol = async () => {
-      if (flow.token) {
-        try {
-          const type = await tokenManager.detectAssetType(flow.token, networkDeployment);
-          // Read every detail now, so that a token whose decimals can't be read is refused here
-          // rather than when the settlement is submitted.
-          const metadata = await tokenManager.tokenMetadata(flow.token, networkDeployment);
-          setAssetType(type);
-          setError(null);
-
-          // Update the isNFT property if it has changed.
-          if (flow.isNFT !== (type === AssetType.ERC721)) {
-            onChange({ ...flow, isNFT: type === AssetType.ERC721 });
-          }
-
-          setTokenSymbol(type === AssetType.ERC721 ? '' : metadata.symbol);
-        } catch (error) {
-          if (error instanceof TokenDetectionError) {
-            setError(error.message);
-          } else {
-            setError('Failed to detect token type');
-          }
-          setAssetType(null);
-          setTokenSymbol('');
-        }
-      } else {
-        setAssetType(null);
-        setTokenSymbol('');
-        setError(null);
-        setAmountError(null);
-      }
-    };
-    checkAssetTypeAndSymbol();
-  }, [flow, onChange, networkDeployment]);
-
-  useEffect(() => {
-    // Validate amount when it changes or when asset type changes.
-    if (flow.amount && assetType) {
-      let validation;
-      if (assetType === AssetType.ERC721) {
-        validation = inputValidationManager.validateNFTTokenId(flow.amount);
-      } else {
-        validation = inputValidationManager.validateTokenAmount(flow.amount);
-      }
-
-      if (!validation.isValid) {
-        setAmountError(validation.error || null);
-      } else {
-        setAmountError(null);
-      }
-    } else {
-      setAmountError(null);
+    if (assetType && flow.isNFT !== (assetType === AssetType.ERC721)) {
+      onChange({ ...flow, isNFT: assetType === AssetType.ERC721 });
     }
-  }, [flow.amount, assetType]);
+  }, [assetType, flow, onChange]);
 
   // Track overall validation state and communicate to parent.
   useEffect(() => {
@@ -216,3 +167,20 @@ export const FlowInput: FC<FlowInputProps> = ({
     </div>
   );
 };
+
+/**
+ * Why the flow's token can't be used, if it can't.
+ */
+function tokenError (tokenAddress: string, metadataError: Error | null): string | null {
+  if (!tokenAddress) return null;
+  if (!isAddress(tokenAddress)) return 'Failed to detect token type';
+  if (!metadataError) return null;
+  return metadataError instanceof TokenDetectionError ? metadataError.message : 'Failed to detect token type';
+}
+
+function amountValidationError (amount: string, assetType: AssetType): string | null {
+  const validation = assetType === AssetType.ERC721
+    ? inputValidationManager.validateNFTTokenId(amount)
+    : inputValidationManager.validateTokenAmount(amount);
+  return validation.isValid ? null : validation.error || null;
+}
