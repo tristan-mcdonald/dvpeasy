@@ -27,8 +27,8 @@ export function useTokensForDisplay (tokenAddresses: string[]): Record<string, T
     [listedTokens],
   );
 
-  return useMemo(() => {
-    return Object.fromEntries(Object.entries(tokensMetadata.byAddress).map(([address, { metadata, isLoading }]) => {
+  return useMemo(() => Object.fromEntries(
+    Object.entries(tokensMetadata.byAddress).map(([address, { metadata, isLoading }]) => {
       const listedToken = listedTokensByAddress.get(address);
       const symbol = listedToken?.symbol ?? metadata?.symbol ?? 'TOKEN';
       return [address, {
@@ -39,6 +39,6 @@ export function useTokensForDisplay (tokenAddresses: string[]): Record<string, T
         logoUrl: listedToken?.logoUrl,
         trustWalletLogoUrl: listedToken?.trustWalletLogoUrl,
       }];
-    }));
-  }, [tokensMetadata, listedTokensByAddress, isLoadingList]);
+    }),
+  ), [tokensMetadata, listedTokensByAddress, isLoadingList]);
 }

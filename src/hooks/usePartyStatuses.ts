@@ -140,9 +140,10 @@ function formatPartyStatus ({
     ...partyStatus,
     address,
     isLoading: false,
-    tokenStatuses: partyStatus.tokenStatuses.map(
-      tokenStatus => formatTokenStatus(tokenStatus, tokensMetadataByAddress[tokenStatus.tokenAddress.toLowerCase()]?.metadata),
-    ),
+    tokenStatuses: partyStatus.tokenStatuses.map(tokenStatus => formatTokenStatus(
+      tokenStatus,
+      tokensMetadataByAddress[tokenStatus.tokenAddress.toLowerCase()]?.metadata,
+    )),
   };
 }
 

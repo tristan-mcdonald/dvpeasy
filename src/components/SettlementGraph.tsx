@@ -3,6 +3,7 @@ import { cssCustomProperty, graphColors, nodeColors } from '../config/theme';
 import { drag } from 'd3-drag';
 import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
 import { select, Selection } from 'd3-selection';
+import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { utilityManager } from '../lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { zoom, zoomIdentity } from 'd3-zoom';
@@ -51,7 +52,7 @@ interface SettlementGraphProps {
     amountOrId: bigint;
     formattedAmount: string;
   }[];
-  tokenMetadata: Record<string, { symbol: string; isNFT: boolean; isLoading: boolean }>;
+  tokenMetadata: Record<string, TokenForDisplay>;
 }
 
 export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGraphProps) {
