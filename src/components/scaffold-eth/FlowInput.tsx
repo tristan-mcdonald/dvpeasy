@@ -41,7 +41,6 @@ export const FlowInput: FC<FlowInputProps> = ({
           const metadata = await tokenManager.tokenMetadata(flow.token, networkDeployment);
           setAssetType(type);
           setError(null);
-          setAmountError(null); // Clear amount errors when asset type changes.
 
           // Update the isNFT property if it has changed.
           if (flow.isNFT !== (type === AssetType.ERC721)) {
