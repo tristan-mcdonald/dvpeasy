@@ -1,16 +1,6 @@
-import { Address } from 'viem';
+import { Address, erc721Abi } from 'viem';
 import { logger } from './logger';
 import { publicClientFor } from '../config/wagmi';
-
-const ERC721_ABI = [
-  {
-    name: 'tokenURI',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [{ name: 'tokenId', type: 'uint256' }],
-    outputs: [{ type: 'string' }],
-  },
-] as const;
 
 export interface NFTMetadata {
   name?: string;
@@ -22,9 +12,6 @@ export interface NFTMetadata {
     value: string | number;
   }>;
 }
-
-// Cache for NFT metadata to avoid repeated queries.
-const metadataCache = new Map<string, NFTMetadata>();
 
 // IPFS gateway fallbacks in order of preference.
 const IPFS_GATEWAYS = [
@@ -95,7 +82,7 @@ export const nftManager = {
     try {
       const uri = await publicClientFor(chainId).readContract({
         address: tokenAddress as Address,
-        abi: ERC721_ABI,
+        abi: erc721Abi,
         functionName: 'tokenURI',
         args: [BigInt(tokenId)],
       });
@@ -118,14 +105,6 @@ export const nftManager = {
    * Fetches NFT metadata from a tokenURI.
    */
   async fetchNFTMetadata (tokenAddress: string, tokenId: string, chainId: number): Promise<NFTMetadata> {
-    const cacheKey = `${chainId}:${tokenAddress.toLowerCase()}-${tokenId}`;
-
-    // Check cache first.
-    const cached = metadataCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
     try {
       // Get tokenURI from contract.
       const tokenURI = await this.getTokenURI(tokenAddress, tokenId, chainId);
@@ -148,9 +127,6 @@ export const nftManager = {
       if (metadata.image) {
         metadata.image = normalizeIPFSUri(metadata.image);
       }
-
-      // Cache the result.
-      metadataCache.set(cacheKey, metadata);
 
       return metadata;
     } catch (error) {

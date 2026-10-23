@@ -1,9 +1,9 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { logger } from '../lib/logger';
 import { nftManager } from '../lib/nft';
 import NFTIcon from './NFTIcon';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
+import { useQuery } from '@tanstack/react-query';
 
 interface NFTImageProps {
   tokenAddress: string;
@@ -28,55 +28,30 @@ export const NFTImage: FC<NFTImageProps> = ({
   showTokenId = false,
 }) => {
   const { chainId } = useCurrentNetwork().network;
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadNFTImage = async () => {
-      if (!tokenAddress || !tokenId) {
-        return;
-      }
-
-      setIsLoading(true);
-      setHasError(false);
-      setImageLoaded(false);
-      setImageUrl(null);
-
-      try {
-        const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
-
-        if (url) {
-          // Preload the image to check if it's accessible.
-          const canLoad = await nftManager.preloadImage(url);
-
-          if (canLoad) {
-            setImageUrl(url);
-          } else {
-            setHasError(true);
-          }
-        } else {
-          setHasError(true);
-        }
-      } catch (error) {
-        logger.warn('Failed to load NFT image:', error);
-        setHasError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadNFTImage();
-  }, [tokenAddress, tokenId, chainId]);
+  const imageQuery = useQuery({
+    queryKey: ['nftImage', chainId, tokenAddress.toLowerCase(), tokenId],
+    queryFn: async () => {
+      const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
+      // Only an image which loads is shown; any other is treated as missing.
+      return url && await nftManager.preloadImage(url) ? url : null;
+    },
+    enabled: Boolean(tokenAddress && tokenId),
+    staleTime: Infinity,
+  });
+  const imageUrl = imageQuery.data ?? null;
+  const isLoading = imageQuery.isLoading;
+  const hasError = imageQuery.isSuccess && (imageUrl === null || failedImageUrl === imageUrl);
+  const imageLoaded = imageUrl !== null && loadedImageUrl === imageUrl;
 
   const handleImageLoad = () => {
-    setImageLoaded(true);
+    setLoadedImageUrl(imageUrl);
   };
 
   const handleImageError = () => {
-    setHasError(true);
-    setImageLoaded(false);
+    setFailedImageUrl(imageUrl);
   };
 
   const sizeClass = SIZE_CLASSES[size];

@@ -1,5 +1,5 @@
 import { logger } from './logger';
-import { TokenDetectionError } from '../lib/token-manager';
+import { TokenDetectionError } from '../types/errors';
 
 /**
  * Common error messages for settlement creation operations.

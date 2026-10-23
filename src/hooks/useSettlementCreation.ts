@@ -11,7 +11,8 @@ import { ContractValidationError, contractValidationManager } from '../lib/contr
 import { logger } from '../lib/logger';
 import { settlementErrorManager } from '../lib/settlement-error-utils';
 import { AssetType, tokenMetadataQuery } from '../lib/token-metadata';
-import { TokenDetectionError, tokenManager } from '../lib/token-manager';
+import { TokenDetectionError } from '../types/errors';
+import { tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
 import { Flow } from '../types/settlement';
 import { useCurrentNetwork } from './useCurrentNetwork';

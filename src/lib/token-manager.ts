@@ -1,49 +1,16 @@
 import { Address, erc20Abi, erc721Abi, formatUnits, parseUnits } from 'viem';
-import { AssetType, readTokenMetadata, TokenMetadata } from './token-metadata';
+import { AssetType, TokenMetadata } from './token-metadata';
 import { config } from '../config/wagmi';
 import { ContractValidationError, contractValidationManager } from './contract-validation';
 import { logger } from './logger';
 import { NetworkDeployment } from '../config/contracts/deployments';
-import { TokenDetectionError } from '../types/errors';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 
-// Re-export TokenDetectionError for external use.
-export { TokenDetectionError };
-
-// Token metadata, keyed by chain ID and address, since an address can hold different tokens on
-// different chains.
-const tokenCache = new Map<string, TokenMetadata>();
-
 /**
- * Token management utilities following the manager pattern.
- * Provides methods for token operations including detection, metadata, and transactions.
+ * Converting token amounts between what users read and type and what the contract holds, and
+ * approving the DVP contract to move a token.
  */
 export const tokenManager = {
-  /**
-   * Token metadata retrieval for token addresses.
-   * Returns comprehensive metadata including decimals, symbol, name, and type.
-   */
-  async tokenMetadata (tokenAddress: string, networkDeployment: NetworkDeployment): Promise<TokenMetadata> {
-    const cacheKey = `${networkDeployment.network.chainId}:${tokenAddress.toLowerCase()}`;
-    const cached = tokenCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    const metadata = await readTokenMetadata(tokenAddress.toLowerCase() as Address, networkDeployment);
-    tokenCache.set(cacheKey, metadata);
-    return metadata;
-  },
-
-  /**
-   * Token symbol for a given address.
-   * Returns just the symbol property from token metadata.
-   */
-  async tokenSymbol (tokenAddress: string, networkDeployment: NetworkDeployment): Promise<string> {
-    const metadata = await this.tokenMetadata(tokenAddress, networkDeployment);
-    return metadata.symbol;
-  },
-
   /**
    * An amount for display: the NFT's ID, or the amount in whole tokens, with the token's symbol.
    * Without the token's details, the amount in base units.

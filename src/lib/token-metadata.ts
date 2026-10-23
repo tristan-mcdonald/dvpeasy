@@ -43,7 +43,7 @@ export function tokenMetadataQuery ({ networkDeployment, tokenAddress }: TokenMe
 /**
  * Reads a token's details from its contract, or from the network's record for the native token.
  */
-export async function readTokenMetadata (
+async function readTokenMetadata (
   tokenAddress: Address,
   networkDeployment: NetworkDeployment,
 ): Promise<TokenMetadata> {
@@ -87,7 +87,7 @@ export async function readTokenMetadata (
 /**
  * Whether a token is the native token, an ERC-20 or an ERC-721, as the DVP contract sees it.
  */
-export async function readAssetType (
+async function readAssetType (
   tokenAddress: string,
   networkDeployment: NetworkDeployment,
 ): Promise<AssetType> {

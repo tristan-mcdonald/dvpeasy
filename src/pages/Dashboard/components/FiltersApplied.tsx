@@ -1,5 +1,5 @@
 import { UseDashboardState } from '../hooks/useDashboardState';
-import { useTokenSymbol } from '../hooks/useTokenSymbol';
+import { useTokenMetadata } from '../../../hooks/useTokenMetadata';
 import { X } from 'lucide-react';
 
 interface FilterBadgesProps {
@@ -8,7 +8,7 @@ interface FilterBadgesProps {
 
 export default function FilterBadges ({ filters }: FilterBadgesProps) {
   const { isTokenFiltering, isSettlementIdFiltering, isWalletFiltering, hasActiveFilters } = filters.derived;
-  const { tokenSymbol } = useTokenSymbol(filters.state.tokenFilter);
+  const { data: tokenMetadata } = useTokenMetadata(filters.state.tokenFilter);
 
   if (!hasActiveFilters) {
     return null;
@@ -25,7 +25,7 @@ export default function FilterBadges ({ filters }: FilterBadgesProps) {
         aria-label="Clear token"
         onClick={filters.clearTokenFilter}>
           <X className={classNamesIcon} />
-          <span>{tokenSymbol || 'Token'}</span>
+          <span>{tokenMetadata?.symbol || 'Token'}</span>
         </button>
       )}
 
