@@ -7,7 +7,7 @@ import { FormEvent } from 'react';
 import { useFlowManagement } from '../hooks/useFlowManagement';
 import { useSettlementCreation } from '../hooks/useSettlementCreation';
 import { useSettlementForm } from '../hooks/useSettlementForm';
-import { useTokenMetadata } from '../hooks/useTokenMetadata';
+import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
 
 export default function CreateSettlement () {
   // Custom hooks for managing different aspects of the component.
@@ -15,8 +15,7 @@ export default function CreateSettlement () {
   const settlementForm = useSettlementForm();
   const { isLoading, createSettlement, isConnected } = useSettlementCreation();
 
-  // Get token metadata for displaying token info.
-  const tokenMetadata = useTokenMetadata(flowManagement.flows);
+  const tokensForDisplay = useTokensForDisplay(flowManagement.flows.map(flow => flow.token));
 
   /**
    * Handle form submission.
@@ -97,7 +96,7 @@ export default function CreateSettlement () {
           onEditFlow={flowManagement.handleEditFlow}
           onRemoveFlow={flowManagement.handleRemoveFlow}
           onReorderFlows={flowManagement.handleReorderFlows}
-          tokenMetadata={tokenMetadata} />
+          tokenMetadata={tokensForDisplay} />
         </div>
 
         <SettlementDetailsForm

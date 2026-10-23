@@ -14,6 +14,7 @@ import { flowsManager } from '../lib/flow-utils';
 import { CSS } from '@dnd-kit/utilities';
 import { Flow } from '../types/settlement';
 import { networkLinks } from '../lib/network-links';
+import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useMemo, useState, memo } from 'react';
@@ -28,18 +29,10 @@ interface FormattedFlow {
   formattedAmount: string;
 }
 
-interface TokenMetadata {
-  symbol: string;
-  isLoading: boolean;
-  isNFT: boolean;
-  trustWalletLogoUrl?: string;
-  logoUrl?: string;
-}
-
 interface SettlementFlowsProps {
   formattedFlows?: FormattedFlow[];
   flows?: Flow[];
-  tokenMetadata?: Record<string, TokenMetadata>;
+  tokenMetadata?: Record<string, TokenForDisplay>;
   isEditMode?: boolean;
   onEditFlow?: (index: number) => void;
   onRemoveFlow?: (index: number) => void;
@@ -52,7 +45,7 @@ interface SortableFlowItemProps {
   flow: Flow | FormattedFlow;
   index: number;
   isEditMode: boolean;
-  tokenMetadata?: Record<string, TokenMetadata>;
+  tokenMetadata?: Record<string, TokenForDisplay>;
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
   copiedNftId: string | null;

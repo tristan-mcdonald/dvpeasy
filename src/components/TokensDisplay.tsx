@@ -1,21 +1,16 @@
 import NFTCollectionPreview from './NFTCollectionPreview';
 import Tooltip from './Tooltip';
 import { Flow } from '../types/settlement';
-import { tokenManager } from '../lib/token-manager';
-import { logger } from '../lib/logger';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
-import { TokensDisplayProps, TokenInfo } from '../types/components';
+import { TokensDisplayProps } from '../types/components';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
-import { useTokenData } from '../hooks/useTokenData';
+import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
 
 function TokensDisplay ({ flows }: TokensDisplayProps) {
-  const networkDeployment = useCurrentNetwork();
-  const { chainId } = networkDeployment.network;
-  const [tokens, setTokens] = useState<TokenInfo[]>([]);
-
-  // Get token data from API.
-  const { searchTokens } = useTokenData(chainId, 100);
+  const { chainId } = useCurrentNetwork().network;
+  const tokensForDisplay = useTokensForDisplay(flows.map(flow => flow.token));
+  const tokens = Object.entries(tokensForDisplay).map(([address, token]) => ({ address, ...token }));
 
   // Create a mapping of collection address to first NFT ID for preview.
   const getCollectionPreviews = (flows: Flow[]): Record<string, string> => {
@@ -41,70 +36,6 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
     getCollectionPreviews(flows),
     [flows],
   );
-
-  useEffect(() => {
-    const loadTokenData = async () => {
-      // Get unique token addresses from flows.
-      const uniqueAddresses = Array.from(
-        new Set(flows.map(flow => flow.token.toLowerCase())),
-      );
-
-      // Initialize tokens with loading state.
-      const initialTokens: TokenInfo[] = uniqueAddresses.map(address => ({
-        address,
-        symbol: '',
-        name: '',
-        chainId,
-        isLoading: true,
-        isNFT: false,
-      }));
-
-      setTokens(initialTokens);
-
-      // Fetch metadata for each token and try to find API data.
-      const updatedTokens = await Promise.all(
-        initialTokens.map(async (token) => {
-          try {
-            // First, get basic metadata.
-            const metadata = await tokenManager.tokenMetadata(token.address, networkDeployment);
-
-            // Try to retrieve enriched data from API.
-            const searchResults = searchTokens(token.address, { limit: 1 });
-            const apiToken = searchResults?.tokens.find(apiTokenCandidate =>
-              apiTokenCandidate.address.toLowerCase() === token.address.toLowerCase(),
-            );
-
-            return {
-              ...token,
-              symbol: metadata.symbol,
-              name: apiToken?.name || metadata.symbol,
-              isNFT: metadata.isNFT || false,
-              isLoading: false,
-              logoUrl: apiToken?.logoUrl,
-              trustWalletLogoUrl: apiToken?.trustWalletLogoUrl,
-            };
-          } catch (error) {
-            logger.warn(`Failed to get metadata for token ${token.address}:`, error);
-            return {
-              ...token,
-              symbol: 'TOKEN',
-              name: 'TOKEN',
-              isNFT: false,
-              isLoading: false,
-            };
-          }
-        }),
-      );
-
-      setTokens(updatedTokens);
-    };
-
-    if (flows.length > 0) {
-      loadTokenData();
-    } else {
-      setTokens([]);
-    }
-  }, [flows, chainId, searchTokens, networkDeployment]);
 
   if (flows.length === 0) {
     return <span className="text-text-disabled text-sm">No tokens</span>;
@@ -138,7 +69,7 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
                 address: token.address,
                 symbol: token.symbol,
                 name: token.name,
-                chainId: token.chainId,
+                chainId,
                 logoUrl: token.logoUrl,
                 trustWalletLogoUrl: token.trustWalletLogoUrl,
               }}/>

@@ -71,10 +71,22 @@ export class InsufficientBalanceError extends ContractError {
 export class TokenDetectionError extends ContractError {
   readonly type = 'TOKEN_DETECTION_ERROR';
   readonly userMessage = 'Unable to detect token type. Please verify the token address.';
-  readonly isRetryable = true;
+  readonly isRetryable: boolean = true;
 
   constructor (message: string, public readonly tokenAddress: string, originalError?: unknown) {
     super(message, originalError);
+  }
+}
+
+/**
+ * A token which the DVP contract says is neither an ERC-20 nor an ERC-721, which reading again
+ * won't change.
+ */
+export class UnsupportedTokenError extends TokenDetectionError {
+  readonly isRetryable = false;
+
+  constructor (tokenAddress: string) {
+    super('Token address does not implement a supported interface (ERC20 or ERC721)', tokenAddress);
   }
 }
 

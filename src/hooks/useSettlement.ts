@@ -5,8 +5,8 @@ import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useReadContract } from 'wagmi';
+import { useTokensMetadata } from './useTokenMetadata';
 
 const invalidIdError = errorManager.parse(new Error('Invalid settlement ID format'));
 
@@ -14,8 +14,7 @@ const invalidIdError = errorManager.parse(new Error('Invalid settlement ID forma
  * A settlement, and its flows with their amounts formatted, read again while it's open.
  */
 export function useSettlement (settlementId: string | undefined) {
-  const networkDeployment = useCurrentNetwork();
-  const { deployment, network } = networkDeployment;
+  const { deployment, network } = useCurrentNetwork();
   const isValidId = settlementId !== undefined && /^\d+$/.test(settlementId);
 
   const settlementQuery = useReadContract({
@@ -34,16 +33,18 @@ export function useSettlement (settlementId: string | undefined) {
   });
   const settlement = settlementQuery.data;
 
-  // A settlement's flows can't change once it's created, so they're formatted once.
-  const formattedFlowsQuery = useQuery({
-    queryKey: ['formattedFlows', network.chainId, deployment.dvpAddress, settlementId],
-    queryFn: () => Promise.all(settlement!.flows.map(async (flow): Promise<FormattedFlow> => ({
+  const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);
+  const isLoadingTokensMetadata = Object.values(tokensMetadata).some(token => token.isLoading);
+  const formattedFlows = useMemo(() => {
+    if (!settlement || isLoadingTokensMetadata) return [];
+    return settlement.flows.map((flow): FormattedFlow => ({
       ...flow,
-      formattedAmount: await tokenManager.formatTokenAmount(flow.amountOrId, flow.token, networkDeployment),
-    }))),
-    enabled: settlement !== undefined,
-    staleTime: Infinity,
-  });
+      formattedAmount: tokenManager.formatAmount(
+        flow.amountOrId,
+        tokensMetadata[flow.token.toLowerCase()].metadata,
+      ),
+    }));
+  }, [settlement, isLoadingTokensMetadata, tokensMetadata]);
 
   // A failed poll keeps the settlement already read, so only a failed first read is an error.
   const error = useMemo(() => {
@@ -54,8 +55,8 @@ export function useSettlement (settlementId: string | undefined) {
 
   return {
     settlement,
-    formattedFlows: formattedFlowsQuery.data ?? [],
-    isLoading: settlementQuery.isLoading || formattedFlowsQuery.isLoading,
+    formattedFlows,
+    isLoading: settlementQuery.isLoading || isLoadingTokensMetadata,
     error,
     refetch: settlementQuery.refetch,
   };

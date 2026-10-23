@@ -1,7 +1,8 @@
 import { FC, useEffect, useState } from 'react';
 import { isAddress } from 'viem';
 import { ArrowDownRight, ArrowUpRight, Coins, Hash, X } from 'lucide-react';
-import { AssetType, TokenDetectionError, tokenManager } from '../../lib/token-manager';
+import { AssetType } from '../../lib/token-metadata';
+import { TokenDetectionError, tokenManager } from '../../lib/token-manager';
 import { utilityManager } from '../../lib/utils';
 import { inputValidationManager } from '../../lib/validation';
 import { Flow } from '../../types/settlement';

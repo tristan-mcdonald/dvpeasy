@@ -7,12 +7,12 @@ import SettlementHeader from '../components/SettlementHeader';
 import SettlementOverview from '../components/SettlementOverview';
 import { urlManager } from '../lib/url-manager';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
 import { useSettlementActions } from '../hooks/useSettlementActions';
 import { useSettlementDetails } from '../hooks/useSettlementDetails';
-import { useTokenMetadata } from '../hooks/useTokenMetadata';
+import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
 
 export default function SettlementDetails () {
   const navigate = useNavigate();
@@ -37,17 +37,7 @@ export default function SettlementDetails () {
     walletClient,
   } = useSettlementDetails();
 
-  /**
-   * Create a stable reference for flows to prevent useTokenMetadata from re-running when only
-   * settlement status changes but flows remain the same.
-   */
-  const flowsForTokenMetadata = useMemo(() => {
-    if (!settlement?.flows) return undefined;
-    // Only extract the token addresses that useTokenMetadata actually needs.
-    return settlement.flows.map(flow => ({ token: flow.token }));
-  }, [settlement?.flows]);
-
-  const tokenMetadata = useTokenMetadata(flowsForTokenMetadata);
+  const tokensForDisplay = useTokensForDisplay(settlement?.flows.map(flow => flow.token) ?? []);
 
   const {
     isApproving,
@@ -110,10 +100,10 @@ export default function SettlementDetails () {
         <SettlementOverview settlement={settlement} />
         <SettlementFlows
         formattedFlows={formattedFlows}
-        tokenMetadata={tokenMetadata} />
+        tokenMetadata={tokensForDisplay} />
         <SettlementGraph
         flows={formattedFlows}
-        tokenMetadata={tokenMetadata} />
+        tokenMetadata={tokensForDisplay} />
         <SettlementApprovals
         approvingToken={approvingToken}
         currentUserAddress={address}

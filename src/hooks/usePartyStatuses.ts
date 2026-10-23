@@ -2,15 +2,14 @@ import { Address } from 'viem';
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
 import { FormattedTokenStatus, PartyApprovalStatus } from '../components/SettlementApprovals/types';
-import { useQuery } from '@tanstack/react-query';
-import { logger } from '../lib/logger';
-import { NetworkDeployment } from '../config/contracts/deployments';
 import { PartyStatus, Settlement, TokenStatus } from '../types/settlement-details';
 import { settlementManager } from '../components/SettlementApprovals/utils';
 import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
-import { useCurrentNetwork } from './useCurrentNetwork';
+import { TokenMetadata } from '../lib/token-metadata';
+import { TokenMetadataState, useTokensMetadata } from './useTokenMetadata';
 import { useCallback, useMemo } from 'react';
+import { useCurrentNetwork } from './useCurrentNetwork';
 import { useReadContract, useReadContracts } from 'wagmi';
 
 interface UsePartyStatusesOptions {
@@ -24,8 +23,7 @@ interface UsePartyStatusesOptions {
  * connected address's own status and whether every approval the settlement needs is made.
  */
 export function usePartyStatuses ({ settlementId, settlement, address }: UsePartyStatusesOptions) {
-  const networkDeployment = useCurrentNetwork();
-  const { deployment, network } = networkDeployment;
+  const { deployment, network } = useCurrentNetwork();
   const parties = useMemo(() => (settlement ? settlements.parties(settlement) : []), [settlement]);
   const query = {
     enabled: settlement !== undefined,
@@ -61,22 +59,17 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
     });
   }, [partyStatusesQuery.data]);
 
-  const settlementKey = `${network.chainId}-${deployment.dvpAddress}-${settlementId}`;
-  const formattedPartyStatusesQuery = useQuery({
-    queryKey: ['formattedPartyStatuses', settlementKey, partyStatuses],
-    queryFn: () => Promise.all(parties.map((party, index) => formatPartyStatus({
+  const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);
+  const isLoadingTokensMetadata = Object.values(tokensMetadata).some(token => token.isLoading);
+  const formattedPartyStatuses = useMemo(() => {
+    if (!partyStatuses || isLoadingTokensMetadata) return undefined;
+    return parties.map((party, index) => formatPartyStatus({
       address: party,
       error: partyStatusesQuery.data?.[index].error,
-      networkDeployment,
-      partyStatus: partyStatuses?.[index],
-    }))),
-    enabled: partyStatuses !== undefined,
-    // Keep showing the last statuses while new ones are formatted, but not another settlement's.
-    placeholderData: (previousData, previousQuery) => (
-      previousQuery?.queryKey[1] === settlementKey ? previousData : undefined
-    ),
-    staleTime: Infinity,
-  });
+      partyStatus: partyStatuses[index],
+      tokensMetadata,
+    }));
+  }, [parties, partyStatuses, partyStatusesQuery.data, isLoadingTokensMetadata, tokensMetadata]);
 
   const currentPartyStatus = address
     ? partyStatuses?.[parties.indexOf(address.toLowerCase() as Address)] ?? null
@@ -105,8 +98,8 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
   );
 
   return {
-    partyStatuses: formattedPartyStatusesQuery.data ?? loadingPartyStatuses,
-    hasLoaded: formattedPartyStatusesQuery.data !== undefined,
+    partyStatuses: formattedPartyStatuses ?? loadingPartyStatuses,
+    hasLoaded: formattedPartyStatuses !== undefined,
     currentPartyStatus,
     allApprovalsComplete,
     refetch,
@@ -116,20 +109,20 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
 interface FormatPartyStatusOptions {
   address: Address;
   error: Error | undefined;
-  networkDeployment: NetworkDeployment;
   partyStatus: PartyStatus | undefined;
+  tokensMetadata: Record<string, TokenMetadataState>;
 }
 
 /**
  * A party's status with its token amounts formatted for display, or the error which stopped it
  * being read.
  */
-async function formatPartyStatus ({
+function formatPartyStatus ({
   address,
   error,
-  networkDeployment,
   partyStatus,
-}: FormatPartyStatusOptions): Promise<PartyApprovalStatus> {
+  tokensMetadata,
+}: FormatPartyStatusOptions): PartyApprovalStatus {
   if (!partyStatus) {
     const parsedError = errorManager.parse(error, { partyAddress: address });
     errorManager.log(parsedError, { partyAddress: address });
@@ -148,30 +141,20 @@ async function formatPartyStatus ({
     ...partyStatus,
     address,
     isLoading: false,
-    tokenStatuses: await Promise.all(partyStatus.tokenStatuses.map(
-      tokenStatus => formatTokenStatus(tokenStatus, networkDeployment),
-    )),
+    tokenStatuses: partyStatus.tokenStatuses.map(
+      tokenStatus => formatTokenStatus(tokenStatus, tokensMetadata[tokenStatus.tokenAddress.toLowerCase()]?.metadata),
+    ),
   };
 }
 
-async function formatTokenStatus (
+function formatTokenStatus (
   tokenStatus: TokenStatus,
-  networkDeployment: NetworkDeployment,
-): Promise<FormattedTokenStatus> {
-  const { amountOrIdApprovedForDvp, amountOrIdHeldByParty, amountOrIdRequired, tokenAddress } = tokenStatus;
+  metadata: TokenMetadata | undefined,
+): FormattedTokenStatus {
+  const { amountOrIdApprovedForDvp, amountOrIdHeldByParty, amountOrIdRequired } = tokenStatus;
   const isMaxApproval = settlementManager.isMaxApproval(amountOrIdApprovedForDvp);
 
-  try {
-    return {
-      ...tokenStatus,
-      formattedRequired: await tokenManager.formatTokenAmount(amountOrIdRequired, tokenAddress, networkDeployment),
-      formattedApproved: await tokenManager.formatTokenAmount(amountOrIdApprovedForDvp, tokenAddress, networkDeployment),
-      formattedHeld: await tokenManager.formatTokenAmount(amountOrIdHeldByParty, tokenAddress, networkDeployment),
-      symbol: await tokenManager.tokenSymbol(tokenAddress, networkDeployment),
-      isMaxApproval,
-    };
-  } catch (error) {
-    logger.error(`Error formatting token status for ${tokenAddress}:`, error);
+  if (!metadata) {
     return {
       ...tokenStatus,
       formattedRequired: amountOrIdRequired.toString(),
@@ -181,4 +164,13 @@ async function formatTokenStatus (
       isMaxApproval,
     };
   }
+
+  return {
+    ...tokenStatus,
+    formattedRequired: tokenManager.formatAmount(amountOrIdRequired, metadata),
+    formattedApproved: tokenManager.formatAmount(amountOrIdApprovedForDvp, metadata),
+    formattedHeld: tokenManager.formatAmount(amountOrIdHeldByParty, metadata),
+    symbol: metadata.symbol,
+    isMaxApproval,
+  };
 }

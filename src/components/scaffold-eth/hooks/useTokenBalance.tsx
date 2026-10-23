@@ -1,4 +1,5 @@
-import { AssetType, tokenManager } from '../../../lib/token-manager';
+import { AssetType } from '../../../lib/token-metadata';
+import { tokenManager } from '../../../lib/token-manager';
 import { isAddress } from 'viem';
 import { logger } from '../../../lib/logger';
 import { useBalance } from 'wagmi';

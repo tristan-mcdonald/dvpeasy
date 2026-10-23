@@ -6,6 +6,7 @@ import PageSuspense from './components/PageSuspense';
 import RouteErrorBoundary from './components/RouteErrorBoundary';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { config } from './config/wagmi';
+import { ContractError } from './types/errors';
 import { hashFn } from 'wagmi/query';
 import { IStaticMethods } from 'flyonui/flyonui';
 import { lazy } from 'react';
@@ -36,7 +37,9 @@ const queryClient = new QueryClient({
     queries: {
       // Hashes bigints in query keys, as wagmi's own queries do.
       queryKeyHashFn: hashFn,
-      retry: 2,
+      retry: (failureCount, error) => (
+        failureCount < 2 && !(error instanceof ContractError && !error.isRetryable)
+      ),
       staleTime: 5000,
     },
   },

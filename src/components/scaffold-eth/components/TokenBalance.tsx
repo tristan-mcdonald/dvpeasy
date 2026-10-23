@@ -1,4 +1,4 @@
-import { AssetType } from '../../../lib/token-manager';
+import { AssetType } from '../../../lib/token-metadata';
 import { memo } from 'react';
 
 /**

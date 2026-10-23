@@ -1,5 +1,5 @@
 import Tooltip from '../../Tooltip';
-import { AssetType } from '../../../lib/token-manager';
+import { AssetType } from '../../../lib/token-metadata';
 import { Check, Copy, ExternalLink } from 'lucide-react';
 import { networkLinks } from '../../../lib/network-links';
 import { logger } from '../../../lib/logger';
