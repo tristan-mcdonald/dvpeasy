@@ -74,7 +74,7 @@ export const useTokenBalance = ({
   const storedSymbol = storedTokenData?.address.toLowerCase() === address.toLowerCase()
     ? storedTokenData.symbol
     : undefined;
-  const tokenMetadataQuery = useTokenMetadata(address);
+  const tokenMetadataQuery = useTokenMetadata(address, { isEnabled: !storedSymbol });
   const metadata = tokenMetadataQuery.data;
 
   const assetType = storedSymbol ? AssetType.ERC20 : metadata?.assetType ?? null;

@@ -16,10 +16,12 @@ export interface TokensMetadata {
 
 /**
  * A token's details on the network in the URL, read once and shared with every other reader.
+ * `isEnabled` is false where the caller already knows what it needs.
  */
-export function useTokenMetadata (tokenAddress: string) {
+export function useTokenMetadata (tokenAddress: string, { isEnabled = true } = {}) {
   const networkDeployment = useCurrentNetwork();
-  return useQuery(tokenMetadataQuery({ networkDeployment, tokenAddress }));
+  const query = tokenMetadataQuery({ networkDeployment, tokenAddress });
+  return useQuery({ ...query, enabled: isEnabled && query.enabled });
 }
 
 /**
@@ -40,9 +42,9 @@ export function useTokensMetadata (tokenAddresses: string[]): TokensMetadata {
   const combine = useCallback((results: UseQueryResult<TokenMetadata>[]): TokensMetadata => ({
     byAddress: Object.fromEntries(uniqueAddresses.map((address, index) => [address, {
       metadata: results[index].data,
-      isLoading: results[index].isLoading,
+      isLoading: isFirstRead(results[index]),
     }])),
-    isLoading: results.some(result => result.isLoading),
+    isLoading: results.some(isFirstRead),
   }), [uniqueAddresses]);
 
   return useQueries({ queries, combine });
@@ -60,4 +62,13 @@ export function useFetchTokenMetadata () {
     (tokenAddress: string) => queryClient.fetchQuery(tokenMetadataQuery({ networkDeployment, tokenAddress })),
     [networkDeployment, queryClient],
   );
+}
+
+/**
+ * Whether a token's details are being read for the first time. A token whose read failed is
+ * read again on the next mount or focus, but it keeps its fallback meanwhile, so that a failure
+ * doesn't put the page back into loading.
+ */
+function isFirstRead (result: UseQueryResult<TokenMetadata>): boolean {
+  return result.isLoading && !result.isFetched;
 }

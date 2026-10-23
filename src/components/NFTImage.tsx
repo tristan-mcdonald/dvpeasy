@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { nftImageQuery } from '../lib/nft';
+import { nftManager } from '../lib/nft';
 import NFTIcon from './NFTIcon';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useQuery } from '@tanstack/react-query';
@@ -31,10 +31,10 @@ export const NFTImage: FC<NFTImageProps> = ({
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
-  const { data: imageUrl = null, isLoading, isSuccess } = useQuery(
-    nftImageQuery({ chainId, tokenAddress, tokenId }),
+  const { data: imageUrl = null, isError, isLoading } = useQuery(
+    nftManager.imageQuery({ chainId, tokenAddress, tokenId }),
   );
-  const hasError = isSuccess && (imageUrl === null || failedImageUrl === imageUrl);
+  const hasError = isError || (imageUrl !== null && failedImageUrl === imageUrl);
   const imageLoaded = imageUrl !== null && loadedImageUrl === imageUrl;
 
   const handleImageLoad = () => {

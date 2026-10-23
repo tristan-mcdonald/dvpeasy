@@ -153,6 +153,26 @@ export const nftManager = {
   },
 
   /**
+   * The query for the URL of an NFT's image which loads. A missing image fails the query rather
+   * than being cached, so that it's tried again on the next mount.
+   */
+  imageQuery ({ chainId, tokenAddress, tokenId }: { chainId: number; tokenAddress: string; tokenId: string }) {
+    return queryOptions({
+      queryKey: ['nftImage', chainId, tokenAddress.toLowerCase(), tokenId],
+      queryFn: async () => {
+        const url = await this.fetchNFTImage(tokenAddress, tokenId, chainId);
+        if (!url || !await this.preloadImage(url)) {
+          throw new NFTMetadataError('No image which loads', tokenAddress, tokenId);
+        }
+        return url;
+      },
+      enabled: Boolean(tokenAddress && tokenId),
+      retry: false,
+      staleTime: Infinity,
+    });
+  },
+
+  /**
    * Preloads an image to check if it's accessible.
    */
   preloadImage (src: string): Promise<boolean> {
@@ -165,21 +185,3 @@ export const nftManager = {
   },
 };
 
-/**
- * The query for an NFT's image URL, or `null` when it has none which loads.
- */
-export function nftImageQuery ({ chainId, tokenAddress, tokenId }: {
-  chainId: number;
-  tokenAddress: string;
-  tokenId: string;
-}) {
-  return queryOptions({
-    queryKey: ['nftImage', chainId, tokenAddress.toLowerCase(), tokenId],
-    queryFn: async () => {
-      const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
-      return url && await nftManager.preloadImage(url) ? url : null;
-    },
-    enabled: Boolean(tokenAddress && tokenId),
-    staleTime: Infinity,
-  });
-}
