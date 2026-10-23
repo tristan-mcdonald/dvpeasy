@@ -34,17 +34,16 @@ export function useSettlement (settlementId: string | undefined) {
   const settlement = settlementQuery.data;
 
   const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);
-  const isLoadingTokensMetadata = Object.values(tokensMetadata).some(token => token.isLoading);
   const formattedFlows = useMemo(() => {
-    if (!settlement || isLoadingTokensMetadata) return [];
+    if (!settlement || tokensMetadata.isLoading) return [];
     return settlement.flows.map((flow): FormattedFlow => ({
       ...flow,
       formattedAmount: tokenManager.formatAmount(
         flow.amountOrId,
-        tokensMetadata[flow.token.toLowerCase()].metadata,
+        tokensMetadata.byAddress[flow.token.toLowerCase()].metadata,
       ),
     }));
-  }, [settlement, isLoadingTokensMetadata, tokensMetadata]);
+  }, [settlement, tokensMetadata]);
 
   // A failed poll keeps the settlement already read, so only a failed first read is an error.
   const error = useMemo(() => {
@@ -56,7 +55,7 @@ export function useSettlement (settlementId: string | undefined) {
   return {
     settlement,
     formattedFlows,
-    isLoading: settlementQuery.isLoading || isLoadingTokensMetadata,
+    isLoading: settlementQuery.isLoading || tokensMetadata.isLoading,
     error,
     refetch: settlementQuery.refetch,
   };

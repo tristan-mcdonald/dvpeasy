@@ -1,5 +1,4 @@
 import { Address, erc20Abi, erc721Abi, isAddress, zeroAddress } from 'viem';
-import { ContractValidationError, contractValidationManager } from './contract-validation';
 import { DVP_ABI } from '../config/contracts/abis';
 import { NetworkDeployment } from '../config/contracts/deployments';
 import { publicClientFor } from '../config/wagmi';
@@ -55,50 +54,37 @@ async function readTokenMetadata (
   const assetType = await readAssetType(tokenAddress, networkDeployment);
   const publicClient = publicClientFor(networkDeployment.network.chainId);
 
-  try {
-    if (assetType === AssetType.ERC721) {
-      const [symbol, name] = await Promise.all([
-        publicClient.readContract({ address: tokenAddress, abi: erc721Abi, functionName: 'symbol' })
-          .catch(() => 'NFT'),
-        publicClient.readContract({ address: tokenAddress, abi: erc721Abi, functionName: 'name' })
-          .catch(() => 'Unknown NFT'),
-      ]);
-      return { assetType, decimals: 0, name: name || 'Unknown NFT', symbol: symbol || 'NFT' };
-    }
-
-    const [decimals, symbol, name] = await Promise.all([
-      // Decimals have no safe default: a wrong guess scales every amount by a power of ten.
-      publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'decimals' })
-        .catch((error) => {
-          throw new TokenDetectionError('Could not read the token\'s decimals; please try again', tokenAddress, error);
-        }),
-      publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'symbol' })
-        .catch(() => 'TOKEN'),
-      publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'name' })
-        .catch(() => 'Unknown Token'),
+  if (assetType === AssetType.ERC721) {
+    const [symbol, name] = await Promise.all([
+      publicClient.readContract({ address: tokenAddress, abi: erc721Abi, functionName: 'symbol' })
+        .catch(() => 'NFT'),
+      publicClient.readContract({ address: tokenAddress, abi: erc721Abi, functionName: 'name' })
+        .catch(() => 'Unknown NFT'),
     ]);
-    return { assetType, decimals, name: name || 'Unknown Token', symbol: symbol || 'TOKEN' };
-  } catch (error) {
-    if (error instanceof TokenDetectionError) throw error;
-    throw new TokenDetectionError('Could not read the token\'s details; please try again', tokenAddress, error);
+    return { assetType, decimals: 0, name: name || 'Unknown NFT', symbol: symbol || 'NFT' };
   }
+
+  const [decimals, symbol, name] = await Promise.all([
+    // Decimals have no safe default: a wrong guess scales every amount by a power of ten.
+    publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'decimals' })
+      .catch((error) => {
+        throw new TokenDetectionError('Could not read the token\'s decimals; please try again', tokenAddress, error);
+      }),
+    publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'symbol' })
+      .catch(() => 'TOKEN'),
+    publicClient.readContract({ address: tokenAddress, abi: erc20Abi, functionName: 'name' })
+      .catch(() => 'Unknown Token'),
+  ]);
+  return { assetType, decimals, name: name || 'Unknown Token', symbol: symbol || 'TOKEN' };
 }
 
 /**
- * Whether a token is the native token, an ERC-20 or an ERC-721, as the DVP contract sees it.
+ * Whether a token is an ERC-20 or an ERC-721, as the DVP contract sees it.
  */
 async function readAssetType (
-  tokenAddress: string,
+  tokenAddress: Address,
   networkDeployment: NetworkDeployment,
-): Promise<AssetType> {
-  if (!tokenAddress || !contractValidationManager.isValidAddress(tokenAddress)) {
-    throw new ContractValidationError('Invalid token address format', tokenAddress, 'tokenAddress');
-  }
-
-  if (tokenAddress === zeroAddress) {
-    return AssetType.ETH;
-  }
-
+): Promise<AssetType.ERC20 | AssetType.ERC721> {
   const { deployment, network } = networkDeployment;
   const publicClient = publicClientFor(network.chainId);
 

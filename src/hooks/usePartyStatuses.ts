@@ -60,16 +60,15 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
   }, [partyStatusesQuery.data]);
 
   const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);
-  const isLoadingTokensMetadata = Object.values(tokensMetadata).some(token => token.isLoading);
   const formattedPartyStatuses = useMemo(() => {
-    if (!partyStatuses || isLoadingTokensMetadata) return undefined;
+    if (!partyStatuses || tokensMetadata.isLoading) return undefined;
     return parties.map((party, index) => formatPartyStatus({
       address: party,
       error: partyStatusesQuery.data?.[index].error,
       partyStatus: partyStatuses[index],
-      tokensMetadata,
+      tokensMetadataByAddress: tokensMetadata.byAddress,
     }));
-  }, [parties, partyStatuses, partyStatusesQuery.data, isLoadingTokensMetadata, tokensMetadata]);
+  }, [parties, partyStatuses, partyStatusesQuery.data, tokensMetadata]);
 
   const currentPartyStatus = address
     ? partyStatuses?.[parties.indexOf(address.toLowerCase() as Address)] ?? null
@@ -110,7 +109,7 @@ interface FormatPartyStatusOptions {
   address: Address;
   error: Error | undefined;
   partyStatus: PartyStatus | undefined;
-  tokensMetadata: Record<string, TokenMetadataState>;
+  tokensMetadataByAddress: Record<string, TokenMetadataState>;
 }
 
 /**
@@ -121,7 +120,7 @@ function formatPartyStatus ({
   address,
   error,
   partyStatus,
-  tokensMetadata,
+  tokensMetadataByAddress,
 }: FormatPartyStatusOptions): PartyApprovalStatus {
   if (!partyStatus) {
     const parsedError = errorManager.parse(error, { partyAddress: address });
@@ -142,7 +141,7 @@ function formatPartyStatus ({
     address,
     isLoading: false,
     tokenStatuses: partyStatus.tokenStatuses.map(
-      tokenStatus => formatTokenStatus(tokenStatus, tokensMetadata[tokenStatus.tokenAddress.toLowerCase()]?.metadata),
+      tokenStatus => formatTokenStatus(tokenStatus, tokensMetadataByAddress[tokenStatus.tokenAddress.toLowerCase()]?.metadata),
     ),
   };
 }

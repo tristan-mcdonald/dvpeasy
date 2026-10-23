@@ -22,12 +22,13 @@ export function useTokensForDisplay (tokenAddresses: string[]): Record<string, T
   const tokensMetadata = useTokensMetadata(tokenAddresses);
   const { tokens: listedTokens, isLoading: isLoadingList } = useTokenData(chainId, Infinity);
 
-  return useMemo(() => {
-    const listedTokensByAddress = new Map(
-      listedTokens.map(listedToken => [listedToken.address.toLowerCase(), listedToken]),
-    );
+  const listedTokensByAddress = useMemo(
+    () => new Map(listedTokens.map(listedToken => [listedToken.address.toLowerCase(), listedToken])),
+    [listedTokens],
+  );
 
-    return Object.fromEntries(Object.entries(tokensMetadata).map(([address, { metadata, isLoading }]) => {
+  return useMemo(() => {
+    return Object.fromEntries(Object.entries(tokensMetadata.byAddress).map(([address, { metadata, isLoading }]) => {
       const listedToken = listedTokensByAddress.get(address);
       const symbol = listedToken?.symbol ?? metadata?.symbol ?? 'TOKEN';
       return [address, {
@@ -39,5 +40,5 @@ export function useTokensForDisplay (tokenAddresses: string[]): Record<string, T
         trustWalletLogoUrl: listedToken?.trustWalletLogoUrl,
       }];
     }));
-  }, [tokensMetadata, listedTokens, isLoadingList]);
+  }, [tokensMetadata, listedTokensByAddress, isLoadingList]);
 }

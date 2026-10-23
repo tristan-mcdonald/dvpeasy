@@ -77,17 +77,8 @@ export const useTokenBalance = ({
   const tokenMetadataQuery = useTokenMetadata(address);
   const metadata = tokenMetadataQuery.data;
 
-  let tokenSymbol = '';
-  let assetType: AssetType | null = null;
-  if (storedSymbol) {
-    tokenSymbol = storedSymbol;
-    assetType = AssetType.ERC20;
-  } else if (metadata) {
-    tokenSymbol = metadata.symbol;
-    assetType = metadata.assetType;
-  } else if (tokenMetadataQuery.isError) {
-    tokenSymbol = 'TOKEN';
-  }
+  const assetType = storedSymbol ? AssetType.ERC20 : metadata?.assetType ?? null;
+  const tokenSymbol = storedSymbol || metadata?.symbol || (tokenMetadataQuery.isError ? 'TOKEN' : '');
 
   const { data: userBalance, isLoading: isLoadingBalance } = useBalance({
     address: balanceAddress as Address | undefined,

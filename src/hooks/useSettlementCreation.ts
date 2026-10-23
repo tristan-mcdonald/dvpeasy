@@ -1,7 +1,6 @@
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAccount, useWalletClient } from 'wagmi';
 import { simulateContract, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { isAddressEqual, keccak256, toHex } from 'viem';
@@ -10,12 +9,13 @@ import { DVP_ABI } from '../config/contracts/abis';
 import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
 import { logger } from '../lib/logger';
 import { settlementErrorManager } from '../lib/settlement-error-utils';
-import { AssetType, tokenMetadataQuery } from '../lib/token-metadata';
+import { AssetType } from '../lib/token-metadata';
 import { TokenDetectionError } from '../types/errors';
 import { tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
 import { Flow } from '../types/settlement';
 import { useCurrentNetwork } from './useCurrentNetwork';
+import { useFetchTokenMetadata } from './useTokenMetadata';
 
 /**
  * Hook for handling settlement creation logic.
@@ -28,11 +28,7 @@ export function useSettlementCreation () {
   const networkDeployment = useCurrentNetwork();
   const { deployment, network } = networkDeployment;
   const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
-
-  const readTokenMetadata = (tokenAddress: string) => queryClient.fetchQuery(
-    tokenMetadataQuery({ networkDeployment, tokenAddress }),
-  );
+  const fetchTokenMetadata = useFetchTokenMetadata();
 
   /**
    * Verify asset type and parse token amount for a flow.
@@ -40,7 +36,7 @@ export function useSettlementCreation () {
   const verifyAndParseFlow = async (flow: Flow) => {
     try {
       // Double-check asset type detection for accuracy.
-      const metadata = await readTokenMetadata(flow.token);
+      const metadata = await fetchTokenMetadata(flow.token);
       const detectedIsNFT = metadata.assetType === AssetType.ERC721;
 
       if (detectedIsNFT !== flow.isNFT) {
@@ -71,7 +67,7 @@ export function useSettlementCreation () {
     for (let i = 0; i < flows.length; i++) {
       const flow = flows[i];
       try {
-        const { assetType } = await readTokenMetadata(flow.token);
+        const { assetType } = await fetchTokenMetadata(flow.token);
         const detectedIsNFT = assetType === AssetType.ERC721;
 
         if (detectedIsNFT !== flow.isNFT) {

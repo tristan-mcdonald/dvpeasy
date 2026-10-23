@@ -1,6 +1,7 @@
 import { Address, erc721Abi } from 'viem';
 import { logger } from './logger';
 import { publicClientFor } from '../config/wagmi';
+import { queryOptions } from '@tanstack/react-query';
 
 export interface NFTMetadata {
   name?: string;
@@ -163,3 +164,22 @@ export const nftManager = {
     });
   },
 };
+
+/**
+ * The query for an NFT's image URL, or `null` when it has none which loads.
+ */
+export function nftImageQuery ({ chainId, tokenAddress, tokenId }: {
+  chainId: number;
+  tokenAddress: string;
+  tokenId: string;
+}) {
+  return queryOptions({
+    queryKey: ['nftImage', chainId, tokenAddress.toLowerCase(), tokenId],
+    queryFn: async () => {
+      const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
+      return url && await nftManager.preloadImage(url) ? url : null;
+    },
+    enabled: Boolean(tokenAddress && tokenId),
+    staleTime: Infinity,
+  });
+}

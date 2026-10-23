@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { nftManager } from '../lib/nft';
+import { nftImageQuery } from '../lib/nft';
 import NFTIcon from './NFTIcon';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useQuery } from '@tanstack/react-query';
@@ -31,19 +31,10 @@ export const NFTImage: FC<NFTImageProps> = ({
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
-  const imageQuery = useQuery({
-    queryKey: ['nftImage', chainId, tokenAddress.toLowerCase(), tokenId],
-    queryFn: async () => {
-      const url = await nftManager.fetchNFTImage(tokenAddress, tokenId, chainId);
-      // Only an image which loads is shown; any other is treated as missing.
-      return url && await nftManager.preloadImage(url) ? url : null;
-    },
-    enabled: Boolean(tokenAddress && tokenId),
-    staleTime: Infinity,
-  });
-  const imageUrl = imageQuery.data ?? null;
-  const isLoading = imageQuery.isLoading;
-  const hasError = imageQuery.isSuccess && (imageUrl === null || failedImageUrl === imageUrl);
+  const { data: imageUrl = null, isLoading, isSuccess } = useQuery(
+    nftImageQuery({ chainId, tokenAddress, tokenId }),
+  );
+  const hasError = isSuccess && (imageUrl === null || failedImageUrl === imageUrl);
   const imageLoaded = imageUrl !== null && loadedImageUrl === imageUrl;
 
   const handleImageLoad = () => {
