@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { isAddress } from 'viem';
 import { ArrowDownRight, ArrowUpRight, Coins, Hash, X } from 'lucide-react';
-import { logger } from '../../lib/logger';
 import { AssetType, TokenDetectionError, tokenManager } from '../../lib/token-manager';
 import { utilityManager } from '../../lib/utils';
 import { inputValidationManager } from '../../lib/validation';
@@ -36,6 +35,9 @@ export const FlowInput: FC<FlowInputProps> = ({
       if (flow.token) {
         try {
           const type = await tokenManager.detectAssetType(flow.token, networkDeployment);
+          // Read every detail now, so that a token whose decimals can't be read is refused here
+          // rather than when the settlement is submitted.
+          const metadata = await tokenManager.tokenMetadata(flow.token, networkDeployment);
           setAssetType(type);
           setError(null);
           setAmountError(null); // Clear amount errors when asset type changes.
@@ -45,18 +47,7 @@ export const FlowInput: FC<FlowInputProps> = ({
             onChange({ ...flow, isNFT: type === AssetType.ERC721 });
           }
 
-          // Fetch token symbol for ERC20 and native tokens.
-          if (type === AssetType.ERC20 || type === AssetType.ETH) {
-            try {
-              const symbol = await tokenManager.tokenSymbol(flow.token, networkDeployment);
-              setTokenSymbol(symbol);
-            } catch (symbolError) {
-              logger.warn('Failed to fetch token symbol:', symbolError);
-              setTokenSymbol('TOKEN');
-            }
-          } else {
-            setTokenSymbol('');
-          }
+          setTokenSymbol(type === AssetType.ERC721 ? '' : metadata.symbol);
         } catch (error) {
           if (error instanceof TokenDetectionError) {
             setError(error.message);
