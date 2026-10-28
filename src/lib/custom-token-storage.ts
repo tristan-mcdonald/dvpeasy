@@ -2,7 +2,7 @@
  * Custom token storage utilities for the TokenSelect component.
  * Handles user-defined tokens stored in localStorage with network-aware management.
  */
-import { TokenMetadata } from './token-api';
+import { ListedToken } from '../types/tokens';
 import { logger } from './logger';
 
 /**
@@ -11,7 +11,7 @@ import { logger } from './logger';
 const CUSTOM_TOKENS_KEY = 'dvp-custom-tokens';
 
 export interface CustomTokensStorage {
-  chainTokens: Record<number, TokenMetadata[]>;
+  chainTokens: Record<number, ListedToken[]>;
   lastUpdated: number;
 }
 
@@ -46,7 +46,7 @@ export const tokenStorage = {
   /**
    * Save custom tokens for a specific chain.
    */
-_saveCustomTokensForChain (chainId: number, tokens: TokenMetadata[]): void {
+_saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
     try {
       const data = this._getStorage();
       data.chainTokens[chainId] = tokens;
@@ -60,7 +60,7 @@ _saveCustomTokensForChain (chainId: number, tokens: TokenMetadata[]): void {
 /**
    * Load custom tokens for a specific chain.
    */
-  getCustomTokensForChain (chainId: number): TokenMetadata[] {
+  getCustomTokensForChain (chainId: number): ListedToken[] {
     try {
       const data = this._getStorage();
       return data.chainTokens[chainId] || [];
@@ -74,7 +74,7 @@ _saveCustomTokensForChain (chainId: number, tokens: TokenMetadata[]): void {
   /**
    * Add a new custom token for a specific chain.
    */
-  addCustomTokenForChain (token: TokenMetadata, chainId: number): TokenMetadata[] {
+  addCustomTokenForChain (token: ListedToken, chainId: number): ListedToken[] {
     const existing = this.getCustomTokensForChain(chainId);
 
     // Ensure token has chainId set.
@@ -99,7 +99,7 @@ _saveCustomTokensForChain (chainId: number, tokens: TokenMetadata[]): void {
   /**
    * Search custom tokens by symbol, name, or address for a specific chain.
    */
-  searchCustomTokens (query: string, chainId: number): TokenMetadata[] {
+  searchCustomTokens (query: string, chainId: number): ListedToken[] {
     const customTokens = this.getCustomTokensForChain(chainId);
     const searchTerm = query.toLowerCase().trim();
 
@@ -117,7 +117,7 @@ _saveCustomTokensForChain (chainId: number, tokens: TokenMetadata[]): void {
   /**
    * Remove a custom token by address from a specific chain.
    */
-  removeCustomTokenFromChain (address: string, chainId: number): TokenMetadata[] {
+  removeCustomTokenFromChain (address: string, chainId: number): ListedToken[] {
     const existing = this.getCustomTokensForChain(chainId);
     const updated = existing.filter(token =>
       token.address.toLowerCase() !== address.toLowerCase(),

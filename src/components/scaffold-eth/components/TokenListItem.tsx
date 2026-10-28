@@ -1,21 +1,21 @@
 import { Check } from 'lucide-react';
+import { ListedToken } from '../../../types/tokens';
 import { memo, ReactNode } from 'react';
 import { TOKEN_CONTAINER_CLASSES } from '../utils/tokenSizeUtils';
 import { TokenLogoResolver } from './TokenLogoResolver';
-import { TokenMetadata } from '../../../lib/token-api';
 
 /**
  * Props for the TokenListItem component.
  */
 interface TokenListItemProps {
   /** Token metadata to display */
-  token: TokenMetadata;
+  token: ListedToken;
   /** Currently selected token value for comparison */
   selectedValue: string;
   /** Whether this is a custom token */
   isCustomToken: boolean;
   /** Callback when token is selected */
-  onSelect: (token: TokenMetadata) => void;
+  onSelect: (token: ListedToken) => void;
   /** Optional additional actions (e.g., remove button for custom tokens) */
   actions?: ReactNode;
 }

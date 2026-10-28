@@ -1,7 +1,7 @@
 import { networkLinks } from '../lib/network-links';
 import { Network, networks } from '../config/networks';
+import { ListedToken } from '../types/tokens';
 import { logger } from '../lib/logger';
-import { TokenMetadata } from '../lib/token-api';
 import { tokenStorage } from '../lib/custom-token-storage';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -42,7 +42,7 @@ export interface TokenSearchOptions {
  */
 export interface TokenSearchResult {
   /** Matching tokens */
-  tokens: TokenMetadata[];
+  tokens: ListedToken[];
   /** Search query used */
   query: string;
   /** Total results found */
@@ -57,7 +57,7 @@ export interface TokenSearchResult {
 /**
  * The tokens offered on a test network: its list of test tokens, or only its native token.
  */
-function getTestnetTokens (network: Network): TokenMetadata[] {
+function getTestnetTokens (network: Network): ListedToken[] {
   const tokens = network.testTokens ?? [network.nativeToken];
   return tokens.map((token) => ({
     address: token.address,
@@ -73,7 +73,7 @@ function getTestnetTokens (network: Network): TokenMetadata[] {
 /**
  * Fetch tokens from 1Inch API for mainnet networks.
  */
-async function fetchMainnetTokens (chainId: number): Promise<TokenMetadata[]> {
+async function fetchMainnetTokens (chainId: number): Promise<ListedToken[]> {
   const network = networks.byChainId(chainId)!;
 
   try {
@@ -121,11 +121,11 @@ async function fetchMainnetTokens (chainId: number): Promise<TokenMetadata[]> {
 }
 
 /**
- * Transform 1Inch API response data into TokenMetadata array.
+ * Transform 1Inch API response data into ListedToken array.
  */
-function transformTokensData (tokensData: Record<string, unknown>, chainId: number): TokenMetadata[] {
+function transformTokensData (tokensData: Record<string, unknown>, chainId: number): ListedToken[] {
   const network = networks.byChainId(chainId)!;
-  const tokens: TokenMetadata[] = [];
+  const tokens: ListedToken[] = [];
 
   // First, add native token.
   tokens.push({
@@ -166,7 +166,7 @@ function transformTokensData (tokensData: Record<string, unknown>, chainId: numb
 /**
  * Calculate relevance score for search result ranking. Higher scores appear first in results.
  */
-function calculateRelevanceScore (token: TokenMetadata, query: string): number {
+function calculateRelevanceScore (token: ListedToken, query: string): number {
   const normalizedQuery = query.toLowerCase().trim();
   const symbol = token.symbol.toLowerCase();
   const name = token.name.toLowerCase();
@@ -202,12 +202,12 @@ function calculateRelevanceScore (token: TokenMetadata, query: string): number {
  * Merge and rank tokens from different sources with relevance scoring.
  */
 function mergeAndRankTokens (
-  apiTokens: TokenMetadata[],
-  customTokens: TokenMetadata[],
+  apiTokens: ListedToken[],
+  customTokens: ListedToken[],
   query: string,
   maxResults: number,
-): { tokens: TokenMetadata[]; counts: TokenSearchResult['counts'] } {
-  const tokenMap = new Map<string, TokenMetadata & { relevanceScore: number; source: string }>();
+): { tokens: ListedToken[]; counts: TokenSearchResult['counts'] } {
+  const tokenMap = new Map<string, ListedToken & { relevanceScore: number; source: string }>();
   const counts = { api: 0, custom: 0 };
 
   // Add custom tokens first.
@@ -262,7 +262,7 @@ export function useTokenData (chainId: number, limit: number = 100) {
     refetch,
   } = useQuery({
     queryKey: ['unified-token-data', chainId],
-    queryFn: async (): Promise<TokenMetadata[]> => {
+    queryFn: async (): Promise<ListedToken[]> => {
       const network = networks.byChainId(chainId);
 
       if (!network) {
@@ -290,7 +290,7 @@ export function useTokenData (chainId: number, limit: number = 100) {
     return stored.map(token => ({
       ...token,
       chainId: token.chainId || chainId,
-    })) as TokenMetadata[];
+    })) as ListedToken[];
   }, [chainId]);
 
   // Combine API tokens with custom tokens for dropdown.

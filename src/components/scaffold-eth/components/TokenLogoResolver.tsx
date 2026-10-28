@@ -1,15 +1,15 @@
 import { CustomTokenIcon } from './CustomTokenIcon';
 import { getTokenSizeClasses, normalizeTokenSymbol, TokenSizeVariant } from '../utils/tokenSizeUtils';
+import { ListedToken } from '../../../types/tokens';
 import { memo, useCallback, useState } from 'react';
 import { TokenLogo } from '../../TokenLogo';
-import { TokenMetadata } from '../../../lib/token-api';
 
 /**
  * Props for the TokenLogoResolver component.
  */
 interface TokenLogoResolverProps {
   /** Token metadata containing address, symbol, and logo information */
-  token: TokenMetadata;
+  token: ListedToken;
   /** Size variant for the logo - defaults to 'sm' */
   size?: TokenSizeVariant;
   /** Whether this is a custom token (affects fallback behavior) */

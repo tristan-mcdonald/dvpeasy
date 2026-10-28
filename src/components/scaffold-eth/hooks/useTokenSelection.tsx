@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { isAddress } from 'viem';
-import { TokenMetadata } from '../../../lib/token-api';
+import { ListedToken } from '../../../types/tokens';
 import { tokenStorage } from '../../../lib/custom-token-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
@@ -40,13 +40,13 @@ interface UseTokenSelectionReturn {
   /** Handle input value changes */
   handleInputChange: (newValue: string) => void;
   /** Handle token selection from dropdown */
-  handleTokenSelect: (token: TokenMetadata) => void;
+  handleTokenSelect: (token: ListedToken) => void;
   /** Set dropdown open state */
   setIsDropdownOpen: (open: boolean) => void;
   /** Get custom tokens for current chain */
-  getCustomTokens: () => TokenMetadata[];
+  getCustomTokens: () => ListedToken[];
   /** Check if a token is custom */
-  isCustomToken: (token: TokenMetadata) => boolean;
+  isCustomToken: (token: ListedToken) => boolean;
   /** Remove a custom token */
   handleRemoveCustomToken: (tokenAddress: string, onSuccess?: () => void) => void;
   /** Get stored token data for the current value */
@@ -172,7 +172,7 @@ export const useTokenSelection = ({
    * Updates both input value and calls onChange callback.
    * Also stores token metadata for later use.
    */
-  const handleTokenSelect = useCallback((token: TokenMetadata) => {
+  const handleTokenSelect = useCallback((token: ListedToken) => {
     const newValue = token.address;
 
     // Mark that this is not user typing to prevent interference.
@@ -197,20 +197,20 @@ export const useTokenSelection = ({
    * Get custom tokens for the current chain.
    * Returns an array of custom tokens stored for the current network.
    */
-  const getCustomTokens = useCallback((): TokenMetadata[] => {
+  const getCustomTokens = useCallback((): ListedToken[] => {
     const customTokens = tokenStorage.getCustomTokensForChain(chainId);
-    // Ensure all tokens have required chainId for TokenMetadata compatibility.
+    // Ensure all tokens have required chainId for ListedToken compatibility.
     return customTokens.map(token => ({
       ...token,
       chainId: token.chainId || chainId,
-    })) as TokenMetadata[];
+    })) as ListedToken[];
   }, [chainId]);
 
   /**
    * Check if a token is custom.
    * Compares against the current chain's custom token list.
    */
-  const isCustomToken = useCallback((token: TokenMetadata): boolean => {
+  const isCustomToken = useCallback((token: ListedToken): boolean => {
     const customTokens = getCustomTokens();
     return customTokens.some(ct =>
       ct.address.toLowerCase() === token.address.toLowerCase(),

@@ -4,8 +4,8 @@ import { AlertCircle, Loader2, RefreshCw, X } from 'lucide-react';
 import { forwardRef, ReactNode } from 'react';
 import { networkLinks } from '../../lib/network-links';
 import { isAddress } from 'viem';
+import { ListedToken } from '../../types/tokens';
 import { networks } from '../../config/networks';
-import { TokenMetadata } from '../../lib/token-api';
 import { tokenStorage } from '../../lib/custom-token-storage';
 import { useAccount } from 'wagmi';
 import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
@@ -133,12 +133,12 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   const saveCustomTokenIfNeeded = (address: string) => {
     if (isAddress(address) && tokenSymbol && chainId) {
       const existingTokens = availableTokens || [];
-      const isExisting = existingTokens.some((existingToken: TokenMetadata) =>
+      const isExisting = existingTokens.some((existingToken: ListedToken) =>
         existingToken.address.toLowerCase() === address.toLowerCase(),
       );
 
       if (!isExisting) {
-        const newToken: TokenMetadata = {
+        const newToken: ListedToken = {
           address,
           symbol: tokenSymbol,
           name: tokenSymbol,
@@ -153,7 +153,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   /**
    * Handles token selection from dropdown and saves as custom token if needed.
    */
-  const handleTokenSelectWithStorage = (token: TokenMetadata) => {
+  const handleTokenSelectWithStorage = (token: ListedToken) => {
     handleTokenSelect(token);
     saveCustomTokenIfNeeded(token.address);
   };
@@ -173,7 +173,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
 
   // Separate custom tokens from tokens list for better organisation.
   const { customTokensToDisplay, tokensToDisplay } = allTokensToDisplay.reduce(
-    (acc: { customTokensToDisplay: TokenMetadata[]; tokensToDisplay: TokenMetadata[] }, token: TokenMetadata) => {
+    (acc: { customTokensToDisplay: ListedToken[]; tokensToDisplay: ListedToken[] }, token: ListedToken) => {
       if (isCustomToken(token)) {
         acc.customTokensToDisplay.push(token);
       } else {
@@ -181,7 +181,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
       }
       return acc;
     },
-    { customTokensToDisplay: [] as TokenMetadata[], tokensToDisplay: [] as TokenMetadata[] },
+    { customTokensToDisplay: [] as ListedToken[], tokensToDisplay: [] as ListedToken[] },
   );
 
   const isLoadingTokens = isLoadingTokenData;
@@ -275,7 +275,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
                         <div className="text-xs text-text-label mx-3 py-2 font-medium border-b border-interface-border">
                           Your custom tokens ({customTokensToDisplay.length})
                         </div>
-                        {customTokensToDisplay.map((token: TokenMetadata) => (
+                        {customTokensToDisplay.map((token: ListedToken) => (
                           <TokenListItem
                           actions={
                             <Tooltip content="Remove custom token">
@@ -308,7 +308,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
                             : `Tokens (${networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`
                           }
                         </div>
-                        {tokensToDisplay.map((token: TokenMetadata) => (
+                        {tokensToDisplay.map((token: ListedToken) => (
                           <TokenListItem
                           isCustomToken={false}
                           key={`token-${token.address}-${token.chainId}`}
