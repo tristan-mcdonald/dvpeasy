@@ -39,6 +39,15 @@ export interface FlowDraft {
   isNFT: boolean;
 }
 
-export interface FormattedFlow extends Flow {
-  formattedAmount: string;
+/**
+ * A flow as the flow cards and the graph show it: `amount` is formatted with the token's symbol,
+ * or as typed into the form.
+ */
+export interface FlowForDisplay {
+  token: string;
+  from: string;
+  to: string;
+  isNFT: boolean;
+  amount: string;
+  nftId?: string;
 }

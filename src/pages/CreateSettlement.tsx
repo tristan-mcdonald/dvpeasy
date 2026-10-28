@@ -3,7 +3,8 @@ import FlowModal from '../components/FlowModal';
 import HeaderLocal from '../components/HeaderLocal';
 import SettlementDetailsForm from '../components/CreateSettlement/SettlementDetailsForm';
 import SettlementFlows from '../components/SettlementFlows';
-import { FormEvent } from 'react';
+import { flowDisplay } from '../lib/flow-display';
+import { FormEvent, useMemo } from 'react';
 import { useFlowManagement } from '../hooks/useFlowManagement';
 import { useSettlementCreation } from '../hooks/useSettlementCreation';
 import { useSettlementForm } from '../hooks/useSettlementForm';
@@ -16,6 +17,10 @@ export default function CreateSettlement () {
   const { isLoading, createSettlement, isConnected } = useSettlementCreation();
 
   const tokensForDisplay = useTokensForDisplay(flowManagement.flows.map(flow => flow.token));
+  const flowsForDisplay = useMemo(
+    () => flowManagement.flows.map(flowDisplay.fromDraft),
+    [flowManagement.flows],
+  );
 
   /**
    * Handle form submission.
@@ -90,7 +95,7 @@ export default function CreateSettlement () {
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <SettlementFlows
-          flows={flowManagement.flows}
+          flows={flowsForDisplay}
           isEditMode={true}
           onAddFlow={flowManagement.handleAddFlow}
           onEditFlow={flowManagement.handleEditFlow}

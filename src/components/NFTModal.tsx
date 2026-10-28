@@ -1,20 +1,11 @@
 import NFTImage from './NFTImage';
-import { FlowDraft } from '../types/settlement';
+import { FlowForDisplay } from '../types/settlement';
 import { X } from 'lucide-react';
-
-interface FormattedFlow {
-  token: string;
-  isNFT: boolean;
-  from: string;
-  to: string;
-  amountOrId: bigint;
-  formattedAmount: string;
-}
 
 interface NFTModalProps {
   showNftModal: string | null;
   setShowNftModal: (modal: string | null) => void;
-  displayFlows: (FormattedFlow | FlowDraft)[];
+  displayFlows: FlowForDisplay[];
 }
 
 /**
@@ -27,10 +18,7 @@ export default function NFTModal ({
 }: NFTModalProps) {
   if (!showNftModal) return null;
 
-  const modalFlow = displayFlows.find((flow: FormattedFlow | FlowDraft) => {
-    const tokenId = 'amountOrId' in flow ? flow.amountOrId.toString() : flow.amount;
-    return `${flow.token}-${tokenId}` === showNftModal;
-  });
+  const modalFlow = displayFlows.find(flow => `${flow.token}-${flow.nftId}` === showNftModal);
 
   return (
     <div
@@ -48,12 +36,12 @@ export default function NFTModal ({
               <X />
             </button>
           </div>
-          {modalFlow && (
+          {modalFlow?.nftId && (
             <NFTImage
               showTokenId={true}
               size="large"
               tokenAddress={modalFlow.token}
-              tokenId={'amountOrId' in modalFlow ? modalFlow.amountOrId.toString() : modalFlow.amount}
+              tokenId={modalFlow.nftId}
             />
           )}
         </div>

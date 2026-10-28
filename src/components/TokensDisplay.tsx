@@ -1,6 +1,7 @@
 import NFTCollectionPreview from './NFTCollectionPreview';
 import Tooltip from './Tooltip';
 import { Flow } from '../types/settlement';
+import { flowDisplay } from '../lib/flow-display';
 import { memo, useMemo } from 'react';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
@@ -15,30 +16,10 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
   const tokensForDisplay = useTokensForDisplay(flows.map(flow => flow.token));
   const tokens = Object.entries(tokensForDisplay).map(([address, token]) => ({ address, ...token }));
 
-  // Create a mapping of collection address to first NFT ID for preview.
-  const getCollectionPreviews = (flows: Flow[]): Record<string, string> => {
-    const collectionPreviews: Record<string, string> = {};
-
-    // Filter to only NFT flows.
-    const nftFlows = flows.filter(flow => flow.isNFT);
-
-    // Group by token address and pick first NFT ID.
-    nftFlows.forEach(flow => {
-      const collectionAddress = flow.token.toLowerCase();
-
-      // Only set if we haven't seen this collection yet.
-      if (!collectionPreviews[collectionAddress]) {
-        collectionPreviews[collectionAddress] = flow.amountOrId.toString();
-      }
-    });
-
-    return collectionPreviews;
-  };
-
-  const collectionPreviews = useMemo(() =>
-    getCollectionPreviews(flows),
-    [flows],
-  );
+  const collectionPreviews = useMemo(() => flowDisplay.collectionPreviews(flows.map(flow => ({
+    token: flow.token,
+    nftId: flow.isNFT ? flow.amountOrId.toString() : undefined,
+  }))), [flows]);
 
   if (flows.length === 0) {
     return <span className="text-text-disabled text-sm">No tokens</span>;

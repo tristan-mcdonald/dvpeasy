@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable';
 import { FlowDraft } from '../types/settlement';
 import { useState } from 'react';
 
@@ -49,10 +50,10 @@ export function useFlowManagement (initialFlows: FlowDraft[] = []) {
   };
 
   /**
-   * Handle reordering flows.
+   * Handle moving a flow to another place in the list.
    */
-  const handleReorderFlows = (reorderedFlows: FlowDraft[]) => {
-    setFlows(reorderedFlows);
+  const handleReorderFlows = (oldIndex: number, newIndex: number) => {
+    setFlows(arrayMove(flows, oldIndex, newIndex));
   };
 
   /**

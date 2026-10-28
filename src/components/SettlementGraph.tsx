@@ -2,6 +2,7 @@ import './SettlementGraph.css';
 import { copyToClipboard } from '../lib/clipboard';
 import { cssCustomProperty, graphColors, nodeColors } from '../config/theme';
 import { drag } from 'd3-drag';
+import { FlowForDisplay } from '../types/settlement';
 import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
 import { select, Selection } from 'd3-selection';
 import { TokenForDisplay } from '../hooks/useTokensForDisplay';
@@ -45,14 +46,7 @@ interface GradientStop {
 type D3DragEventLocal = D3DragEvent<SVGGElement, D3SimulationNode, D3SimulationNode>;
 
 interface SettlementGraphProps {
-  flows: {
-    token: string;
-    isNFT: boolean;
-    from: string;
-    to: string;
-    amountOrId: bigint;
-    formattedAmount: string;
-  }[];
+  flows: FlowForDisplay[];
   tokenMetadata: Record<string, TokenForDisplay>;
 }
 
@@ -92,7 +86,7 @@ export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGra
       return {
         source: shortenedFrom,
         target: shortenedTo,
-        label: flow.formattedAmount,
+        label: flow.amount,
       };
     });
 

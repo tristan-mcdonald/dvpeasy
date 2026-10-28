@@ -7,12 +7,12 @@ import NFTCollectionPreview from './NFTCollectionPreview';
 import NFTIcon from './NFTIcon';
 import NFTModal from './NFTModal';
 import Tooltip from './Tooltip';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ArrowDownRight, ArrowUpRight, Check, Coins, Copy, Edit, ExternalLink, GripVertical, Hash, Loader2, Plus, Trash2, TriangleRight } from 'lucide-react';
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { flowsManager } from '../lib/flow-utils';
 import { CSS } from '@dnd-kit/utilities';
-import { FlowDraft } from '../types/settlement';
+import { flowDisplay } from '../lib/flow-display';
+import { FlowForDisplay } from '../types/settlement';
 import { networkLinks } from '../lib/network-links';
 import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
@@ -21,29 +21,19 @@ import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useMemo, useState, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 
-interface FormattedFlow {
-  token: string;
-  isNFT: boolean;
-  from: string;
-  to: string;
-  amountOrId: bigint;
-  formattedAmount: string;
-}
-
 interface SettlementFlowsProps {
-  formattedFlows?: FormattedFlow[];
-  flows?: FlowDraft[];
+  flows: FlowForDisplay[];
   tokenMetadata?: Record<string, TokenForDisplay>;
   isEditMode?: boolean;
   onEditFlow?: (index: number) => void;
   onRemoveFlow?: (index: number) => void;
-  onReorderFlows?: (flows: FlowDraft[]) => void;
+  onReorderFlows?: (oldIndex: number, newIndex: number) => void;
   onAddFlow?: () => void;
 }
 
 // Individual sortable flow item component.
 interface SortableFlowItemProps {
-  flow: FlowDraft | FormattedFlow;
+  flow: FlowForDisplay;
   index: number;
   isEditMode: boolean;
   tokenMetadata?: Record<string, TokenForDisplay>;
@@ -85,16 +75,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
     zIndex: isDragging ? 1000 : 'auto',
   };
 
-  // Handle different flow types.
-  const isFormattedFlow = 'amountOrId' in flow;
-  const token = flow.token;
-  const from = flow.from;
-  const to = flow.to;
-  const isNFT = flow.isNFT;
-  const amount = isFormattedFlow ? flow.formattedAmount : flow.amount;
-
-  // Safe BigInt conversion to avoid syntax errors.
-  const amountOrId = isFormattedFlow ? flow.amountOrId : flowsManager.safeAmountToBigInt(flow.amount);
+  const { token, from, to, isNFT, amount, nftId } = flow;
 
   return (
     <li
@@ -226,14 +207,14 @@ const SortableFlowItem = memo(function SortableFlowItem ({
           <LabelWithIcon icon={isNFT ? <Hash className="size-4" /> : <TriangleRight className="size-4" />}>
             {isNFT ? 'NFT ID' : 'Amount'}
           </LabelWithIcon>
-          {isNFT ? (
+          {nftId !== undefined ? (
             <div className="flex flex-auto items-center justify-between gap-2 w-full font-mono">
               <span className="wrap-anywhere">{amount}</span>
               <div className="flex items-center gap-1">
                 <Tooltip content="View NFT preview">
                   <button
                   className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction"
-                  onClick={() => setShowNftModal(`${token}-${amountOrId.toString()}`)}
+                  onClick={() => setShowNftModal(`${token}-${nftId}`)}
                   type="button">
                     <NFTIcon
                     className="transition-colors"
@@ -243,9 +224,9 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                 <Tooltip content="Copy NFT ID">
                   <button
                   className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction"
-                  onClick={() => onCopyNftId(amountOrId.toString())}
+                  onClick={() => onCopyNftId(nftId)}
                   type="button">
-                    {copiedNftId === amountOrId.toString() ? (
+                    {copiedNftId === nftId ? (
                       <Check className="size-4 text-success" />
                     ) : (
                       <Copy className="transition-colors size-4" />
@@ -253,7 +234,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                   </button>
                 </Tooltip>
                 {(() => {
-                  const nftMarketplaceUrl = networkLinks.nft(network.chainId, token, amountOrId.toString());
+                  const nftMarketplaceUrl = networkLinks.nft(network.chainId, token, nftId);
                   return nftMarketplaceUrl && !network.isTestnet && (
                     <Tooltip content="View on NFT marketplace">
                       <a
@@ -280,7 +261,6 @@ const SortableFlowItem = memo(function SortableFlowItem ({
 });
 
 export default function SettlementFlows ({
-  formattedFlows,
   flows,
   tokenMetadata,
   isEditMode = false,
@@ -311,14 +291,11 @@ export default function SettlementFlows ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over?.id && flows && onReorderFlows) {
+    if (active.id !== over?.id && onReorderFlows) {
       const oldIndex = flows.findIndex((_, index) => `flow-${index}` === active.id);
       const newIndex = flows.findIndex((_, index) => `flow-${index}` === over?.id);
 
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const reorderedFlows = arrayMove(flows, oldIndex, newIndex);
-        onReorderFlows(reorderedFlows);
-      }
+      if (oldIndex !== -1 && newIndex !== -1) onReorderFlows(oldIndex, newIndex);
     }
 
     setActiveId(null);
@@ -326,20 +303,13 @@ export default function SettlementFlows ({
 
   // Get the active flow being dragged for the overlay.
   const activeFlow = useMemo(() => {
-    if (!activeId || !flows) return null;
+    if (!activeId) return null;
     const index = parseInt(activeId.replace('flow-', ''));
     return flows[index] || null;
   }, [activeId, flows]);
 
-
-  // Use either formattedFlows or flows based on what's provided.
-  const displayFlows = useMemo(() => formattedFlows || flows || [], [formattedFlows, flows]);
-  const flowCount = displayFlows.length;
-
-  const collectionPreviews = useMemo(() =>
-    flowsManager.getCollectionPreviews(displayFlows),
-    [displayFlows],
-  );
+  const flowCount = flows.length;
+  const collectionPreviews = useMemo(() => flowDisplay.collectionPreviews(flows), [flows]);
 
   // Handle case when no flows and no add function is provided (read-only mode).
   if (flowCount === 0 && !onAddFlow) {
@@ -348,7 +318,7 @@ export default function SettlementFlows ({
     );
   }
 
-  const flowItems = displayFlows.map((flow, index) => (
+  const flowItems = flows.map((flow, index) => (
     <ErrorBoundary
     description="There was an error displaying this flow item. Other flows are still visible."
     fallback={
@@ -375,7 +345,7 @@ export default function SettlementFlows ({
 
   return (
     <div className="space-y-3">
-      {isEditMode && flows ? (
+      {isEditMode ? (
         // Show flows with drag & drop and add button.
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-14">
           <DndContext
@@ -427,7 +397,7 @@ export default function SettlementFlows ({
       )}
 
       <NFTModal
-      displayFlows={displayFlows}
+      displayFlows={flows}
       setShowNftModal={setShowNftModal}
       showNftModal={showNftModal} />
     </div>

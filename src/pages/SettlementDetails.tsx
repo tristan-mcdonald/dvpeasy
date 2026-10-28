@@ -21,7 +21,7 @@ export default function SettlementDetails () {
   const {
     settlementId,
     settlement,
-    formattedFlows,
+    flowsForDisplay,
     isLoading,
     error,
     isRefreshing,
@@ -99,10 +99,10 @@ export default function SettlementDetails () {
       <div className="space-y-8">
         <SettlementOverview settlement={settlement} />
         <SettlementFlows
-        formattedFlows={formattedFlows}
+        flows={flowsForDisplay}
         tokenMetadata={tokensForDisplay} />
         <SettlementGraph
-        flows={formattedFlows}
+        flows={flowsForDisplay}
         tokenMetadata={tokensForDisplay} />
         <SettlementApprovals
         approvingToken={approvingToken}

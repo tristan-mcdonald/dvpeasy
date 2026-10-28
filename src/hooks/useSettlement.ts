@@ -1,8 +1,7 @@
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
-import { FormattedFlow } from '../types/settlement';
+import { flowDisplay } from '../lib/flow-display';
 import { settlements } from '../lib/settlements';
-import { tokenManager } from '../lib/token-manager';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useMemo } from 'react';
 import { useReadContract } from 'wagmi';
@@ -11,7 +10,8 @@ import { useTokensMetadata } from './useTokenMetadata';
 const invalidIdError = errorManager.parse(new Error('Invalid settlement ID format'));
 
 /**
- * A settlement, and its flows with their amounts formatted, read again while it's open.
+ * A settlement, and its flows with their amounts formatted for display, read again while it's
+ * open.
  */
 export function useSettlement (settlementId: string | undefined) {
   const { deployment, network } = useCurrentNetwork();
@@ -35,15 +35,12 @@ export function useSettlement (settlementId: string | undefined) {
   const settlement = settlementQuery.data;
 
   const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);
-  const formattedFlows = useMemo(() => {
+  const flowsForDisplay = useMemo(() => {
     if (!settlement || tokensMetadata.isLoading) return [];
-    return settlement.flows.map((flow): FormattedFlow => ({
-      ...flow,
-      formattedAmount: tokenManager.formatAmount(
-        flow.amountOrId,
-        tokensMetadata.byAddress[flow.token.toLowerCase()].metadata,
-      ),
-    }));
+    return settlement.flows.map(flow => flowDisplay.fromContract(
+      flow,
+      tokensMetadata.byAddress[flow.token.toLowerCase()].metadata,
+    ));
   }, [settlement, tokensMetadata]);
 
   // A failed poll keeps the settlement already read, so only a failed first read is an error.
@@ -55,7 +52,7 @@ export function useSettlement (settlementId: string | undefined) {
 
   return {
     settlement,
-    formattedFlows,
+    flowsForDisplay,
     isLoading: settlementQuery.isLoading || tokensMetadata.isLoading,
     error,
     refetch: settlementQuery.refetch,

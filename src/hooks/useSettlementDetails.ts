@@ -19,7 +19,7 @@ export function useSettlementDetails () {
 
   const {
     settlement,
-    formattedFlows,
+    flowsForDisplay,
     isLoading,
     error,
     refetch: refetchSettlement,
@@ -46,7 +46,7 @@ export function useSettlementDetails () {
   return {
     settlementId,
     settlement,
-    formattedFlows,
+    flowsForDisplay,
     isLoading,
     error,
     isRefreshing,
