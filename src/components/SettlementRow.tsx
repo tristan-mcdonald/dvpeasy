@@ -1,10 +1,17 @@
 import TokensDisplay from './TokensDisplay';
 import { urlManager } from '../lib/url-manager';
 import { Check, Hourglass, X } from 'lucide-react';
-import { memo } from 'react';
-import { Settlement } from '../types/settlement';
+import { memo, ReactNode } from 'react';
+import { Settlement, SettlementStatus } from '../types/settlement';
+import { settlements } from '../lib/settlements';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
+
+const STATUS_DISPLAY: Record<SettlementStatus, { classColor: string; icon: ReactNode; text: string }> = {
+  expired: { classColor: 'text-error', icon: <X className="size-4 text-error/50" />, text: 'Expired' },
+  pending: { classColor: 'text-warning', icon: <Hourglass className="size-4 text-warning/50" />, text: 'Pending' },
+  settled: { classColor: 'text-success', icon: <Check className="size-4 text-success/50" />, text: 'Settled' },
+};
 
 interface SettlementRowProps {
   settlement: Settlement;
@@ -14,19 +21,7 @@ const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRow
   const navigate = useNavigate();
   const { deployment, network } = useCurrentNetwork();
 
-  const getSettlementStatus = () => {
-    if (settlement.isSettled) {
-      return { classColor: 'text-success', icon: <Check className="size-4 text-success/50" />, text: 'Settled' };
-    }
-
-    const isExpired = new Date().getTime() > settlement.cutoffDate;
-
-    return isExpired
-      ? { classColor: 'text-error', icon: <X className="size-4 text-error/50" />, text: 'Expired' }
-      : { classColor: 'text-warning', icon: <Hourglass className="size-4 text-warning/50" />, text: 'Pending' };
-  };
-
-  const status = getSettlementStatus();
+  const status = STATUS_DISPLAY[settlements.status(settlement)];
 
   const handleRowClick = () => {
     navigate(urlManager.buildSettlementUrl(network.id, deployment.version.tag, settlement.id));

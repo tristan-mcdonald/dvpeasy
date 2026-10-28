@@ -1,5 +1,28 @@
 import { Check, Hourglass, X } from 'lucide-react';
-import { Settlement } from '../types/settlement';
+import { ReactNode } from 'react';
+import { Settlement, SettlementStatus } from '../types/settlement';
+import { settlements } from '../lib/settlements';
+
+const STATUS_DISPLAY: Record<SettlementStatus, ReactNode> = {
+  expired: (
+    <span className="flex items-center gap-1 text-error">
+      <X className="size-5" />
+      <span>Expired</span>
+    </span>
+  ),
+  pending: (
+    <span className="flex items-center gap-1 text-attention">
+      <Hourglass className="size-5" />
+      <span>Pending</span>
+    </span>
+  ),
+  settled: (
+    <span className="flex items-center gap-1 text-success">
+      <Check className="size-5" />
+      <span>Settled</span>
+    </span>
+  ),
+};
 
 interface SettlementOverviewProps {
   settlement: Settlement;
@@ -7,7 +30,6 @@ interface SettlementOverviewProps {
 
 export default function SettlementOverview ({ settlement }: SettlementOverviewProps) {
   const cutoffDate = new Date(settlement.cutoffDate);
-  const isExpired = settlement.cutoffDate < Date.now();
 
   return (
     <div className="space-y-3">
@@ -15,22 +37,7 @@ export default function SettlementOverview ({ settlement }: SettlementOverviewPr
       <div className="sm:grid sm:grid-cols-3 gap-4 w-full shadow-standard rounded-lg bg-input-background border border-input-border">
         <div className="space-y-1 p-4">
           <span className="block label">Status</span>
-          {settlement.isSettled ? (
-            <span className="flex items-center gap-1 text-success">
-              <Check className="size-5" />
-              <span>Settled</span>
-            </span>
-          ) : isExpired ? (
-            <span className="flex items-center gap-1 text-error">
-              <X className="size-5" />
-              <span>Expired</span>
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-attention">
-              <Hourglass className="size-5" />
-              <span>Pending</span>
-            </span>
-          )}
+          {STATUS_DISPLAY[settlements.status(settlement)]}
         </div>
         <div className="space-y-1 p-4">
           <span className="block label">Cutoff date</span>

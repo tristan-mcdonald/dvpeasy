@@ -1,5 +1,12 @@
 import { Address, isAddressEqual } from 'viem';
-import { ContractPartyStatus, ContractSettlement, PartyStatus, Settlement, TokenStatus } from '../types/settlement';
+import {
+  ContractPartyStatus,
+  ContractSettlement,
+  PartyStatus,
+  Settlement,
+  SettlementStatus,
+  TokenStatus,
+} from '../types/settlement';
 
 /**
  * How often an open settlement's data is read again, in milliseconds.
@@ -37,6 +44,11 @@ export const settlements = {
 
   isExpired (settlement: Settlement): boolean {
     return settlement.cutoffDate < Date.now();
+  },
+
+  status (settlement: Settlement): SettlementStatus {
+    if (settlement.isSettled) return 'settled';
+    return this.isExpired(settlement) ? 'expired' : 'pending';
   },
 
   /**

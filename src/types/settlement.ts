@@ -12,6 +12,8 @@ export type Flow = ContractSettlement[2][number];
 
 export type TokenStatus = ContractPartyStatus[3][number];
 
+export type SettlementStatus = 'settled' | 'expired' | 'pending';
+
 export interface Settlement {
   id: string;
   reference: string;
