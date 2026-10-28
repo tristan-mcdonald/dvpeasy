@@ -4,15 +4,6 @@ import { FlowDraft } from '../types/settlement';
 import { z } from 'zod';
 
 /**
- * A flow from the form whose addresses have been checked, with its amount still as typed.
- */
-export interface ValidatedFlowDraft extends FlowDraft {
-  token: Address;
-  from: Address;
-  to: Address;
-}
-
-/**
  * Type guards and runtime validation for smart contract interactions.
  * This module provides both TypeScript type guards and Zod schemas for runtime validation.
  */
@@ -123,6 +114,11 @@ const FlowWithAmountValidationSchema = FlowInputSchema.extend({
   amount: flow.amount,
   isNFT: flow.isNFT,
 }));
+
+/**
+ * A flow from the form whose addresses have been checked, with its amount still as typed.
+ */
+export type ValidatedFlowDraft = z.output<typeof FlowWithAmountValidationSchema>;
 
 // Settlement schema with full transformation.
 const SettlementSubmissionSchema = z.object({

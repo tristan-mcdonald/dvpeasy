@@ -47,10 +47,10 @@ type D3DragEventLocal = D3DragEvent<SVGGElement, D3SimulationNode, D3SimulationN
 
 interface SettlementGraphProps {
   flows: FlowForDisplay[];
-  tokenMetadata: Record<string, TokenForDisplay>;
+  tokensForDisplay: Record<string, TokenForDisplay>;
 }
 
-export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGraphProps) {
+export default function SettlementGraph ({ flows, tokensForDisplay }: SettlementGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInteractionEnabled, setIsInteractionEnabled] = useState<boolean>(false);
@@ -813,7 +813,7 @@ export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGra
       // Stop the D3.js simulation.
       simulation.stop();
     };
-  }, [flows, tokenMetadata]);
+  }, [flows, tokensForDisplay]);
 
   // Handle click events to enable/disable interactions.
   useEffect(() => {

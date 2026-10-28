@@ -103,7 +103,7 @@ export default function SettlementDetails () {
         tokensForDisplay={tokensForDisplay} />
         <SettlementGraph
         flows={flowsForDisplay}
-        tokenMetadata={tokensForDisplay} />
+        tokensForDisplay={tokensForDisplay} />
         <SettlementApprovals
         approvingToken={approvingToken}
         currentUserAddress={address}

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const COPIED_DURATION = 2000;
 
 /**
- * Copies text to the clipboard, and holds the text last copied for two seconds, so that the
+ * Copies text to the clipboard, and holds the text last copied for `COPIED_DURATION`, so that the
  * button which copied it can show a tick.
  */
 export function useCopyToClipboard () {
