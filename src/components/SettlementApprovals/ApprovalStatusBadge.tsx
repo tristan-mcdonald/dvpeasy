@@ -1,4 +1,4 @@
-import { ApprovalStatus } from './types';
+import { ApprovalStatus } from './utils';
 import { Check, Hourglass, X } from 'lucide-react';
 
 interface ApprovalStatusBadgeProps {

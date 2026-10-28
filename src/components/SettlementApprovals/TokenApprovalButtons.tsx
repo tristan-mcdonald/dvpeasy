@@ -1,11 +1,11 @@
 import Tooltip from '../Tooltip';
 import { Check, Infinity, Loader2 } from 'lucide-react';
-import { FormattedTokenStatus } from './types';
+import { TokenStatusForDisplay } from '../../types/settlement';
 import { settlementManager } from './utils';
 import { useWalletNetwork } from '../../hooks/useWalletNetwork';
 
 interface TokenApprovalButtonsProps {
-  tokenStatus: FormattedTokenStatus;
+  tokenStatus: TokenStatusForDisplay;
   onApproveToken: (tokenAddress: string, amount: bigint) => void;
   onMaxApprove: (tokenAddress: string) => void;
   isApproving: boolean;

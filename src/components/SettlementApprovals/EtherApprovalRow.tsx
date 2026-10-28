@@ -1,17 +1,15 @@
 import ApprovalStatusIcon from './ApprovalStatusIcon';
 import RevokeApprovalButton from './RevokeApprovalButton';
 import WithdrawEtherButton from './WithdrawEtherButton';
-import { formatUnits } from 'viem';
-import { settlementManager } from './utils';
-import { PartyApprovalStatus } from './types';
+import { formatEther } from 'viem';
+import { PartyStatusForDisplay } from '../../types/settlement';
 import { TokenLogo } from '../TokenLogo';
 
 interface EtherApprovalRowProps {
-  partyStatus: PartyApprovalStatus;
+  partyStatus: PartyStatusForDisplay;
   isExpired: boolean;
   isSettled: boolean;
-  currentUserAddress: string | undefined;
-  flows: Array<{ to: string; from: string }>;
+  isUserParty: boolean;
   onRevokeApproval?: () => void;
   onWithdrawETH?: () => void;
   isRevoking?: boolean;
@@ -22,8 +20,7 @@ export default function EtherApprovalRow ({
   partyStatus,
   isExpired,
   isSettled,
-  currentUserAddress,
-  flows,
+  isUserParty,
   onRevokeApproval,
   onWithdrawETH,
   isRevoking = false,
@@ -32,16 +29,14 @@ export default function EtherApprovalRow ({
   if (partyStatus.etherRequired === 0n) return null;
 
   const hasEnoughEther = partyStatus.etherDeposited >= partyStatus.etherRequired;
-  const formattedRequired = formatUnits(partyStatus.etherRequired, 18);
-  const formattedDeposited = formatUnits(partyStatus.etherDeposited, 18);
+  const formattedRequired = formatEther(partyStatus.etherRequired);
+  const formattedDeposited = formatEther(partyStatus.etherDeposited);
 
   // When settlement is settled, show the required amount as the approved amount since funds were transferred.
   const displayedApprovedAmount = isSettled ? formattedRequired : formattedDeposited;
 
-  const isUserParty = settlementManager.isCurrentUserParty(currentUserAddress, partyStatus.address);
-  const isInvolved = settlementManager.isPartyInvolved(partyStatus.address, flows);
-  const canShowRevokeButton = isUserParty && isInvolved && partyStatus.isApproved && !isExpired && !isSettled && onRevokeApproval;
-  const canShowWithdrawButton = isUserParty && isInvolved && partyStatus.isApproved && isExpired && !isSettled && partyStatus.etherDeposited > 0n && onWithdrawETH;
+  const canShowRevokeButton = isUserParty && partyStatus.isApproved && !isExpired && !isSettled && onRevokeApproval;
+  const canShowWithdrawButton = isUserParty && partyStatus.isApproved && isExpired && !isSettled && partyStatus.etherDeposited > 0n && onWithdrawETH;
 
   return (
     <tr>

@@ -1,5 +1,5 @@
-import { Address } from 'viem';
-import { ContractPartyStatus, ContractSettlement, PartyStatus, Settlement } from '../types/settlement';
+import { Address, isAddressEqual } from 'viem';
+import { ContractPartyStatus, ContractSettlement, PartyStatus, Settlement, TokenStatus } from '../types/settlement';
 
 /**
  * How often an open settlement's data is read again, in milliseconds.
@@ -49,8 +49,15 @@ export const settlements = {
   /**
    * Whether the address sends anything in the settlement, and so can approve or execute it.
    */
-  isParticipant (settlement: Settlement, address: string): boolean {
-    return settlement.flows.some(flow => flow.from.toLowerCase() === address.toLowerCase());
+  isParticipant (settlement: Settlement, address: Address): boolean {
+    return settlement.flows.some(flow => isAddressEqual(flow.from, address));
+  },
+
+  /**
+   * Whether the DVP contract may move at least as much of the token as the party must send.
+   */
+  isTokenApproved (tokenStatus: TokenStatus): boolean {
+    return tokenStatus.amountOrIdApprovedForDvp >= tokenStatus.amountOrIdRequired;
   },
 
   /**

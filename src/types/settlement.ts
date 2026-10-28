@@ -1,4 +1,5 @@
-import { ContractFunctionReturnType } from 'viem';
+import { Address, ContractFunctionReturnType } from 'viem';
+import { ContractErrorType } from './errors';
 import { DvpAbi } from '../config/contracts/abis';
 
 export type ContractSettlement = ContractFunctionReturnType<DvpAbi, 'view', 'getSettlement'>;
@@ -26,6 +27,24 @@ export interface PartyStatus {
   etherRequired: bigint;
   etherDeposited: bigint;
   tokenStatuses: TokenStatus[];
+}
+
+export interface TokenStatusForDisplay extends TokenStatus {
+  formattedRequired: string;
+  formattedApproved: string;
+  formattedHeld: string;
+  symbol: string;
+  isMaxApproval: boolean;
+}
+
+/**
+ * A party's status as its approval card shows it, or the error which stopped it being read.
+ */
+export interface PartyStatusForDisplay extends Omit<PartyStatus, 'tokenStatuses'> {
+  address: Address;
+  isLoading: boolean;
+  tokenStatuses: TokenStatusForDisplay[];
+  error?: ContractErrorType;
 }
 
 /**

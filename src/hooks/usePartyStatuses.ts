@@ -1,8 +1,13 @@
 import { Address } from 'viem';
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
-import { FormattedTokenStatus, PartyApprovalStatus } from '../components/SettlementApprovals/types';
-import { PartyStatus, Settlement, TokenStatus } from '../types/settlement';
+import {
+  PartyStatus,
+  PartyStatusForDisplay,
+  Settlement,
+  TokenStatus,
+  TokenStatusForDisplay,
+} from '../types/settlement';
 import { settlementManager } from '../components/SettlementApprovals/utils';
 import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
@@ -72,12 +77,10 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
     : null;
 
   const allApprovalsComplete = Boolean(settlementApprovalQuery.data) && Boolean(partyStatuses?.every(
-    partyStatus => partyStatus?.tokenStatuses.every(
-      tokenStatus => tokenStatus.amountOrIdApprovedForDvp >= tokenStatus.amountOrIdRequired,
-    ) ?? true,
+    partyStatus => partyStatus?.tokenStatuses.every(settlements.isTokenApproved) ?? true,
   ));
 
-  const loadingPartyStatuses = useMemo(() => parties.map((party): PartyApprovalStatus => ({
+  const loadingPartyStatuses = useMemo(() => parties.map((party): PartyStatusForDisplay => ({
     address: party,
     isLoading: true,
     isApproved: false,
@@ -118,7 +121,7 @@ function formatPartyStatus ({
   error,
   partyStatus,
   tokensMetadataByAddress,
-}: FormatPartyStatusOptions): PartyApprovalStatus {
+}: FormatPartyStatusOptions): PartyStatusForDisplay {
   if (!partyStatus) {
     const parsedError = errorManager.parse(error, { partyAddress: address });
     errorManager.log(parsedError, { partyAddress: address });
@@ -147,7 +150,7 @@ function formatPartyStatus ({
 function formatTokenStatus (
   tokenStatus: TokenStatus,
   metadata: TokenMetadata | undefined,
-): FormattedTokenStatus {
+): TokenStatusForDisplay {
   const { amountOrIdApprovedForDvp, amountOrIdHeldByParty, amountOrIdRequired } = tokenStatus;
   return {
     ...tokenStatus,

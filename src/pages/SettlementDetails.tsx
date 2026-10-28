@@ -107,7 +107,6 @@ export default function SettlementDetails () {
         <SettlementApprovals
         approvingToken={approvingToken}
         currentUserAddress={address}
-        flows={settlement.flows}
         hasEverLoaded={hasLoadedPartyStatuses}
         isExpired={isExpired}
         isLoading={isRefreshing}

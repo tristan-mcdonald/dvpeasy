@@ -1,9 +1,9 @@
-import { PartyApprovalStatus } from '../types';
+import { PartyStatusForDisplay } from '../../../types/settlement';
 
 export function useLoadingState (
   isLoading: boolean,
   hasEverLoaded: boolean,
-  partyStatuses: PartyApprovalStatus[],
+  partyStatuses: PartyStatusForDisplay[],
 ) {
   const isInitialLoad = !hasEverLoaded;
   const hasPartiesLoading = partyStatuses.some(party => party.isLoading);

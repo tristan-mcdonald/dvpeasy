@@ -1,4 +1,13 @@
-import { PartyApprovalStatus, ApprovalStatus } from './types';
+import { PartyStatusForDisplay } from '../../types/settlement';
+import { settlements } from '../../lib/settlements';
+
+export type ApprovalStatusType = 'success' | 'error' | 'warning';
+
+export interface ApprovalStatus {
+  message: string;
+  type: ApprovalStatusType;
+  badgeClass: string;
+}
 
 /**
  * Settlement manager for approval-related operations.
@@ -7,7 +16,7 @@ export const settlementManager = {
   /**
    * Badge CSS class for approval status types.
    */
-  badgeClass (type: 'success' | 'error' | 'warning'): string {
+  badgeClass (type: ApprovalStatusType): string {
     const badgeClasses = {
       success: 'badge-success',
       error: 'badge-error',
@@ -20,14 +29,12 @@ export const settlementManager = {
    * Approval status for a party based on current state.
    */
   approvalStatus (
-    partyStatus: PartyApprovalStatus,
+    partyStatus: PartyStatusForDisplay,
     isExpired: boolean,
     isSettled: boolean,
   ): ApprovalStatus {
     // Check if all individual token approvals are complete.
-    const allSpendApprovalsComplete = partyStatus.tokenStatuses.every(
-      tokenStatus => tokenStatus.amountOrIdApprovedForDvp >= tokenStatus.amountOrIdRequired,
-    );
+    const allSpendApprovalsComplete = partyStatus.tokenStatuses.every(settlements.isTokenApproved);
 
     // Check if ether approval is complete.
     const etherApprovalComplete = partyStatus.etherDeposited >= partyStatus.etherRequired;
@@ -80,26 +87,6 @@ export const settlementManager = {
   },
 
   /**
-   * Check if enough tokens are approved.
-   */
-  hasEnoughApproved (
-    amountOrIdApprovedForDvp: bigint,
-    amountOrIdRequired: bigint,
-  ): boolean {
-    return amountOrIdApprovedForDvp >= amountOrIdRequired;
-  },
-
-  /**
-   * Check if current user is the party.
-   */
-  isCurrentUserParty (
-    currentUserAddress: string | undefined,
-    partyAddress: string,
-  ): boolean {
-    return currentUserAddress?.toLowerCase() === partyAddress.toLowerCase();
-  },
-
-  /**
    * Check if approval amount represents max approval.
    */
   isMaxApproval (amount: bigint): boolean {
@@ -108,18 +95,4 @@ export const settlementManager = {
     return amount >= maxApprovalThreshold;
   },
 
-
-  /**
-   * Check if party is involved in settlement flows.
-   */
-  isPartyInvolved (
-    partyAddress: string,
-    flows: Array<{ to: string; from: string }>,
-  ): boolean {
-    return flows.some(
-      flow =>
-        flow.to.toLowerCase() === partyAddress.toLowerCase() ||
-        flow.from.toLowerCase() === partyAddress.toLowerCase(),
-    );
-  },
 };

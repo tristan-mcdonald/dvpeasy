@@ -1,20 +1,20 @@
 import ApprovalStatusBadge from './ApprovalStatusBadge';
 import EtherApprovalRow from './EtherApprovalRow';
 import TokenApprovalRow from './TokenApprovalRow';
+import { Address, isAddressEqual } from 'viem';
 import { Check, Hourglass, Wallet, X } from 'lucide-react';
-import { settlementManager } from './utils';
-import { PartyApprovalStatus } from './types';
+import { PartyStatusForDisplay } from '../../types/settlement';
 import { ReactNode } from 'react';
+import { settlementManager } from './utils';
 
 interface PartyApprovalCardProps {
-  partyStatus: PartyApprovalStatus;
-  currentUserAddress: string | undefined;
+  partyStatus: PartyStatusForDisplay;
+  currentUserAddress: Address | undefined;
   approvingToken: string | null;
   isExpired: boolean;
   isSettled: boolean;
   onApproveToken: (tokenAddress: string, amount: bigint) => void;
   onMaxApprove: (tokenAddress: string) => void;
-  flows: Array<{ to: string; from: string }>;
   onRevokeApproval?: () => void;
   onWithdrawETH?: () => void;
   isRevoking?: boolean;
@@ -42,13 +42,12 @@ export default function PartyApprovalCard ({
   isSettled,
   onApproveToken,
   onMaxApprove,
-  flows,
   onRevokeApproval,
   onWithdrawETH,
   isRevoking,
   isWithdrawing,
 }: PartyApprovalCardProps) {
-  const isUserParty = settlementManager.isCurrentUserParty(currentUserAddress, partyStatus.address);
+  const isUserParty = currentUserAddress !== undefined && isAddressEqual(currentUserAddress, partyStatus.address);
   const classesIntroductionSection = 'flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-interface-border pb-4';
 
   if (partyStatus.error) {
@@ -115,11 +114,10 @@ export default function PartyApprovalCard ({
             </thead>
             <tbody>
               <EtherApprovalRow
-              currentUserAddress={currentUserAddress}
-              flows={flows}
               isExpired={isExpired}
               isRevoking={isRevoking}
               isSettled={isSettled}
+              isUserParty={isUserParty}
               isWithdrawing={isWithdrawing}
               onRevokeApproval={onRevokeApproval}
               onWithdrawETH={onWithdrawETH}
@@ -127,13 +125,12 @@ export default function PartyApprovalCard ({
               {partyStatus.tokenStatuses.map((tokenStatus, index) => (
                 <TokenApprovalRow
                 approvingToken={approvingToken}
-                currentUserAddress={currentUserAddress}
                 isExpired={isExpired}
                 isSettled={isSettled}
+                isUserParty={isUserParty}
                 key={`${tokenStatus.tokenAddress}-${index}`}
                 onApproveToken={onApproveToken}
                 onMaxApprove={onMaxApprove}
-                partyStatus={partyStatus}
                 tokenStatus={tokenStatus} />
               ))}
             </tbody>

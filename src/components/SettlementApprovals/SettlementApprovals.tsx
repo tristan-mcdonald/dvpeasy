@@ -1,10 +1,28 @@
 import ErrorBoundary from '../ErrorBoundary';
 import HeadingAndTotal from '../HeadingAndTotal';
 import PartyApprovalCard from './PartyApprovalCard';
+import { Address } from 'viem';
 import { Loader2 } from 'lucide-react';
-import { SettlementApprovalsProps } from './types';
+import { PartyStatusForDisplay } from '../../types/settlement';
 import { useFilteredParties } from './hooks/useFilteredParties';
 import { useLoadingState } from './hooks/useLoadingState';
+import { utilityManager } from '../../lib/utils';
+
+interface SettlementApprovalsProps {
+  partyStatuses: PartyStatusForDisplay[];
+  isLoading: boolean;
+  hasEverLoaded: boolean;
+  isExpired: boolean;
+  isSettled: boolean;
+  onApproveToken: (tokenAddress: string, amount: bigint) => void;
+  onMaxApprove: (tokenAddress: string) => void;
+  currentUserAddress: Address | undefined;
+  approvingToken: string | null;
+  onRevokeApproval?: () => void;
+  onWithdrawETH?: () => void;
+  isRevoking?: boolean;
+  isWithdrawing?: boolean;
+}
 
 export default function SettlementApprovals ({
   partyStatuses,
@@ -16,7 +34,6 @@ export default function SettlementApprovals ({
   onMaxApprove,
   currentUserAddress,
   approvingToken,
-  flows,
   onRevokeApproval,
   onWithdrawETH,
   isRevoking,
@@ -60,7 +77,7 @@ export default function SettlementApprovals ({
                   description="There was an error loading this party's approval status. Other parties may still be visible."
                   fallback={
                     <div className="block w-full shadow-standard rounded-lg bg-input-background border border-input-border p-4">
-                      <p className="text-error text-sm">Error loading approval status for party {partyStatus.address.slice(0, 6)}…{partyStatus.address.slice(-4)}</p>
+                      <p className="text-error text-sm">Error loading approval status for party {utilityManager.shortenAddress(partyStatus.address)}</p>
                     </div>
                   }
                   key={partyStatus.address}
@@ -70,7 +87,6 @@ export default function SettlementApprovals ({
                     <PartyApprovalCard
                     approvingToken={approvingToken}
                     currentUserAddress={currentUserAddress}
-                    flows={flows}
                     isExpired={isExpired}
                     isRevoking={isRevoking}
                     isSettled={isSettled}

@@ -2,14 +2,13 @@ import ApprovalStatusIcon from './ApprovalStatusIcon';
 import NFTCollectionPreview from '../NFTCollectionPreview';
 import TokenApprovalButtons from './TokenApprovalButtons';
 import { Infinity } from 'lucide-react';
-import { FormattedTokenStatus, PartyApprovalStatus } from './types';
-import { settlementManager } from './utils';
+import { settlements } from '../../lib/settlements';
 import { TokenLogo } from '../TokenLogo';
+import { TokenStatusForDisplay } from '../../types/settlement';
 
 interface TokenApprovalRowProps {
-  tokenStatus: FormattedTokenStatus;
-  partyStatus: PartyApprovalStatus;
-  currentUserAddress: string | undefined;
+  tokenStatus: TokenStatusForDisplay;
+  isUserParty: boolean;
   approvingToken: string | null;
   isExpired: boolean;
   isSettled: boolean;
@@ -19,16 +18,14 @@ interface TokenApprovalRowProps {
 
 export default function TokenApprovalRow ({
   tokenStatus,
-  partyStatus,
-  currentUserAddress,
+  isUserParty,
   approvingToken,
   isExpired,
   isSettled,
   onApproveToken,
   onMaxApprove,
 }: TokenApprovalRowProps) {
-  const hasApproval = settlementManager.hasEnoughApproved(tokenStatus.amountOrIdApprovedForDvp, tokenStatus.amountOrIdRequired);
-  const isUserParty = settlementManager.isCurrentUserParty(currentUserAddress, partyStatus.address);
+  const hasApproval = settlements.isTokenApproved(tokenStatus);
   const isTokenApproving = approvingToken?.toLowerCase() === tokenStatus.tokenAddress.toLowerCase() && isUserParty;
 
   const renderApprovalColumn = () => {
