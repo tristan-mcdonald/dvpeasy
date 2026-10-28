@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import { useCallback, useState } from 'react';
-import { Address, WalletClient } from 'viem';
+import { Address, maxUint256, WalletClient } from 'viem';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
@@ -192,7 +192,6 @@ export function useSettlementActions ({
     const toastId = toast.loading('Approving maximum token amount…');
 
     try {
-      const maxUint256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
       await approveToken(address, tokenAddress, maxUint256);
 
       toast.success('Token approved successfully!', { id: toastId });

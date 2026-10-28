@@ -14,6 +14,12 @@ import {
 const POLLING_INTERVAL = 10_000;
 
 /**
+ * Approvals of at least this much are shown as unlimited. It's far above any real amount but well
+ * below the maximum, since a token may count an unlimited allowance down as it's spent.
+ */
+const MAX_APPROVAL_THRESHOLD = 2n ** 224n;
+
+/**
  * Rules about a settlement which don't need the chain: its shape, its parties, and whether it can
  * still change.
  */
@@ -70,6 +76,10 @@ export const settlements = {
    */
   isTokenApproved (tokenStatus: TokenStatus): boolean {
     return tokenStatus.amountOrIdApprovedForDvp >= tokenStatus.amountOrIdRequired;
+  },
+
+  isMaxApproval (amount: bigint): boolean {
+    return amount >= MAX_APPROVAL_THRESHOLD;
   },
 
   /**

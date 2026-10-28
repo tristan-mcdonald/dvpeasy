@@ -6,25 +6,12 @@ export type ApprovalStatusType = 'success' | 'error' | 'warning';
 export interface ApprovalStatus {
   message: string;
   type: ApprovalStatusType;
-  badgeClass: string;
 }
 
 /**
  * Settlement manager for approval-related operations.
  */
 export const settlementManager = {
-  /**
-   * Badge CSS class for approval status types.
-   */
-  badgeClass (type: ApprovalStatusType): string {
-    const badgeClasses = {
-      success: 'badge-success',
-      error: 'badge-error',
-      warning: 'badge-warning',
-    };
-    return badgeClasses[type];
-  },
-
   /**
    * Approval status for a party based on current state.
    */
@@ -42,31 +29,10 @@ export const settlementManager = {
     // All approvals are complete if party is approved AND all spend approvals are complete.
     const allApprovalsComplete = partyStatus.isApproved && allSpendApprovalsComplete && etherApprovalComplete;
 
-    if (isSettled) {
-      return {
-        message: 'All required approvals were completed',
-        type: 'success',
-        badgeClass: this.badgeClass('success'),
-      };
-    } else if (allApprovalsComplete) {
-      return {
-        message: 'All required approvals complete',
-        type: 'success',
-        badgeClass: this.badgeClass('success'),
-      };
-    } else if (isExpired) {
-      return {
-        message: 'Required approvals were not made in time',
-        type: 'error',
-        badgeClass: this.badgeClass('error'),
-      };
-    } else {
-      return {
-        message: 'Awaiting required approvals',
-        type: 'warning',
-        badgeClass: this.badgeClass('warning'),
-      };
-    }
+    if (isSettled) return { message: 'All required approvals were completed', type: 'success' };
+    if (allApprovalsComplete) return { message: 'All required approvals complete', type: 'success' };
+    if (isExpired) return { message: 'Required approvals were not made in time', type: 'error' };
+    return { message: 'Awaiting required approvals', type: 'warning' };
   },
 
   /**
@@ -85,14 +51,4 @@ export const settlementManager = {
     const formattedRequiredAmount = (formattedRequiredNumeric * requiredPortion).toFixed(6).replace(/\.?0+$/, '');
     return `${formattedRequiredAmount} ${symbol}`;
   },
-
-  /**
-   * Check if approval amount represents max approval.
-   */
-  isMaxApproval (amount: bigint): boolean {
-    // 2^200 - a conservative threshold to detect max approvals (much smaller than 2^256-1)
-    const maxApprovalThreshold = BigInt('0x100000000000000000000000000000000000000000000000000000000');
-    return amount >= maxApprovalThreshold;
-  },
-
 };

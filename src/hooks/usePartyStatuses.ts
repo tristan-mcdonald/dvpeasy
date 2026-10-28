@@ -8,7 +8,6 @@ import {
   TokenStatus,
   TokenStatusForDisplay,
 } from '../types/settlement';
-import { settlementManager } from '../components/SettlementApprovals/utils';
 import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
 import { TokenMetadata } from '../lib/token-metadata';
@@ -156,6 +155,6 @@ function formatTokenStatus (
     formattedApproved: tokenManager.formatAmount(amountOrIdApprovedForDvp, metadata),
     formattedHeld: tokenManager.formatAmount(amountOrIdHeldByParty, metadata),
     symbol: metadata?.symbol ?? 'Unknown',
-    isMaxApproval: settlementManager.isMaxApproval(amountOrIdApprovedForDvp),
+    isMaxApproval: settlements.isMaxApproval(amountOrIdApprovedForDvp),
   };
 }
