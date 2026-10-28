@@ -250,9 +250,9 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                 <Tooltip content="Copy NFT ID">
                   <button
                   className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction"
-                  onClick={() => copyNftIdToClipboard(amount)}
+                  onClick={() => copyNftIdToClipboard(amountOrId.toString())}
                   type="button">
-                    {copiedNftId === amount ? (
+                    {copiedNftId === amountOrId.toString() ? (
                       <Check className="size-4 text-success" />
                     ) : (
                       <Copy className="transition-colors size-4" />
