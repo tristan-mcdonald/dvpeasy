@@ -1,5 +1,6 @@
 import { Address, erc20Abi, erc721Abi, isAddress, zeroAddress } from 'viem';
 import { DVP_ABI } from '../config/contracts/abis';
+import { errorManager } from './error-manager';
 import { NetworkDeployment } from '../config/contracts/deployments';
 import { publicClientFor } from '../config/wagmi';
 import { queryOptions } from '@tanstack/react-query';
@@ -108,7 +109,7 @@ async function readAssetType (
     if (isERC20) return AssetType.ERC20;
   } catch (error) {
     throw new TokenDetectionError(
-      `Failed to detect token type: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to detect token type: ${errorManager.message(error)}`,
       tokenAddress,
     );
   }

@@ -1,4 +1,5 @@
 import { Address, erc721Abi } from 'viem';
+import { errorManager } from './error-manager';
 import { logger } from './logger';
 import { publicClientFor } from '../config/wagmi';
 import { queryOptions } from '@tanstack/react-query';
@@ -95,7 +96,7 @@ export const nftManager = {
       return uri;
     } catch (error) {
       throw new NFTMetadataError(
-        `Failed to fetch tokenURI: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch tokenURI: ${errorManager.message(error)}`,
         tokenAddress,
         tokenId,
       );
@@ -132,7 +133,7 @@ export const nftManager = {
       return metadata;
     } catch (error) {
       throw new NFTMetadataError(
-        `Failed to fetch NFT metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch NFT metadata: ${errorManager.message(error)}`,
         tokenAddress,
         tokenId,
       );

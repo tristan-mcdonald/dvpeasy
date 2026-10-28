@@ -1,9 +1,15 @@
 import {
+  BaseError,
+  ContractErrorName,
+  ContractFunctionRevertedError,
+  HttpRequestError,
+  LimitExceededRpcError,
+  TimeoutError,
+  UserRejectedRequestError,
+} from 'viem';
+import {
   ContractError,
   ContractErrorType,
-  ContractNotFoundError,
-  ContractReadError,
-  InsufficientBalanceError,
   InvalidDataError,
   NetworkError,
   RateLimitError,
@@ -12,129 +18,84 @@ import {
   TransactionError,
   UserRejectionError,
 } from '../types/errors';
+import { DvpAbi } from '../config/contracts/abis';
 import { logger } from './logger';
 
 /**
- * Error management system for contract-related errors.
- * Provides methods for parsing, formatting, and handling various error types.
+ * What to tell the user when the DVP contract reverts with one of its custom errors. Errors which
+ * only another contract or a reentrant call can cause are left to viem's summary.
+ */
+const REVERT_MESSAGES: Partial<Record<ContractErrorName<DvpAbi>, string>> = {
+  ApprovalAlreadyGranted: 'This settlement has already been approved from this address.',
+  ApprovalNotGranted: 'This settlement hasn\'t been approved from this address.',
+  CallerNotInvolved: 'You must be a participant in the settlement.',
+  CutoffDateNotPassed: 'The settlement\'s cutoff date hasn\'t passed yet.',
+  CutoffDatePassed: 'The settlement\'s cutoff date has passed.',
+  IncorrectETHAmount: 'The ETH sent doesn\'t match the amount the settlement needs.',
+  InsufficientBalance: 'One or more parties have insufficient token balance.',
+  InvalidAmountOrId: 'One or more flows has an invalid amount or NFT ID.',
+  InvalidERC20Token: 'One or more tokens isn\'t a valid ERC-20 token.',
+  InvalidERC721Token: 'One or more tokens isn\'t a valid ERC-721 token.',
+  InvalidFromAddress: 'One or more flows has an invalid sender.',
+  InvalidToAddress: 'One or more flows has an invalid receiver.',
+  NoETHToWithdraw: 'There is no ETH to withdraw.',
+  NoFlowsProvided: 'Please add at least one flow to the settlement.',
+  SafeERC20FailedOperation: 'A token transfer failed.',
+  SettlementAlreadyExecuted: 'This settlement has already been executed.',
+  SettlementDoesNotExist: 'Settlement not found. It may not exist or may have been removed.',
+  SettlementNotApproved: 'Not every party has approved this settlement yet.',
+};
+
+/**
+ * The first error of the given class in a viem error's chain of causes.
+ */
+function findCause<Cause extends Error> (
+  error: unknown,
+  causeClass: abstract new (...args: never[]) => Cause,
+): Cause | undefined {
+  if (!(error instanceof BaseError)) return undefined;
+  const cause = error.walk(cause => cause instanceof causeClass);
+  return cause instanceof causeClass ? cause : undefined;
+}
+
+/**
+ * Classifying, logging and describing errors from the wallet, the RPC and the DVP contract.
  */
 export const errorManager = {
   /**
-   * Parse and categorize contract errors based on error messages and types.
+   * An error's message, or the fallback for a value thrown which isn't an `Error`.
    */
-  parse (error: unknown, context?: Record<string, unknown>): ContractErrorType {
-    // If it's already a ContractError, return it as the correct type.
-    if (error instanceof ContractError) {
-      return error as ContractErrorType;
-    }
-
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    const errorName = error instanceof Error ? error.name : '';
-
-    // Network-related errors.
-    if (
-      errorMessage.includes('network') ||
-      errorMessage.includes('fetch') ||
-      errorMessage.includes('connection') ||
-      errorMessage.includes('timeout') ||
-      errorMessage.includes('502') ||
-      errorMessage.includes('503') ||
-      errorMessage.includes('504') ||
-      errorName === 'NetworkError'
-    ) {
-      return new NetworkError(errorMessage, error);
-    }
-
-    // Rate limiting errors.
-    if (
-      errorMessage.includes('rate limit') ||
-      errorMessage.includes('too many requests') ||
-      errorMessage.includes('429') ||
-      errorMessage.includes('quota')
-    ) {
-      return new RateLimitError(errorMessage, error);
-    }
-
-    // User rejection errors.
-    if (
-      errorMessage.includes('user rejected') ||
-      errorMessage.includes('user denied') ||
-      errorMessage.includes('cancelled') ||
-      errorMessage.includes('rejected by user') ||
-      errorName === 'UserRejectedRequestError'
-    ) {
-      return new UserRejectionError(errorMessage, error);
-    }
-
-    // Contract not found errors.
-    if (
-      errorMessage.includes('contract not found') ||
-      errorMessage.includes('no contract code') ||
-      errorMessage.includes('contract does not exist') ||
-      errorMessage.includes('invalid address')
-    ) {
-      return new ContractNotFoundError(errorMessage, error);
-    }
-
-    // Settlement not found errors.
-    if (
-      errorMessage.includes('settlement not found') ||
-      errorMessage.includes('settlement does not exist') ||
-      (errorMessage.includes('revert') && errorMessage.includes('settlement'))
-    ) {
-      const settlementId = context?.settlementId as string || 'unknown';
-      return new SettlementNotFoundError(settlementId, error);
-    }
-
-    // Insufficient balance errors.
-    if (
-      errorMessage.includes('insufficient') ||
-      errorMessage.includes('balance') ||
-      errorMessage.includes('not enough')
-    ) {
-      const required = context?.required as string || 'unknown';
-      const available = context?.available as string || 'unknown';
-      return new InsufficientBalanceError(required, available, error);
-    }
-
-    // Token detection errors.
-    if (
-      errorMessage.includes('token') ||
-      errorMessage.includes('erc20') ||
-      errorMessage.includes('erc721') ||
-      errorMessage.includes('invalid token')
-    ) {
-      const tokenAddress = context?.tokenAddress as string || 'unknown';
-      return new TokenDetectionError(tokenAddress, error);
-    }
-
-    // Transaction errors.
-    if (
-      errorMessage.includes('transaction') ||
-      errorMessage.includes('revert') ||
-      errorMessage.includes('execution') ||
-      errorName === 'TransactionExecutionError'
-    ) {
-      return new TransactionError(errorMessage, error);
-    }
-
-    // Contract read errors.
-    if (
-      errorMessage.includes('read') ||
-      errorMessage.includes('call') ||
-      errorMessage.includes('view function')
-    ) {
-      return new ContractReadError(errorMessage, error);
-    }
-
-    // Generic invalid data error as fallback.
-    return new InvalidDataError(errorMessage, error);
+  message (error: unknown, fallback: string = 'Unknown error'): string {
+    return error instanceof Error ? error.message : fallback;
   },
 
   /**
-   * Format an error for user display. Kinds which `parse` recognises reliably get their plain
-   * message; anything else gets the one-line summary from viem or wagmi where there is one, so
-   * that details such as a revert reason aren't replaced by a guess.
+   * Classify an error by viem's error classes, which wagmi's errors carry as their causes.
+   */
+  parse (error: unknown, context: Record<string, unknown> = {}): ContractErrorType {
+    if (error instanceof ContractError) return error as ContractErrorType;
+
+    const message = this.message(error, String(error));
+    const httpError = findCause(error, HttpRequestError);
+    const revertedError = findCause(error, ContractFunctionRevertedError);
+
+    if (findCause(error, UserRejectedRequestError)) return new UserRejectionError(message, error);
+    if (findCause(error, LimitExceededRpcError) || httpError?.status === 429) {
+      return new RateLimitError(message, error);
+    }
+    if (httpError || findCause(error, TimeoutError)) return new NetworkError(message, error);
+    if (revertedError?.data?.errorName === 'SettlementDoesNotExist') {
+      const settlementId = typeof context.settlementId === 'string' ? context.settlementId : 'unknown';
+      return new SettlementNotFoundError(settlementId, error);
+    }
+    if (revertedError) return new TransactionError(message, error);
+    return new InvalidDataError(message, error);
+  },
+
+  /**
+   * Format an error for user display: a plain message for kinds which `parse` recognises and for
+   * the DVP contract's custom errors, and otherwise the one-line summary from viem or wagmi where
+   * there is one.
    */
   formatUserMessage (error: ContractErrorType): string {
     const hasReliableMessage = error instanceof UserRejectionError ||
@@ -142,7 +103,15 @@ export const errorManager = {
       error instanceof RateLimitError;
     if (hasReliableMessage) return error.userMessage;
 
+    if (error instanceof TokenDetectionError) {
+      return `Invalid token at ${error.tokenAddress}: ${error.message}`;
+    }
+
     const { originalError } = error;
+    const revertedErrorName = findCause(originalError, ContractFunctionRevertedError)?.data?.errorName;
+    const revertMessage = REVERT_MESSAGES[revertedErrorName as ContractErrorName<DvpAbi>];
+    if (revertMessage) return revertMessage;
+
     if (
       originalError instanceof Error &&
       'shortMessage' in originalError &&
@@ -155,7 +124,16 @@ export const errorManager = {
   },
 
   /**
-   * Enhanced error details for debugging.
+   * Parse and log an error, and return the message to show the user.
+   */
+  report (error: unknown, context: Record<string, unknown> = {}): string {
+    const parsedError = this.parse(error, context);
+    this.log(parsedError, context);
+    return this.formatUserMessage(parsedError);
+  },
+
+  /**
+   * Details of an error for the log.
    */
   debugInfo (error: ContractErrorType): Record<string, unknown> {
     return {

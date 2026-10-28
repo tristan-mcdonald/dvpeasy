@@ -1,4 +1,5 @@
 import { networkLinks } from '../lib/network-links';
+import { errorManager } from '../lib/error-manager';
 import { Network, networks } from '../config/networks';
 import { ListedToken } from '../types/tokens';
 import { logger } from '../lib/logger';
@@ -106,7 +107,7 @@ async function fetchMainnetTokens (chainId: number): Promise<ListedToken[]> {
     const tokensData = await response.json();
     return transformTokensData(tokensData, chainId);
   } catch (error) {
-    logger.warn(`Failed to fetch from 1inch API: ${error instanceof Error ? error.message : error}`);
+    logger.warn(`Failed to fetch from 1inch API: ${errorManager.message(error, String(error))}`);
     return [{
       address: network.nativeToken.address,
       symbol: network.nativeToken.symbol,

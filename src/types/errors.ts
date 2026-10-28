@@ -22,15 +22,6 @@ export class NetworkError extends ContractError {
 }
 
 /**
- * Contract doesn't exist at the specified address.
- */
-export class ContractNotFoundError extends ContractError {
-  readonly type = 'CONTRACT_NOT_FOUND';
-  readonly userMessage = 'Contract not found. Please verify the contract address.';
-  readonly isRetryable = false;
-}
-
-/**
  * Invalid or malformed data returned from contract.
  */
 export class InvalidDataError extends ContractError {
@@ -49,19 +40,6 @@ export class SettlementNotFoundError extends ContractError {
 
   constructor (settlementId: string, originalError?: unknown) {
     super(`Settlement with ID ${settlementId} not found`, originalError);
-  }
-}
-
-/**
- * Insufficient balance for operations.
- */
-export class InsufficientBalanceError extends ContractError {
-  readonly type = 'INSUFFICIENT_BALANCE';
-  readonly userMessage = 'Insufficient balance for this operation.';
-  readonly isRetryable = false;
-
-  constructor (required: string, available: string, originalError?: unknown) {
-    super(`Insufficient balance: required ${required}, available ${available}`, originalError);
   }
 }
 
@@ -100,15 +78,6 @@ export class RateLimitError extends ContractError {
 }
 
 /**
- * Generic contract read error for uncategorized failures.
- */
-export class ContractReadError extends ContractError {
-  readonly type = 'CONTRACT_READ_ERROR';
-  readonly userMessage = 'Failed to read from contract. Please try again.';
-  readonly isRetryable = true;
-}
-
-/**
  * Transaction-related errors.
  */
 export class TransactionError extends ContractError {
@@ -131,12 +100,9 @@ export class UserRejectionError extends ContractError {
  */
 export type ContractErrorType =
   | NetworkError
-  | ContractNotFoundError
   | InvalidDataError
   | SettlementNotFoundError
-  | InsufficientBalanceError
   | TokenDetectionError
   | RateLimitError
-  | ContractReadError
   | TransactionError
   | UserRejectionError;

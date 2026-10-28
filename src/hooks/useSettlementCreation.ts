@@ -7,8 +7,8 @@ import { isAddressEqual, keccak256, toHex } from 'viem';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
 import { ContractValidationError, contractValidationManager, ValidatedFlowDraft } from '../lib/contract-validation';
+import { errorManager } from '../lib/error-manager';
 import { logger } from '../lib/logger';
-import { settlementErrorManager } from '../lib/settlement-error-utils';
 import { AssetType } from '../lib/token-metadata';
 import { TokenDetectionError } from '../types/errors';
 import { tokenManager } from '../lib/token-manager';
@@ -55,7 +55,11 @@ export function useSettlementCreation () {
     } catch (error) {
       logger.error('Error parsing flow:', error);
       if (error instanceof TokenDetectionError) throw error;
-      throw new Error(`Failed to parse flow for token ${flow.token}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new ContractValidationError(
+        `Failed to parse flow for token ${flow.token}: ${errorManager.message(error)}`,
+        flow,
+        'flow',
+      );
     }
   };
 
@@ -108,7 +112,7 @@ export function useSettlementCreation () {
       if (error instanceof ContractValidationError) {
         toast.error(error.message);
       } else {
-        toast.error(`Validation error: ${error instanceof Error ? error.message : 'Unknown validation error'}`);
+        toast.error(`Validation error: ${errorManager.message(error, 'Unknown validation error')}`);
       }
       return;
     }
@@ -139,8 +143,7 @@ export function useSettlementCreation () {
 
         hash = await writeContract(config, request);
       } catch (error) {
-        const errorMessage = await settlementErrorManager.getSettlementErrorMessage(error);
-        toast.error(errorMessage, { id: toastId });
+        toast.error(errorManager.report(error), { id: toastId });
         setIsLoading(false);
         return;
       }
@@ -178,8 +181,9 @@ export function useSettlementCreation () {
         toast.error('Settlement created but could not retrieve ID.', { id: toastId });
       }
     } catch (error) {
-      logger.error('Settlement creation error:', error);
-      const errorMessage = await settlementErrorManager.getSettlementErrorMessage(error);
+      const errorMessage = error instanceof ContractValidationError
+        ? error.message
+        : errorManager.report(error);
       toast.error(errorMessage, { id: toastId });
     } finally {
       setIsLoading(false);

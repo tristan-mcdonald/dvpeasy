@@ -2,6 +2,7 @@ import { Address, erc20Abi, erc721Abi, formatUnits, parseUnits } from 'viem';
 import { AssetType, TokenMetadata } from './token-metadata';
 import { config } from '../config/wagmi';
 import { ContractValidationError, contractValidationManager } from './contract-validation';
+import { errorManager } from './error-manager';
 import { logger } from './logger';
 import { NetworkDeployment } from '../config/contracts/deployments';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
@@ -49,7 +50,7 @@ export const tokenManager = {
       if (error instanceof ContractValidationError) throw error;
       logger.error('Error parsing token amount:', error);
       throw new ContractValidationError(
-        `Failed to parse token amount: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to parse token amount: ${errorManager.message(error)}`,
         { amount },
         'parseAmount',
       );

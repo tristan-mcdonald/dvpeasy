@@ -94,9 +94,7 @@ export function useSettlementActions ({
       if (error instanceof ContractValidationError) {
         toast.error(`Validation error: ${error.message}`, { id: toastId });
       } else {
-        const parsedError = errorManager.parse(error, { settlementId, operation: 'approveSettlement' });
-        errorManager.log(parsedError, { settlementId, address });
-        toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+        toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
       }
     } finally {
       setIsApproving(false);
@@ -145,9 +143,7 @@ export function useSettlementActions ({
       if (error instanceof ContractValidationError) {
         toast.error(`Validation error: ${error.message}`, { id: toastId });
       } else {
-        const parsedError = errorManager.parse(error, { settlementId, operation: 'executeSettlement' });
-        errorManager.log(parsedError, { settlementId, address });
-        toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+        toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
       }
     } finally {
       setIsExecuting(false);
@@ -187,9 +183,7 @@ export function useSettlementActions ({
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      const parsedError = errorManager.parse(error, { tokenAddress, operation: 'approveToken' });
-      errorManager.log(parsedError, { tokenAddress, address });
-      toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+      toast.error(errorManager.report(error, { tokenAddress, address }), { id: toastId });
     } finally {
       setApprovingToken(null);
     }
@@ -211,9 +205,7 @@ export function useSettlementActions ({
       toast.success('Token approved successfully!', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      const parsedError = errorManager.parse(error, { tokenAddress, operation: 'maxApproveToken' });
-      errorManager.log(parsedError, { tokenAddress, address });
-      toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+      toast.error(errorManager.report(error, { tokenAddress, address }), { id: toastId });
     } finally {
       setApprovingToken(null);
     }
@@ -242,9 +234,7 @@ export function useSettlementActions ({
       toast.success('Approval revoked successfully!', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      const parsedError = errorManager.parse(error, { settlementId, operation: 'revokeApproval' });
-      errorManager.log(parsedError, { settlementId, address });
-      toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+      toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
     } finally {
       setIsRevoking(false);
     }
@@ -273,9 +263,7 @@ export function useSettlementActions ({
       toast.success('ETH withdrawn successfully', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      const parsedError = errorManager.parse(error, { settlementId, operation: 'withdrawETH' });
-      errorManager.log(parsedError, { settlementId, address });
-      toast.error(errorManager.formatUserMessage(parsedError), { id: toastId });
+      toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
     } finally {
       setIsWithdrawing(false);
     }
