@@ -24,6 +24,7 @@ export default function FlowDragOverlay ({
 }: FlowDragOverlayProps) {
   const { chainId } = useCurrentNetwork().network;
   const tokenForDisplay = tokensForDisplay?.[activeFlow.token.toLowerCase()];
+  const isNFT = activeFlow.nftId !== undefined;
 
   return (
     <div className="block w-full shadow-2xl rounded-lg bg-input-background border-2 border-primary p-4 relative z-50 drag-overlay">
@@ -99,10 +100,10 @@ export default function FlowDragOverlay ({
           />
         </div>
         <div className="space-y-1">
-          <LabelWithIcon icon={activeFlow.isNFT ? <Hash className="size-4" /> : <TriangleRight className="size-4" />}>
-            {activeFlow.isNFT ? 'NFT ID' : 'Amount'}
+          <LabelWithIcon icon={isNFT ? <Hash className="size-4" /> : <TriangleRight className="size-4" />}>
+            {isNFT ? 'NFT ID' : 'Amount'}
           </LabelWithIcon>
-          {activeFlow.isNFT ? (
+          {isNFT ? (
             <div className="flex flex-auto items-center justify-between gap-2 w-full font-mono">
               <span className="wrap-anywhere">{activeFlow.amount}</span>
               <div className="flex items-center gap-1">

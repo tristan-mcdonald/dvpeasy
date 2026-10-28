@@ -41,7 +41,7 @@ interface SortableFlowItemProps {
   onRemove?: (index: number) => void;
   copiedNftId: string | null;
   onCopyNftId: (nftId: string) => void;
-  setShowNftModal: (modal: string | null) => void;
+  onShowNft: (flow: FlowForDisplay) => void;
   collectionPreviews: Record<string, string>;
 }
 
@@ -54,7 +54,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   onRemove,
   copiedNftId,
   onCopyNftId,
-  setShowNftModal,
+  onShowNft,
   collectionPreviews,
 }: SortableFlowItemProps) {
   const { network } = useCurrentNetwork();
@@ -75,7 +75,8 @@ const SortableFlowItem = memo(function SortableFlowItem ({
     zIndex: isDragging ? 1000 : 'auto',
   };
 
-  const { token, from, to, isNFT, amount, nftId } = flow;
+  const { token, from, to, amount, nftId } = flow;
+  const isNFT = nftId !== undefined;
   const tokenForDisplay = tokensForDisplay?.[token.toLowerCase()];
 
   return (
@@ -215,7 +216,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                 <Tooltip content="View NFT preview">
                   <button
                   className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction"
-                  onClick={() => setShowNftModal(`${token}-${nftId}`)}
+                  onClick={() => onShowNft(flow)}
                   type="button">
                     <NFTIcon
                     className="transition-colors"
@@ -272,7 +273,7 @@ export default function SettlementFlows ({
 }: SettlementFlowsProps) {
 
   const { copiedText: copiedNftId, copy: copyNftId } = useCopyToClipboard();
-  const [showNftModal, setShowNftModal] = useState<string | null>(null);
+  const [nftFlowShown, setNftFlowShown] = useState<FlowForDisplay | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   // Drag and drop sensors.
   const sensors = useSensors(
@@ -339,7 +340,7 @@ export default function SettlementFlows ({
       onCopyNftId={copyNftId}
       onEdit={onEditFlow}
       onRemove={onRemoveFlow}
-      setShowNftModal={setShowNftModal}
+      onShowNft={setNftFlowShown}
       tokensForDisplay={tokensForDisplay} />
     </ErrorBoundary>
   ));
@@ -398,9 +399,8 @@ export default function SettlementFlows ({
       )}
 
       <NFTModal
-      displayFlows={flows}
-      setShowNftModal={setShowNftModal}
-      showNftModal={showNftModal} />
+      flow={nftFlowShown}
+      onClose={() => setNftFlowShown(null)} />
     </div>
   );
 }

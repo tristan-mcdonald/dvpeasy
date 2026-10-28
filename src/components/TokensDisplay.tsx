@@ -18,7 +18,7 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
 
   const collectionPreviews = useMemo(() => flowDisplay.collectionPreviews(flows.map(flow => ({
     token: flow.token,
-    nftId: flow.isNFT ? flow.amountOrId.toString() : undefined,
+    nftId: flowDisplay.nftId(flow),
   }))), [flows]);
 
   if (flows.length === 0) {

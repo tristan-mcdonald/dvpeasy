@@ -11,14 +11,17 @@ export const flowDisplay = {
       token: flow.token,
       from: flow.from,
       to: flow.to,
-      isNFT: flow.isNFT,
       amount: tokenManager.formatAmount(flow.amountOrId, metadata),
-      nftId: flow.isNFT ? flow.amountOrId.toString() : undefined,
+      nftId: this.nftId(flow),
     };
   },
 
-  fromDraft (flow: FlowDraft): FlowForDisplay {
-    return { ...flow, nftId: flow.isNFT ? flow.amount : undefined };
+  fromDraft ({ token, from, to, amount, isNFT }: FlowDraft): FlowForDisplay {
+    return { token, from, to, amount, nftId: isNFT ? amount : undefined };
+  },
+
+  nftId (flow: Flow): string | undefined {
+    return flow.isNFT ? flow.amountOrId.toString() : undefined;
   },
 
   /**
