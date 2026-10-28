@@ -1,4 +1,5 @@
 import './SettlementGraph.css';
+import { copyToClipboard } from '../lib/clipboard';
 import { cssCustomProperty, graphColors, nodeColors } from '../config/theme';
 import { drag } from 'd3-drag';
 import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
@@ -58,7 +59,6 @@ interface SettlementGraphProps {
 export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [, setCopiedAddress] = useState<string | null>(null);
   const [isInteractionEnabled, setIsInteractionEnabled] = useState<boolean>(false);
   // Use a ref to store the current copied address for D3.js to access.
   const copiedAddressRef = useRef<string | null>(null);
@@ -592,9 +592,7 @@ export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGra
             .duration(150)
             .attr('transform', `translate(${d.width / 2 - 15}, ${-d.height / 2 + 5}) scale(1)`);
 
-          await navigator.clipboard.writeText(originalAddress);
-          // Update both state and ref.
-          setCopiedAddress(originalAddress);
+          if (!await copyToClipboard(originalAddress)) return;
           copiedAddressRef.current = originalAddress;
           updateIcon(button, originalAddress);
 
@@ -608,7 +606,6 @@ export default function SettlementGraph ({ flows, tokenMetadata }: SettlementGra
             .attr('r', 10);
 
           await new Promise(resolve => setTimeout(resolve, 2000));
-          setCopiedAddress(null);
           copiedAddressRef.current = null;
           updateIcon(button, originalAddress);
         }

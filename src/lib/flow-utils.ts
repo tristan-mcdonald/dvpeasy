@@ -12,7 +12,7 @@ interface FormattedFlow {
 
 /**
  * Flows manager for flow-related operations.
- * Provides methods for amount conversion, collection previews, and clipboard operations.
+ * Provides methods for amount conversion and collection previews.
  */
 export const flowsManager = {
   /**
@@ -53,18 +53,5 @@ export const flowsManager = {
     });
 
     return collectionPreviews;
-  },
-
-  /**
-   * Copies text to clipboard and returns success status.
-   */
-  async copyToClipboard (text: string): Promise<boolean> {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (error) {
-      logger.error('Failed to copy to clipboard:', error);
-      return false;
-    }
   },
 };

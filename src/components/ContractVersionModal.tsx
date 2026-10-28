@@ -1,12 +1,13 @@
 import ContractDeploymentDate from './ContractDeploymentDate';
-import React, { useState } from 'react';
+import React from 'react';
 import Tooltip from './Tooltip';
 import { Copy, Check, ExternalLink, X } from 'lucide-react';
-import { networkLinks } from '../lib/network-links';
 import { logger } from '../lib/logger';
+import { networkLinks } from '../lib/network-links';
 import { utilityManager } from '../lib/utils';
 import { contracts } from '../config/contracts/deployments';
 import { networks } from '../config/networks';
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNetworkNavigation } from '../hooks/useNetworkNavigation';
 
@@ -22,21 +23,11 @@ interface ContractVersionModalProps {
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
   const { deployment: currentDeployment, network } = useCurrentNetwork();
   const { changeVersion } = useNetworkNavigation();
-  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const { copiedText, copy } = useCopyToClipboard();
 
   if (!isOpen) {
     return null;
   }
-
-  const copyToClipboard = async (address: string) => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopiedAddress(address);
-      setTimeout(() => setCopiedAddress(null), 2000);
-    } catch (error) {
-      logger.error('Failed to copy address:', error);
-    }
-  };
 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
@@ -108,10 +99,10 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                 className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  copyToClipboard(deployment.dvpAddress);
+                                  copy(deployment.dvpAddress);
                                 }}
                                 type="button">
-                                  {copiedAddress === deployment.dvpAddress ? (
+                                  {copiedText === deployment.dvpAddress ? (
                                     <Check className="size-3 text-success" />
                                   ) : (
                                     <Copy className="transition-colors size-3" />
@@ -139,10 +130,10 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
                                 className="transition-colors cursor-pointer text-primary hover:text-primary-interaction"
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  copyToClipboard(deployment.dvpHelperAddress);
+                                  copy(deployment.dvpHelperAddress);
                                 }}
                                 type="button">
-                                  {copiedAddress === deployment.dvpHelperAddress ? (
+                                  {copiedText === deployment.dvpHelperAddress ? (
                                     <Check className="size-3 text-success" />
                                   ) : (
                                     <Copy className="transition-colors size-3" />

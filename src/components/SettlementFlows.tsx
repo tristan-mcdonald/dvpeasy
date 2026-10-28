@@ -16,6 +16,7 @@ import { FlowDraft } from '../types/settlement';
 import { networkLinks } from '../lib/network-links';
 import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useMemo, useState, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -49,7 +50,7 @@ interface SortableFlowItemProps {
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
   copiedNftId: string | null;
-  setCopiedNftId: (id: string | null) => void;
+  onCopyNftId: (nftId: string) => void;
   setShowNftModal: (modal: string | null) => void;
   collectionPreviews: Record<string, string>;
 }
@@ -62,7 +63,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   onEdit,
   onRemove,
   copiedNftId,
-  setCopiedNftId,
+  onCopyNftId,
   setShowNftModal,
   collectionPreviews,
 }: SortableFlowItemProps) {
@@ -94,14 +95,6 @@ const SortableFlowItem = memo(function SortableFlowItem ({
 
   // Safe BigInt conversion to avoid syntax errors.
   const amountOrId = isFormattedFlow ? flow.amountOrId : flowsManager.safeAmountToBigInt(flow.amount);
-
-  const copyNftIdToClipboard = async (nftId: string) => {
-    const success = await flowsManager.copyToClipboard(nftId);
-    if (success) {
-      setCopiedNftId(nftId);
-      setTimeout(() => setCopiedNftId(null), 2000);
-    }
-  };
 
   return (
     <li
@@ -250,7 +243,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                 <Tooltip content="Copy NFT ID">
                   <button
                   className="cursor-pointer transition-colors p-1 text-primary hover:text-primary-interaction"
-                  onClick={() => copyNftIdToClipboard(amountOrId.toString())}
+                  onClick={() => onCopyNftId(amountOrId.toString())}
                   type="button">
                     {copiedNftId === amountOrId.toString() ? (
                       <Check className="size-4 text-success" />
@@ -297,7 +290,7 @@ export default function SettlementFlows ({
   onAddFlow,
 }: SettlementFlowsProps) {
 
-  const [copiedNftId, setCopiedNftId] = useState<string | null>(null);
+  const { copiedText: copiedNftId, copy: copyNftId } = useCopyToClipboard();
   const [showNftModal, setShowNftModal] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   // Drag and drop sensors.
@@ -372,9 +365,9 @@ export default function SettlementFlows ({
       index={index}
       isEditMode={isEditMode}
       key={`flow-${index}`}
+      onCopyNftId={copyNftId}
       onEdit={onEditFlow}
       onRemove={onRemoveFlow}
-      setCopiedNftId={setCopiedNftId}
       setShowNftModal={setShowNftModal}
       tokenMetadata={tokenMetadata} />
     </ErrorBoundary>

@@ -3,8 +3,8 @@ import Tooltip from '../Tooltip';
 import { networkLinks } from '../../lib/network-links';
 import { Copy, Check, ExternalLink, Loader2 } from 'lucide-react';
 import { isAddress } from 'viem';
-import { logger } from '../../lib/logger';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { utilityManager } from '../../lib/utils';
 import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 import { useEnsName } from 'wagmi';
@@ -25,7 +25,7 @@ const Address = memo(({
   className,
 }: AddressProps) => {
 
-  const [copied, setCopied] = useState(false);
+  const { copiedText, copy } = useCopyToClipboard();
   const hasInitiallyLoadedRef = useRef(false);
   const { chainId } = useCurrentNetwork().network;
 
@@ -63,16 +63,6 @@ const Address = memo(({
     }
   }, []);
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      logger.error('Failed to copy address:', error);
-    }
-  };
-
   // Get the block explorer URL for the current chain and address.
   const blockExplorerUrl = networkLinks.address(chainId, address);
 
@@ -97,10 +87,10 @@ const Address = memo(({
         {showCopy && (
           <Tooltip content="Copy address">
             <button
-            onClick={copyToClipboard}
+            onClick={() => copy(address)}
             className="transition-colors cursor-pointer p-1 text-primary hover:text-primary-interaction"
             type="button">
-              {copied ? (
+              {copiedText === address ? (
                 <Check className="size-4 text-success"/>
               ) : (
                 <Copy className="transition-colors size-4"/>

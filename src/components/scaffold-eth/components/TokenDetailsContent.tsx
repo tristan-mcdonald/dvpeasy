@@ -2,11 +2,11 @@ import Tooltip from '../../Tooltip';
 import { AssetType } from '../../../lib/token-metadata';
 import { Check, Copy, ExternalLink } from 'lucide-react';
 import { networkLinks } from '../../../lib/network-links';
-import { logger } from '../../../lib/logger';
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { TOKEN_BUTTON_CLASSES } from '../utils/tokenSizeUtils';
 import { TokenBalance } from './TokenBalance';
 import { TokenLogoResolver } from './TokenLogoResolver';
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 
 /**
  * Props for the TokenDetailsContent component.
@@ -89,21 +89,7 @@ export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
   isCustomToken,
   storedTokenData,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  /**
-   * Copies the token address to the clipboard.
-   * Shows a temporary success indicator for user feedback.
-   */
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(debouncedAddress);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      logger.error('Failed to copy address:', error);
-    }
-  };
+  const { copiedText, copy } = useCopyToClipboard();
 
   // Get the block explorer URL for the current chain and token address.
   const blockExplorerUrl = networkLinks.address(chainId, debouncedAddress);
@@ -131,9 +117,9 @@ export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
             <Tooltip content="Copy token address">
               <button
               className={`${TOKEN_BUTTON_CLASSES.base} ${TOKEN_BUTTON_CLASSES.primary}`}
-              onClick={copyToClipboard}
+              onClick={() => copy(debouncedAddress)}
               type="button">
-                {copied ? (
+                {copiedText === debouncedAddress ? (
                   <Check className="size-4 text-success" />
                 ) : (
                   <Copy className="transition-colors size-4" />
