@@ -152,25 +152,12 @@ function formatTokenStatus (
   metadata: TokenMetadata | undefined,
 ): FormattedTokenStatus {
   const { amountOrIdApprovedForDvp, amountOrIdHeldByParty, amountOrIdRequired } = tokenStatus;
-  const isMaxApproval = settlementManager.isMaxApproval(amountOrIdApprovedForDvp);
-
-  if (!metadata) {
-    return {
-      ...tokenStatus,
-      formattedRequired: amountOrIdRequired.toString(),
-      formattedApproved: amountOrIdApprovedForDvp.toString(),
-      formattedHeld: amountOrIdHeldByParty.toString(),
-      symbol: 'Unknown',
-      isMaxApproval,
-    };
-  }
-
   return {
     ...tokenStatus,
     formattedRequired: tokenManager.formatAmount(amountOrIdRequired, metadata),
     formattedApproved: tokenManager.formatAmount(amountOrIdApprovedForDvp, metadata),
     formattedHeld: tokenManager.formatAmount(amountOrIdHeldByParty, metadata),
-    symbol: metadata.symbol,
-    isMaxApproval,
+    symbol: metadata?.symbol ?? 'Unknown',
+    isMaxApproval: settlementManager.isMaxApproval(amountOrIdApprovedForDvp),
   };
 }
