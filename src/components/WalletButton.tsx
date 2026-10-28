@@ -1,7 +1,7 @@
-import { formatEther } from 'viem';
 import { networks } from '../config/networks';
 import { Loader2, Wallet } from 'lucide-react';
 import { useAccount, useBalance } from 'wagmi';
+import { tokenManager } from '../lib/token-manager';
 import { useAppKit } from '@reown/appkit/react';
 import { utilityManager } from '../lib/utils';
 import Tooltip from './Tooltip';
@@ -31,8 +31,7 @@ export default function WalletButton () {
 
   const tooltipContent = isConnected && address ? `Connected to ${address}` : 'Connect your wallet';
 
-  // Format balance to 4 decimal places.
-  const formattedBalance = balance ? parseFloat(formatEther(balance.value)).toFixed(4) : '0.0000';
+  const formattedBalance = tokenManager.formatBalance(balance?.formatted ?? '0');
 
   // The balance is of the wallet's chain, which may not be the URL's network.
   const nativeCurrencySymbol = (chainId && networks.byChainId(chainId)?.nativeToken.symbol) || 'ETH';

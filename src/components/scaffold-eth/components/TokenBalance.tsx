@@ -1,5 +1,6 @@
 import { AssetType } from '../../../lib/token-metadata';
 import { memo } from 'react';
+import { tokenManager } from '../../../lib/token-manager';
 
 /**
  * Props for the TokenBalance component.
@@ -98,10 +99,10 @@ export const TokenBalance = memo<TokenBalanceProps>(({
         <span className="text-text-disabled">loading…</span>
       ) : userBalance ? (
         <span className="font-mono">
-          {parseFloat(userBalance.formatted).toFixed(4)} {tokenSymbol || userBalance.symbol}
+          {tokenManager.formatBalance(userBalance.formatted)} {tokenSymbol || userBalance.symbol}
         </span>
       ) : (
-        <span className="font-mono">{parseFloat('0').toFixed(4)}</span>
+        <span className="font-mono">{tokenManager.formatBalance('0')}</span>
       )}
     </>
   );

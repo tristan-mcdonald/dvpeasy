@@ -22,6 +22,13 @@ export const tokenManager = {
   },
 
   /**
+   * A balance in whole tokens, as wagmi formats it, to four decimal places.
+   */
+  formatBalance (formattedBalance: string): string {
+    return parseFloat(formattedBalance).toFixed(4);
+  },
+
+  /**
    * The amount the contract expects for what the user typed: the NFT's ID, or the amount in the
    * token's base units.
    */
