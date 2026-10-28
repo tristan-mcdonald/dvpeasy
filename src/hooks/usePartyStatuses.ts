@@ -155,6 +155,7 @@ function formatTokenStatus (
     formattedApproved: tokenManager.formatAmount(amountOrIdApprovedForDvp, metadata),
     formattedHeld: tokenManager.formatAmount(amountOrIdHeldByParty, metadata),
     symbol: metadata?.symbol ?? 'Unknown',
-    isMaxApproval: settlements.isMaxApproval(amountOrIdApprovedForDvp),
+    // An NFT's approval holds its ID, which can be as large as an unlimited amount.
+    isMaxApproval: !tokenStatus.isNFT && settlements.isMaxApproval(amountOrIdApprovedForDvp),
   };
 }
