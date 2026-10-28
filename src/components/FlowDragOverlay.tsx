@@ -10,7 +10,7 @@ import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 interface FlowDragOverlayProps {
   activeFlow: FlowForDisplay;
-  tokenMetadata?: Record<string, TokenForDisplay>;
+  tokensForDisplay?: Record<string, TokenForDisplay>;
   collectionPreviews: Record<string, string>;
 }
 
@@ -19,21 +19,22 @@ interface FlowDragOverlayProps {
  */
 export default function FlowDragOverlay ({
   activeFlow,
-  tokenMetadata,
+  tokensForDisplay,
   collectionPreviews,
 }: FlowDragOverlayProps) {
   const { chainId } = useCurrentNetwork().network;
+  const tokenForDisplay = tokensForDisplay?.[activeFlow.token.toLowerCase()];
 
   return (
     <div className="block w-full shadow-2xl rounded-lg bg-input-background border-2 border-primary p-4 relative z-50 drag-overlay">
       <div className="flex items-center justify-between mb-1 border-b border-interface-border pb-4">
-        {tokenMetadata && tokenMetadata[activeFlow.token.toLowerCase()] && (
+        {tokenForDisplay && (
           <div className="flex items-center gap-2">
-            {tokenMetadata[activeFlow.token.toLowerCase()].isLoading ? (
+            {tokenForDisplay.isLoading ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <>
-                {tokenMetadata[activeFlow.token.toLowerCase()].isNFT ? (
+                {tokenForDisplay.isNFT ? (
                   <div className="size-5 rounded border border-interface-border overflow-hidden">
                     <NFTCollectionPreview
                       className="size-5"
@@ -47,17 +48,17 @@ export default function FlowDragOverlay ({
                     size="sm"
                     token={{
                       address: activeFlow.token,
-                      symbol: tokenMetadata[activeFlow.token.toLowerCase()].symbol,
-                      name: tokenMetadata[activeFlow.token.toLowerCase()].symbol,
+                      symbol: tokenForDisplay.symbol,
+                      name: tokenForDisplay.symbol,
                       chainId,
-                      logoUrl: tokenMetadata[activeFlow.token.toLowerCase()].logoUrl,
-                      trustWalletLogoUrl: tokenMetadata[activeFlow.token.toLowerCase()].trustWalletLogoUrl,
+                      logoUrl: tokenForDisplay.logoUrl,
+                      trustWalletLogoUrl: tokenForDisplay.trustWalletLogoUrl,
                     }}
                   />
                 )}
                 <span className="font-mono font-medium text-text-label">
-                  {tokenMetadata[activeFlow.token.toLowerCase()].symbol}
-                  {tokenMetadata[activeFlow.token.toLowerCase()].isNFT && ' (NFT)'}
+                  {tokenForDisplay.symbol}
+                  {tokenForDisplay.isNFT && ' (NFT)'}
                 </span>
               </>
             )}

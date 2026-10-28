@@ -101,7 +101,7 @@ export default function CreateSettlement () {
           onEditFlow={flowManagement.handleEditFlow}
           onRemoveFlow={flowManagement.handleRemoveFlow}
           onReorderFlows={flowManagement.handleReorderFlows}
-          tokenMetadata={tokensForDisplay} />
+          tokensForDisplay={tokensForDisplay} />
         </div>
 
         <SettlementDetailsForm

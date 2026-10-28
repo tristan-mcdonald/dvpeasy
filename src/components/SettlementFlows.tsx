@@ -23,7 +23,7 @@ import { useSortable } from '@dnd-kit/sortable';
 
 interface SettlementFlowsProps {
   flows: FlowForDisplay[];
-  tokenMetadata?: Record<string, TokenForDisplay>;
+  tokensForDisplay?: Record<string, TokenForDisplay>;
   isEditMode?: boolean;
   onEditFlow?: (index: number) => void;
   onRemoveFlow?: (index: number) => void;
@@ -36,7 +36,7 @@ interface SortableFlowItemProps {
   flow: FlowForDisplay;
   index: number;
   isEditMode: boolean;
-  tokenMetadata?: Record<string, TokenForDisplay>;
+  tokensForDisplay?: Record<string, TokenForDisplay>;
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
   copiedNftId: string | null;
@@ -49,7 +49,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   flow,
   index,
   isEditMode,
-  tokenMetadata,
+  tokensForDisplay,
   onEdit,
   onRemove,
   copiedNftId,
@@ -76,6 +76,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
   };
 
   const { token, from, to, isNFT, amount, nftId } = flow;
+  const tokenForDisplay = tokensForDisplay?.[token.toLowerCase()];
 
   return (
     <li
@@ -84,13 +85,13 @@ const SortableFlowItem = memo(function SortableFlowItem ({
     style={style}>
       {isEditMode ? (
         <div className="flex items-center justify-between mb-1 border-b border-interface-border pb-4">
-          {tokenMetadata && tokenMetadata[token.toLowerCase()] && (
+          {tokenForDisplay && (
             <div className="flex items-center gap-2">
-              {tokenMetadata[token.toLowerCase()].isLoading ? (
+              {tokenForDisplay.isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
-                  {tokenMetadata[token.toLowerCase()].isNFT ? (
+                  {tokenForDisplay.isNFT ? (
                     <div className="size-5 rounded border border-interface-border overflow-hidden">
                       <NFTCollectionPreview
                       className="size-5"
@@ -103,16 +104,16 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                     size="sm"
                     token={{
                       address: token,
-                      symbol: tokenMetadata[token.toLowerCase()].symbol,
-                      name: tokenMetadata[token.toLowerCase()].symbol,
+                      symbol: tokenForDisplay.symbol,
+                      name: tokenForDisplay.symbol,
                       chainId: network.chainId,
-                      logoUrl: tokenMetadata[token.toLowerCase()].logoUrl,
-                      trustWalletLogoUrl: tokenMetadata[token.toLowerCase()].trustWalletLogoUrl,
+                      logoUrl: tokenForDisplay.logoUrl,
+                      trustWalletLogoUrl: tokenForDisplay.trustWalletLogoUrl,
                     }}/>
                   )}
                   <span className="font-mono font-medium text-text-label">
-                    {tokenMetadata[token.toLowerCase()].symbol}
-                    {tokenMetadata[token.toLowerCase()].isNFT && ' (NFT)'}
+                    {tokenForDisplay.symbol}
+                    {tokenForDisplay.isNFT && ' (NFT)'}
                   </span>
                 </>
               )}
@@ -148,13 +149,13 @@ const SortableFlowItem = memo(function SortableFlowItem ({
         </div>
       ) : (
         // View mode: Token info centered with bottom border (settlement details page).
-        tokenMetadata && tokenMetadata[token.toLowerCase()] && (
+        tokenForDisplay && (
           <div className="flex items-center justify-center gap-2 border-b border-interface-border pb-4">
-            {tokenMetadata[token.toLowerCase()].isLoading ? (
+            {tokenForDisplay.isLoading ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <>
-                {tokenMetadata[token.toLowerCase()].isNFT ? (
+                {tokenForDisplay.isNFT ? (
                   <div className="size-5 rounded border border-interface-border overflow-hidden">
                     <NFTCollectionPreview
                     className="size-5"
@@ -167,16 +168,16 @@ const SortableFlowItem = memo(function SortableFlowItem ({
                   size="sm"
                   token={{
                     address: token,
-                    symbol: tokenMetadata[token.toLowerCase()].symbol,
-                    name: tokenMetadata[token.toLowerCase()].symbol,
+                    symbol: tokenForDisplay.symbol,
+                    name: tokenForDisplay.symbol,
                     chainId: network.chainId,
-                    logoUrl: tokenMetadata[token.toLowerCase()].logoUrl,
-                    trustWalletLogoUrl: tokenMetadata[token.toLowerCase()].trustWalletLogoUrl,
+                    logoUrl: tokenForDisplay.logoUrl,
+                    trustWalletLogoUrl: tokenForDisplay.trustWalletLogoUrl,
                   }}/>
                 )}
                 <span className="font-mono font-medium text-text-label">
-                  {tokenMetadata[token.toLowerCase()].symbol}
-                  {tokenMetadata[token.toLowerCase()].isNFT && ' (NFT)'}
+                  {tokenForDisplay.symbol}
+                  {tokenForDisplay.isNFT && ' (NFT)'}
                 </span>
               </>
             )}
@@ -262,7 +263,7 @@ const SortableFlowItem = memo(function SortableFlowItem ({
 
 export default function SettlementFlows ({
   flows,
-  tokenMetadata,
+  tokensForDisplay,
   isEditMode = false,
   onEditFlow,
   onRemoveFlow,
@@ -339,7 +340,7 @@ export default function SettlementFlows ({
       onEdit={onEditFlow}
       onRemove={onRemoveFlow}
       setShowNftModal={setShowNftModal}
-      tokenMetadata={tokenMetadata} />
+      tokensForDisplay={tokensForDisplay} />
     </ErrorBoundary>
   ));
 
@@ -363,7 +364,7 @@ export default function SettlementFlows ({
                 <FlowDragOverlay
                 activeFlow={activeFlow}
                 collectionPreviews={collectionPreviews}
-                tokenMetadata={tokenMetadata} />
+                tokensForDisplay={tokensForDisplay} />
               )}
             </DragOverlay>
           </DndContext>

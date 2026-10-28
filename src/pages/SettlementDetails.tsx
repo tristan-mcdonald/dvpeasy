@@ -100,7 +100,7 @@ export default function SettlementDetails () {
         <SettlementOverview settlement={settlement} />
         <SettlementFlows
         flows={flowsForDisplay}
-        tokenMetadata={tokensForDisplay} />
+        tokensForDisplay={tokensForDisplay} />
         <SettlementGraph
         flows={flowsForDisplay}
         tokenMetadata={tokensForDisplay} />
