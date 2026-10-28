@@ -123,8 +123,6 @@ function formatPartyStatus ({
   tokensMetadataByAddress,
 }: FormatPartyStatusOptions): PartyStatusForDisplay {
   if (!partyStatus) {
-    const parsedError = errorManager.parse(error, { partyAddress: address });
-    errorManager.log(parsedError, { partyAddress: address });
     return {
       address,
       isLoading: false,
@@ -132,7 +130,7 @@ function formatPartyStatus ({
       etherRequired: 0n,
       etherDeposited: 0n,
       tokenStatuses: [],
-      error: parsedError,
+      error: errorManager.report(error, { partyAddress: address }),
     };
   }
 

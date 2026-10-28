@@ -1,5 +1,4 @@
 import { Address, ContractFunctionReturnType } from 'viem';
-import { ContractErrorType } from './errors';
 import { DvpAbi } from '../config/contracts/abis';
 
 export type ContractSettlement = ContractFunctionReturnType<DvpAbi, 'view', 'getSettlement'>;
@@ -40,13 +39,14 @@ export interface TokenStatusForDisplay extends TokenStatus {
 }
 
 /**
- * A party's status as its approval card shows it, or the error which stopped it being read.
+ * A party's status as its approval card shows it, or the message for the error which stopped it
+ * being read.
  */
 export interface PartyStatusForDisplay extends Omit<PartyStatus, 'tokenStatuses'> {
   address: Address;
   isLoading: boolean;
   tokenStatuses: TokenStatusForDisplay[];
-  error?: ContractErrorType;
+  error?: string;
 }
 
 /**

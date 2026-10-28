@@ -6,11 +6,10 @@ import { simulateContract, waitForTransactionReceipt, writeContract } from 'wagm
 import { isAddressEqual, keccak256, toHex } from 'viem';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
-import { ContractValidationError, contractValidationManager, ValidatedFlowDraft } from '../lib/contract-validation';
+import { contractValidationManager, ValidatedFlowDraft } from '../lib/contract-validation';
 import { errorManager } from '../lib/error-manager';
 import { logger } from '../lib/logger';
 import { AssetType } from '../lib/token-metadata';
-import { TokenDetectionError } from '../types/errors';
 import { tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
 import { Flow, FlowDraft } from '../types/settlement';
@@ -34,33 +33,21 @@ export function useSettlementCreation () {
    * Verify asset type and parse token amount for a flow.
    */
   const verifyAndParseFlow = async (flow: ValidatedFlowDraft): Promise<Flow> => {
-    try {
-      // Double-check asset type detection for accuracy.
-      const metadata = await fetchTokenMetadata(flow.token);
-      const detectedIsNFT = metadata.assetType === AssetType.ERC721;
+    // Double-check asset type detection for accuracy.
+    const metadata = await fetchTokenMetadata(flow.token);
+    const detectedIsNFT = metadata.assetType === AssetType.ERC721;
 
-      if (detectedIsNFT !== flow.isNFT) {
-        logger.warn(`Asset type mismatch for ${flow.token}: detected=${detectedIsNFT}, provided=${flow.isNFT}`);
-      }
-
-      const amountOrId = tokenManager.parseAmount(flow.amount, metadata);
-
-      return {
-        token: flow.token,
-        isNFT: flow.isNFT,
-        from: flow.from,
-        to: flow.to,
-        amountOrId: amountOrId,
-      };
-    } catch (error) {
-      logger.error('Error parsing flow:', error);
-      if (error instanceof TokenDetectionError) throw error;
-      throw new ContractValidationError(
-        `Failed to parse flow for token ${flow.token}: ${errorManager.message(error)}`,
-        flow,
-        'flow',
-      );
+    if (detectedIsNFT !== flow.isNFT) {
+      logger.warn(`Asset type mismatch for ${flow.token}: detected=${detectedIsNFT}, provided=${flow.isNFT}`);
     }
+
+    return {
+      token: flow.token,
+      isNFT: flow.isNFT,
+      from: flow.from,
+      to: flow.to,
+      amountOrId: tokenManager.parseAmount(flow.amount, metadata),
+    };
   };
 
   /**
@@ -109,11 +96,8 @@ export function useSettlementCreation () {
         isAutoSettled,
       });
     } catch (error) {
-      if (error instanceof ContractValidationError) {
-        toast.error(error.message);
-      } else {
-        toast.error(`Validation error: ${errorManager.message(error, 'Unknown validation error')}`);
-      }
+      // Validation throws only `ContractValidationError`, whose message is meant for the user.
+      toast.error(errorManager.message(error));
       return;
     }
 
@@ -181,10 +165,7 @@ export function useSettlementCreation () {
         toast.error('Settlement created but could not retrieve ID.', { id: toastId });
       }
     } catch (error) {
-      const errorMessage = error instanceof ContractValidationError
-        ? error.message
-        : errorManager.report(error);
-      toast.error(errorMessage, { id: toastId });
+      toast.error(errorManager.report(error), { id: toastId });
     } finally {
       setIsLoading(false);
     }

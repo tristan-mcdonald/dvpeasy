@@ -60,7 +60,7 @@ export default function PartyApprovalCard ({
             <span className="text-sm text-error">Error loading data</span>
           </div>
         </div>
-        <p className="text-sm text-error">{String(partyStatus.error)}</p>
+        <p className="text-sm text-error">{partyStatus.error}</p>
       </CardContainer>
     );
   }

@@ -1,4 +1,5 @@
 import { Address, isAddress } from 'viem';
+import { ContractValidationError } from '../types/errors';
 import { FlowDraft } from '../types/settlement';
 import { z } from 'zod';
 
@@ -263,15 +264,3 @@ export const contractValidationManager = {
     };
   },
 };
-
-// Validation error types.
-export class ContractValidationError extends Error {
-  constructor (
-    message: string,
-    public readonly data: unknown,
-    public readonly schema: string,
-  ) {
-    super(message);
-    this.name = 'ContractValidationError';
-  }
-}

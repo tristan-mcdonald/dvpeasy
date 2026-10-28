@@ -9,12 +9,10 @@ import {
 } from 'viem';
 import {
   ContractError,
-  ContractErrorType,
   InvalidDataError,
   NetworkError,
   RateLimitError,
   SettlementNotFoundError,
-  TokenDetectionError,
   TransactionError,
   UserRejectionError,
 } from '../types/errors';
@@ -72,8 +70,8 @@ export const errorManager = {
   /**
    * Classify an error by viem's error classes, which wagmi's errors carry as their causes.
    */
-  parse (error: unknown, context: Record<string, unknown> = {}): ContractErrorType {
-    if (error instanceof ContractError) return error as ContractErrorType;
+  parse (error: unknown, context: Record<string, unknown> = {}): ContractError {
+    if (error instanceof ContractError) return error;
 
     const message = this.message(error, String(error));
     const httpError = findCause(error, HttpRequestError);
@@ -93,19 +91,13 @@ export const errorManager = {
   },
 
   /**
-   * Format an error for user display: a plain message for kinds which `parse` recognises and for
-   * the DVP contract's custom errors, and otherwise the one-line summary from viem or wagmi where
-   * there is one.
+   * Format an error for user display. Each kind has its own message, except the two which wrap an
+   * error `parse` couldn't name, whose cause can say more: the DVP contract's custom error, or the
+   * one-line summary from viem or wagmi.
    */
-  formatUserMessage (error: ContractErrorType): string {
-    const hasReliableMessage = error instanceof UserRejectionError ||
-      error instanceof NetworkError ||
-      error instanceof RateLimitError;
-    if (hasReliableMessage) return error.userMessage;
-
-    if (error instanceof TokenDetectionError) {
-      return `Invalid token at ${error.tokenAddress}: ${error.message}`;
-    }
+  formatUserMessage (error: ContractError): string {
+    const isUnnamed = error instanceof TransactionError || error instanceof InvalidDataError;
+    if (!isUnnamed) return error.userMessage;
 
     const { originalError } = error;
     const revertedErrorName = findCause(originalError, ContractFunctionRevertedError)?.data?.errorName;
@@ -135,7 +127,7 @@ export const errorManager = {
   /**
    * Details of an error for the log.
    */
-  debugInfo (error: ContractErrorType): Record<string, unknown> {
+  debugInfo (error: ContractError): Record<string, unknown> {
     return {
       type: error.type,
       message: error.message,
@@ -150,7 +142,7 @@ export const errorManager = {
   /**
    * Log an error with context.
    */
-  log (error: ContractErrorType, context?: Record<string, unknown>): void {
+  log (error: ContractError, context?: Record<string, unknown>): void {
     const errorInfo = this.debugInfo(error);
     const fullContext = {
       ...errorInfo,

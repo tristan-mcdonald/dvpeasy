@@ -48,11 +48,12 @@ export class SettlementNotFoundError extends ContractError {
  */
 export class TokenDetectionError extends ContractError {
   readonly type = 'TOKEN_DETECTION_ERROR';
-  readonly userMessage = 'Unable to detect token type. Please verify the token address.';
+  readonly userMessage: string;
   readonly isRetryable: boolean = true;
 
   constructor (message: string, public readonly tokenAddress: string, originalError?: unknown) {
     super(message, originalError);
+    this.userMessage = `Invalid token at ${tokenAddress}: ${message}`;
   }
 }
 
@@ -96,13 +97,15 @@ export class UserRejectionError extends ContractError {
 }
 
 /**
- * Union type of all possible contract errors.
+ * Input which failed validation before it was sent to the contract, with a message for the user.
  */
-export type ContractErrorType =
-  | NetworkError
-  | InvalidDataError
-  | SettlementNotFoundError
-  | TokenDetectionError
-  | RateLimitError
-  | TransactionError
-  | UserRejectionError;
+export class ContractValidationError extends ContractError {
+  readonly type = 'VALIDATION_ERROR';
+  readonly userMessage: string;
+  readonly isRetryable = false;
+
+  constructor (message: string, public readonly data: unknown, public readonly schema: string) {
+    super(message);
+    this.userMessage = message;
+  }
+}

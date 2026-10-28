@@ -1,7 +1,8 @@
 import { Address, erc20Abi, erc721Abi, formatUnits, parseUnits } from 'viem';
 import { AssetType, TokenMetadata } from './token-metadata';
 import { config } from '../config/wagmi';
-import { ContractValidationError, contractValidationManager } from './contract-validation';
+import { ContractValidationError } from '../types/errors';
+import { contractValidationManager } from './contract-validation';
 import { errorManager } from './error-manager';
 import { logger } from './logger';
 import { NetworkDeployment } from '../config/contracts/deployments';

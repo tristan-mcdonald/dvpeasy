@@ -1,13 +1,14 @@
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
 import { flowDisplay } from '../lib/flow-display';
+import { InvalidDataError } from '../types/errors';
 import { settlements } from '../lib/settlements';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useMemo } from 'react';
 import { useReadContract } from 'wagmi';
 import { useTokensMetadata } from './useTokenMetadata';
 
-const invalidIdError = errorManager.parse(new Error('Invalid settlement ID format'));
+const invalidIdError = new InvalidDataError('Invalid settlement ID format');
 
 /**
  * A settlement, and its flows with their amounts formatted for display, read again while it's

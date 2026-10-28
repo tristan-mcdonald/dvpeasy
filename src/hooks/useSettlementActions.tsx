@@ -4,7 +4,8 @@ import { Address, WalletClient } from 'viem';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
-import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
+import { ContractValidationError } from '../types/errors';
+import { contractValidationManager } from '../lib/contract-validation';
 import { errorManager } from '../lib/error-manager';
 import { PartyStatus } from '../types/settlement';
 import { tokenManager } from '../lib/token-manager';
@@ -91,11 +92,7 @@ export function useSettlementActions ({
       toast.success('Settlement approved successfully!', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      if (error instanceof ContractValidationError) {
-        toast.error(`Validation error: ${error.message}`, { id: toastId });
-      } else {
-        toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
-      }
+      toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
     } finally {
       setIsApproving(false);
     }
@@ -140,11 +137,7 @@ export function useSettlementActions ({
       toast.success('Settlement executed successfully!', { id: toastId });
       onSuccess?.();
     } catch (error) {
-      if (error instanceof ContractValidationError) {
-        toast.error(`Validation error: ${error.message}`, { id: toastId });
-      } else {
-        toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
-      }
+      toast.error(errorManager.report(error, { settlementId, address }), { id: toastId });
     } finally {
       setIsExecuting(false);
     }
