@@ -1,7 +1,7 @@
 import { networks } from '../config/networks';
 import { Loader2, Wallet } from 'lucide-react';
-import { useAccount, useBalance } from 'wagmi';
 import { tokenManager } from '../lib/token-manager';
+import { useAccount, useBalance } from 'wagmi';
 import { useAppKit } from '@reown/appkit/react';
 import { utilityManager } from '../lib/utils';
 import Tooltip from './Tooltip';

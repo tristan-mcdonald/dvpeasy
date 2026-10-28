@@ -31,7 +31,7 @@ export const flowDisplay = {
   collectionPreviews (flows: Pick<FlowForDisplay, 'token' | 'nftId'>[]): Record<string, string> {
     const collectionPreviews: Record<string, string> = {};
     for (const { token, nftId } of flows) {
-      if (nftId !== undefined) collectionPreviews[token.toLowerCase()] ??= nftId;
+      if (nftId !== undefined) collectionPreviews[token.toLowerCase()] ||= nftId;
     }
     return collectionPreviews;
   },

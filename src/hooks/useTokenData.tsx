@@ -1,5 +1,5 @@
-import { networkLinks } from '../lib/network-links';
 import { errorManager } from '../lib/error-manager';
+import { networkLinks } from '../lib/network-links';
 import { Network, networks } from '../config/networks';
 import { ListedToken } from '../types/tokens';
 import { logger } from '../lib/logger';

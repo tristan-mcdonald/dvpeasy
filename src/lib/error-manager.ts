@@ -21,7 +21,8 @@ import { logger } from './logger';
 
 /**
  * What to tell the user when the DVP contract reverts with one of its custom errors. Errors which
- * only another contract or a reentrant call can cause are left to viem's summary.
+ * come from the libraries it uses for transfers, or from a reentrant call, are left to viem's
+ * summary.
  */
 const REVERT_MESSAGES: Partial<Record<ContractErrorName<DvpAbi>, string>> = {
   ApprovalAlreadyGranted: 'This settlement has already been approved from this address.',
@@ -30,7 +31,6 @@ const REVERT_MESSAGES: Partial<Record<ContractErrorName<DvpAbi>, string>> = {
   CutoffDateNotPassed: 'The settlement\'s cutoff date hasn\'t passed yet.',
   CutoffDatePassed: 'The settlement\'s cutoff date has passed.',
   IncorrectETHAmount: 'The ETH sent doesn\'t match the amount the settlement needs.',
-  InsufficientBalance: 'One or more parties have insufficient token balance.',
   InvalidAmountOrId: 'One or more flows has an invalid amount or NFT ID.',
   InvalidERC20Token: 'One or more tokens isn\'t a valid ERC-20 token.',
   InvalidERC721Token: 'One or more tokens isn\'t a valid ERC-721 token.',
