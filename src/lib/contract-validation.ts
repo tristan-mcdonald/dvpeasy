@@ -1,5 +1,15 @@
 import { Address, isAddress } from 'viem';
+import { FlowDraft } from '../types/settlement';
 import { z } from 'zod';
+
+/**
+ * A flow from the form whose addresses have been checked, with its amount still as typed.
+ */
+export interface ValidatedFlowDraft extends FlowDraft {
+  token: Address;
+  from: Address;
+  to: Address;
+}
 
 /**
  * Type guards and runtime validation for smart contract interactions.
@@ -79,34 +89,6 @@ const FutureDateSchema = z.string()
 
     return BigInt(Math.floor(date.getTime() / 1000));
   });
-
-// Contract Flow validation schemas.
-export const ContractFlowSchema = z.object({
-  token: AddressSchema,
-  isNFT: z.boolean(),
-  from: AddressSchema,
-  to: AddressSchema,
-  amountOrId: z.bigint(),
-});
-
-// Token status validation schemas.
-const TokenStatusSchema = z.object({
-  tokenAddress: AddressSchema,
-  isNFT: z.boolean(),
-  amountOrIdRequired: z.bigint(),
-  amountOrIdApprovedForDvp: z.bigint(),
-  amountOrIdHeldByParty: z.bigint(),
-});
-
-const TokenStatusArraySchema = z.array(TokenStatusSchema);
-
-// Party status validation schemas.
-export const PartyStatusSchema = z.object({
-  isApproved: z.boolean(),
-  etherRequired: z.bigint(),
-  etherDeposited: z.bigint(),
-  tokenStatuses: TokenStatusArraySchema,
-});
 
 // Flow schema with full validation and transformation.
 const FlowInputSchema = z.object({
@@ -204,19 +186,7 @@ export const contractValidationManager = {
    * Validates all flow fields and returns properly formatted data.
    * Note: Amount remains as string for later parsing with proper decimal handling.
    */
-  validateFlowForSubmission (flow: {
-    token: string;
-    from: string;
-    to: string;
-    amount: string;
-    isNFT: boolean;
-  }): {
-    token: Address;
-    from: Address;
-    to: Address;
-    amount: string;
-    isNFT: boolean;
-  } {
+  validateFlowForSubmission (flow: FlowDraft): ValidatedFlowDraft {
     const validationResult = FlowWithAmountValidationSchema.safeParse(flow);
 
     if (!validationResult.success) {
@@ -242,24 +212,12 @@ export const contractValidationManager = {
    * Note: Flow amounts remain as strings for later parsing with proper decimal handling.
    */
   validateSettlementForSubmission (input: {
-    flows: Array<{
-      token: string;
-      from: string;
-      to: string;
-      amount: string;
-      isNFT: boolean;
-    }>;
+    flows: FlowDraft[];
     reference: string;
     cutoffDate: string;
     isAutoSettled: boolean;
   }): {
-    validatedFlows: Array<{
-      token: Address;
-      from: Address;
-      to: Address;
-      amount: string;
-      isNFT: boolean;
-    }>;
+    validatedFlows: ValidatedFlowDraft[];
     reference: string;
     cutoffTimestamp: bigint;
     isAutoSettled: boolean;
@@ -317,7 +275,3 @@ export class ContractValidationError extends Error {
     this.name = 'ContractValidationError';
   }
 }
-
-// Export type definitions for use in other modules.
-export type ContractFlow = z.infer<typeof ContractFlowSchema>;
-export type PartyStatus = z.infer<typeof PartyStatusSchema>;

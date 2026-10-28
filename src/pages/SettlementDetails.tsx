@@ -95,7 +95,7 @@ export default function SettlementDetails () {
       isRefreshing={isRefreshing}
       onRefresh={refresh}
       settlementId={settlementId}
-      settlementReference={settlement.settlementReference} />
+      reference={settlement.reference} />
       <div className="space-y-8">
         <SettlementOverview settlement={settlement} />
         <SettlementFlows

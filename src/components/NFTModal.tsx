@@ -1,5 +1,5 @@
 import NFTImage from './NFTImage';
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { X } from 'lucide-react';
 
 interface FormattedFlow {
@@ -14,7 +14,7 @@ interface FormattedFlow {
 interface NFTModalProps {
   showNftModal: string | null;
   setShowNftModal: (modal: string | null) => void;
-  displayFlows: (FormattedFlow | Flow)[];
+  displayFlows: (FormattedFlow | FlowDraft)[];
 }
 
 /**
@@ -27,7 +27,7 @@ export default function NFTModal ({
 }: NFTModalProps) {
   if (!showNftModal) return null;
 
-  const modalFlow = displayFlows.find((flow: FormattedFlow | Flow) => {
+  const modalFlow = displayFlows.find((flow: FormattedFlow | FlowDraft) => {
     const tokenId = 'amountOrId' in flow ? flow.amountOrId.toString() : flow.amount;
     return `${flow.token}-${tokenId}` === showNftModal;
   });

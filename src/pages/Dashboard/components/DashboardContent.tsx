@@ -2,13 +2,13 @@ import ButtonLink from '../../../components/ButtonLink';
 import Pagination from '../../../components/Pagination';
 import SettlementTable from '../../../components/SettlementTable';
 import { Plus } from 'lucide-react';
-import { SettlementWithFlows } from '../../../types/settlement';
+import { Settlement } from '../../../types/settlement';
 import { urlManager } from '../../../lib/url-manager';
 import { useCurrentNetwork } from '../../../hooks/useCurrentNetwork';
 import { UseDashboardState } from '../hooks/useDashboardState';
 
 interface DashboardContentProps {
-  settlements: SettlementWithFlows[];
+  settlements: Settlement[];
   pagination: UseDashboardState;
   filters: UseDashboardState;
 }

@@ -6,14 +6,14 @@ import HeaderLocal from './HeaderLocal';
 
 interface SettlementHeaderProps {
   settlementId: string | undefined;
-  settlementReference: string;
+  reference: string;
   isRefreshing: boolean;
   onRefresh: () => void;
 }
 
 export default function SettlementHeader ({
   settlementId,
-  settlementReference,
+  reference,
   isRefreshing,
   onRefresh,
 }: SettlementHeaderProps) {
@@ -44,7 +44,7 @@ export default function SettlementHeader ({
       </div>
 
       <HeaderLocal
-      description={settlementReference}
+      description={reference}
       title={`Settlement #${settlementId}`}/>
     </>
   );

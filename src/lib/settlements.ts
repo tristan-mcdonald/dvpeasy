@@ -1,13 +1,5 @@
 import { Address } from 'viem';
-import { Flow, Settlement } from '../types/settlement-details';
-
-type ContractSettlement = readonly [
-  settlementReference: string,
-  cutoffDate: bigint,
-  flows: readonly Flow[],
-  isSettled: boolean,
-  isAutoSettled: boolean,
-];
+import { ContractPartyStatus, ContractSettlement, PartyStatus, Settlement } from '../types/settlement';
 
 /**
  * How often an open settlement's data is read again, in milliseconds.
@@ -19,24 +11,32 @@ const POLLING_INTERVAL = 10_000;
  * still change.
  */
 export const settlements = {
-  fromContract ([
-    settlementReference,
-    cutoffDate,
-    flows,
-    isSettled,
-    isAutoSettled,
-  ]: ContractSettlement): Settlement {
+  fromContract (
+    id: bigint,
+    [reference, cutoffDate, flows, isSettled, isAutoSettled]: ContractSettlement,
+  ): Settlement {
     return {
-      settlementReference,
-      cutoffDate,
+      id: id.toString(),
+      reference,
+      // The contract holds the cutoff in seconds.
+      cutoffDate: Number(cutoffDate) * 1000,
       flows: [...flows],
       isSettled,
       isAutoSettled,
     };
   },
 
+  partyStatusFromContract ([
+    isApproved,
+    etherRequired,
+    etherDeposited,
+    tokenStatuses,
+  ]: ContractPartyStatus): PartyStatus {
+    return { isApproved, etherRequired, etherDeposited, tokenStatuses: [...tokenStatuses] };
+  },
+
   isExpired (settlement: Settlement): boolean {
-    return Number(settlement.cutoffDate) * 1000 < Date.now();
+    return settlement.cutoffDate < Date.now();
   },
 
   /**

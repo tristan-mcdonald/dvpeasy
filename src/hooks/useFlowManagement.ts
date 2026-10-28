@@ -1,12 +1,12 @@
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { useState } from 'react';
 
 /**
  * Hook for managing flows in settlement creation.
  * Handles CRUD operations and modal state for flows.
  */
-export function useFlowManagement (initialFlows: Flow[] = []) {
-  const [flows, setFlows] = useState<Flow[]>(initialFlows);
+export function useFlowManagement (initialFlows: FlowDraft[] = []) {
+  const [flows, setFlows] = useState<FlowDraft[]>(initialFlows);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFlowIndex, setEditingFlowIndex] = useState<number | null>(null);
 
@@ -29,7 +29,7 @@ export function useFlowManagement (initialFlows: Flow[] = []) {
   /**
    * Handle saving flow from modal.
    */
-  const handleSaveFlow = (flow: Flow) => {
+  const handleSaveFlow = (flow: FlowDraft) => {
     if (editingFlowIndex !== null) {
       // Update existing flow.
       setFlows(flows.map((f, i) => i === editingFlowIndex ? flow : f));
@@ -51,7 +51,7 @@ export function useFlowManagement (initialFlows: Flow[] = []) {
   /**
    * Handle reordering flows.
    */
-  const handleReorderFlows = (reorderedFlows: Flow[]) => {
+  const handleReorderFlows = (reorderedFlows: FlowDraft[]) => {
     setFlows(reorderedFlows);
   };
 

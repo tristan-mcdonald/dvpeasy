@@ -1,10 +1,7 @@
 import { Check, Loader2 } from 'lucide-react';
 import ButtonLink from './ButtonLink';
+import { PartyStatus } from '../types/settlement';
 import { useWalletNetwork } from '../hooks/useWalletNetwork';
-
-interface PartyStatus {
-  isApproved: boolean;
-}
 
 interface SettlementActionsProps {
   isSettled: boolean;

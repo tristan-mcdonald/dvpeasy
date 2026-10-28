@@ -1,5 +1,5 @@
 import { getFilterResultsText } from '../utils/filterHelpers';
-import { SettlementWithFlows } from '../../../types/settlement';
+import { Settlement } from '../../../types/settlement';
 import { TokenSelect } from '../../../components/scaffold-eth/TokenSelect';
 import { UseDashboardState } from '../hooks/useDashboardState';
 import { useAccount } from 'wagmi';
@@ -9,7 +9,7 @@ interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   filters: UseDashboardState;
-  settlements: SettlementWithFlows[];
+  settlements: Settlement[];
   totalSettlements?: number;
 }
 

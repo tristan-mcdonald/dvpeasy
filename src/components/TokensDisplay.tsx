@@ -3,9 +3,12 @@ import Tooltip from './Tooltip';
 import { Flow } from '../types/settlement';
 import { memo, useMemo } from 'react';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
-import { TokensDisplayProps } from '../types/components';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
+
+interface TokensDisplayProps {
+  flows: Flow[];
+}
 
 function TokensDisplay ({ flows }: TokensDisplayProps) {
   const { chainId } = useCurrentNetwork().network;
@@ -25,7 +28,7 @@ function TokensDisplay ({ flows }: TokensDisplayProps) {
 
       // Only set if we haven't seen this collection yet.
       if (!collectionPreviews[collectionAddress]) {
-        collectionPreviews[collectionAddress] = flow.amount; // For NFTs, amount is the token ID.
+        collectionPreviews[collectionAddress] = flow.amountOrId.toString();
       }
     });
 

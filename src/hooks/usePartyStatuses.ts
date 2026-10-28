@@ -2,7 +2,7 @@ import { Address } from 'viem';
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
 import { FormattedTokenStatus, PartyApprovalStatus } from '../components/SettlementApprovals/types';
-import { PartyStatus, Settlement, TokenStatus } from '../types/settlement-details';
+import { PartyStatus, Settlement, TokenStatus } from '../types/settlement';
 import { settlementManager } from '../components/SettlementApprovals/utils';
 import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
@@ -51,12 +51,9 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
   });
 
   const partyStatuses = useMemo(() => {
-    return partyStatusesQuery.data?.map(({ result }): PartyStatus | undefined => result && {
-      isApproved: result[0],
-      etherRequired: result[1],
-      etherDeposited: result[2],
-      tokenStatuses: [...result[3]],
-    });
+    return partyStatusesQuery.data?.map(({ result }) => (
+      result && settlements.partyStatusFromContract(result)
+    ));
   }, [partyStatusesQuery.data]);
 
   const tokensMetadata = useTokensMetadata(settlement?.flows.map(flow => flow.token) ?? []);

@@ -1,8 +1,8 @@
 import SettlementRow from './SettlementRow';
-import { Settlement, SettlementWithFlows } from '../types/settlement';
+import { Settlement } from '../types/settlement';
 
 interface SettlementTableProps {
-  settlements: (Settlement | SettlementWithFlows)[];
+  settlements: Settlement[];
 }
 
 export default function SettlementTable ({ settlements }: SettlementTableProps) {

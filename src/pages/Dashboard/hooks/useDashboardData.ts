@@ -1,10 +1,10 @@
-import { SettlementWithFlows } from '../../../types/settlement';
+import { Settlement } from '../../../types/settlement';
 import { UseDashboardState } from './useDashboardState';
 import { useMemo } from 'react';
 import { useSettlementList } from '../../../hooks/useSettlementList';
 
 export interface DashboardData {
-  settlements: SettlementWithFlows[];
+  settlements: Settlement[];
   isLoading: boolean;
   isError: boolean;
   refetch: () => void;

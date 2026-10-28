@@ -12,7 +12,7 @@ import { ArrowDownRight, ArrowUpRight, Check, Coins, Copy, Edit, ExternalLink, G
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { flowsManager } from '../lib/flow-utils';
 import { CSS } from '@dnd-kit/utilities';
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { networkLinks } from '../lib/network-links';
 import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
@@ -31,18 +31,18 @@ interface FormattedFlow {
 
 interface SettlementFlowsProps {
   formattedFlows?: FormattedFlow[];
-  flows?: Flow[];
+  flows?: FlowDraft[];
   tokenMetadata?: Record<string, TokenForDisplay>;
   isEditMode?: boolean;
   onEditFlow?: (index: number) => void;
   onRemoveFlow?: (index: number) => void;
-  onReorderFlows?: (flows: Flow[]) => void;
+  onReorderFlows?: (flows: FlowDraft[]) => void;
   onAddFlow?: () => void;
 }
 
 // Individual sortable flow item component.
 interface SortableFlowItemProps {
-  flow: Flow | FormattedFlow;
+  flow: FlowDraft | FormattedFlow;
   index: number;
   isEditMode: boolean;
   tokenMetadata?: Record<string, TokenForDisplay>;

@@ -1,28 +1,13 @@
 import { Check, Hourglass, X } from 'lucide-react';
-
-interface Flow {
-  token: string;
-  from: string;
-  to: string;
-  amountOrId: bigint;
-  isNFT: boolean;
-}
-
-interface Settlement {
-  settlementReference: string;
-  cutoffDate: bigint;
-  flows: Flow[];
-  isSettled: boolean;
-  isAutoSettled: boolean;
-}
+import { Settlement } from '../types/settlement';
 
 interface SettlementOverviewProps {
   settlement: Settlement;
 }
 
 export default function SettlementOverview ({ settlement }: SettlementOverviewProps) {
-  const cutoffDate = new Date(Number(settlement.cutoffDate) * 1000);
-  const isExpired = Number(settlement.cutoffDate) * 1000 < Date.now();
+  const cutoffDate = new Date(settlement.cutoffDate);
+  const isExpired = settlement.cutoffDate < Date.now();
 
   return (
     <div className="space-y-3">

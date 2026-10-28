@@ -1,18 +1,18 @@
 import ButtonLink from './ButtonLink';
 import { Check, X, Save } from 'lucide-react';
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { FlowInput } from './scaffold-eth/FlowInput';
 import { MouseEvent, useEffect, useState } from 'react';
 
 interface FlowModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (flow: Flow) => void;
-  flow?: Flow;
+  onSave: (flow: FlowDraft) => void;
+  flow?: FlowDraft;
   title?: string;
 }
 
-const EMPTY_FLOW: Flow = {
+const EMPTY_FLOW: FlowDraft = {
   token: '',
   from: '',
   to: '',
@@ -21,7 +21,7 @@ const EMPTY_FLOW: Flow = {
 };
 
 export default function FlowModal ({ isOpen, onClose, onSave, flow, title = 'Add token flow' }: FlowModalProps) {
-  const [currentFlow, setCurrentFlow] = useState<Flow>(flow || EMPTY_FLOW);
+  const [currentFlow, setCurrentFlow] = useState<FlowDraft>(flow || EMPTY_FLOW);
   const [isFormValid, setIsFormValid] = useState(false);
 
   // Handle escape key and prevent body scroll when modal is open.

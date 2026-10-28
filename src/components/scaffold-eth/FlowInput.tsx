@@ -5,15 +5,15 @@ import { AssetType } from '../../lib/token-metadata';
 import { TokenDetectionError } from '../../types/errors';
 import { utilityManager } from '../../lib/utils';
 import { inputValidationManager } from '../../lib/validation';
-import { Flow } from '../../types/settlement';
+import { FlowDraft } from '../../types/settlement';
 import LabelWithIcon from '../LabelWithIcon';
 import NFTImage from '../NFTImage';
 import { TokenSelect } from './TokenSelect';
 import { useTokenMetadata } from '../../hooks/useTokenMetadata';
 
 interface FlowInputProps {
-  flow: Flow;
-  onChange: (flow: Flow) => void;
+  flow: FlowDraft;
+  onChange: (flow: FlowDraft) => void;
   isDraggable?: boolean;
   id?: string;
   onValidationChange?: (isValid: boolean) => void;

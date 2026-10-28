@@ -1,6 +1,6 @@
 import { DVP_ABI } from '../config/contracts/abis';
 import { errorManager } from '../lib/error-manager';
-import { FormattedFlow } from '../types/settlement-details';
+import { FormattedFlow } from '../types/settlement';
 import { settlements } from '../lib/settlements';
 import { tokenManager } from '../lib/token-manager';
 import { useCurrentNetwork } from './useCurrentNetwork';
@@ -16,18 +16,19 @@ const invalidIdError = errorManager.parse(new Error('Invalid settlement ID forma
 export function useSettlement (settlementId: string | undefined) {
   const { deployment, network } = useCurrentNetwork();
   const isValidId = settlementId !== undefined && /^\d+$/.test(settlementId);
+  const id = isValidId ? BigInt(settlementId) : 0n;
 
   const settlementQuery = useReadContract({
     address: deployment.dvpAddress,
     abi: DVP_ABI,
     functionName: 'getSettlement',
-    args: isValidId ? [BigInt(settlementId)] : undefined,
+    args: isValidId ? [id] : undefined,
     chainId: network.chainId,
     query: {
       enabled: isValidId,
-      select: settlements.fromContract,
+      select: result => settlements.fromContract(id, result),
       refetchInterval: (query) => settlements.pollingInterval(
-        query.state.data && settlements.fromContract(query.state.data),
+        query.state.data && settlements.fromContract(id, query.state.data),
       ),
     },
   });

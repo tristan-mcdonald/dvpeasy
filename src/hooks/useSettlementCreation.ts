@@ -6,14 +6,14 @@ import { simulateContract, waitForTransactionReceipt, writeContract } from 'wagm
 import { isAddressEqual, keccak256, toHex } from 'viem';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
-import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
+import { ContractValidationError, contractValidationManager, ValidatedFlowDraft } from '../lib/contract-validation';
 import { logger } from '../lib/logger';
 import { settlementErrorManager } from '../lib/settlement-error-utils';
 import { AssetType } from '../lib/token-metadata';
 import { TokenDetectionError } from '../types/errors';
 import { tokenManager } from '../lib/token-manager';
 import { urlManager } from '../lib/url-manager';
-import { Flow } from '../types/settlement';
+import { Flow, FlowDraft } from '../types/settlement';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useFetchTokenMetadata } from './useTokenMetadata';
 
@@ -33,7 +33,7 @@ export function useSettlementCreation () {
   /**
    * Verify asset type and parse token amount for a flow.
    */
-  const verifyAndParseFlow = async (flow: Flow) => {
+  const verifyAndParseFlow = async (flow: ValidatedFlowDraft): Promise<Flow> => {
     try {
       // Double-check asset type detection for accuracy.
       const metadata = await fetchTokenMetadata(flow.token);
@@ -62,7 +62,7 @@ export function useSettlementCreation () {
   /**
    * Double-check asset types as a defensive measure against detection failures.
    */
-  const verifyAssetTypes = async (flows: Flow[]): Promise<boolean> => {
+  const verifyAssetTypes = async (flows: FlowDraft[]): Promise<boolean> => {
     // Defensive check to ensure asset types match blockchain state.
     for (let i = 0; i < flows.length; i++) {
       const flow = flows[i];
@@ -85,7 +85,7 @@ export function useSettlementCreation () {
    * Create settlement with provided parameters using validation.
    */
   const createSettlement = async (
-    flows: Flow[],
+    flows: FlowDraft[],
     cutoffDate: string,
     reference: string,
     isAutoSettled: boolean,
@@ -99,13 +99,7 @@ export function useSettlementCreation () {
     let validatedSettlement;
     try {
       validatedSettlement = contractValidationManager.validateSettlementForSubmission({
-        flows: flows.map(flow => ({
-          token: flow.token,
-          from: flow.from,
-          to: flow.to,
-          amount: flow.amount,
-          isNFT: flow.isNFT,
-        })),
+        flows,
         reference,
         cutoffDate,
         isAutoSettled,
@@ -130,7 +124,7 @@ export function useSettlementCreation () {
 
     try {
       // Verify and parse each flow to get proper amountOrId values.
-      const parsedFlows = await Promise.all(flows.map(verifyAndParseFlow));
+      const parsedFlows = await Promise.all(validatedSettlement.validatedFlows.map(verifyAndParseFlow));
 
       let hash: `0x${string}`;
       try {

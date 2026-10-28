@@ -3,13 +3,13 @@ import LabelWithIcon from './LabelWithIcon';
 import NFTCollectionPreview from './NFTCollectionPreview';
 import NFTIcon from './NFTIcon';
 import { ArrowDownRight, ArrowUpRight, Coins, Copy, Edit, ExternalLink, GripVertical, Hash, Loader2, Trash2, TriangleRight } from 'lucide-react';
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 interface FlowDragOverlayProps {
-  activeFlow: Flow;
+  activeFlow: FlowDraft;
   tokenMetadata?: Record<string, TokenForDisplay>;
   collectionPreviews: Record<string, string>;
 }

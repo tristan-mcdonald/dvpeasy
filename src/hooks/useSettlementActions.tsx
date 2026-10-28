@@ -4,13 +4,12 @@ import { Address, WalletClient } from 'viem';
 import { waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { config } from '../config/wagmi';
 import { DVP_ABI } from '../config/contracts/abis';
-import { ContractValidationError, contractValidationManager, PartyStatus as ValidatedPartyStatus } from '../lib/contract-validation';
+import { ContractValidationError, contractValidationManager } from '../lib/contract-validation';
 import { errorManager } from '../lib/error-manager';
+import { PartyStatus } from '../types/settlement';
 import { tokenManager } from '../lib/token-manager';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useFetchTokenMetadata } from './useTokenMetadata';
-
-type PartyStatus = ValidatedPartyStatus;
 
 interface UseSettlementActionsProps {
   settlementId: string | undefined;

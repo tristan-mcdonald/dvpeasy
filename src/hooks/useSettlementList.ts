@@ -1,5 +1,6 @@
 import { DVP_ABI, DVP_HELPER_ABI } from '../config/contracts/abis';
-import { SettlementWithFlows } from '../types/settlement';
+import { Settlement } from '../types/settlement';
+import { settlements } from '../lib/settlements';
 import { useAccount, useReadContract, useReadContracts } from 'wagmi';
 import { useCallback, useMemo } from 'react';
 import { useCurrentNetwork } from './useCurrentNetwork';
@@ -64,26 +65,11 @@ export function useSettlementList ({ isWalletFiltering }: UseSettlementListOptio
     query: { enabled: settlementIds.length > 0 },
   });
 
-  const settlements = useMemo(() => {
+  const listedSettlements = useMemo(() => {
     // A read which failed has no result, so it's left out rather than failing the whole list.
-    return (settlementsQuery.data ?? []).flatMap(({ result }, index): SettlementWithFlows[] => {
-      if (!result) return [];
-      const [reference, cutoffDate, flows, isSettled, isAutoSettled] = result;
-      return [{
-        id: settlementIds[index].toString(),
-        reference,
-        cutoffDate: Number(cutoffDate) * 1000,
-        isSettled,
-        isAutoSettled,
-        flows: flows.map(flow => ({
-          token: flow.token,
-          from: flow.from,
-          to: flow.to,
-          amount: flow.amountOrId.toString(),
-          isNFT: flow.isNFT,
-        })),
-      }];
-    });
+    return (settlementsQuery.data ?? []).flatMap(({ result }, index): Settlement[] => (
+      result ? [settlements.fromContract(settlementIds[index], result)] : []
+    ));
   }, [settlementsQuery.data, settlementIds]);
 
   const { refetch: refetchSettlementIds } = settlementIdsQuery;
@@ -94,7 +80,7 @@ export function useSettlementList ({ isWalletFiltering }: UseSettlementListOptio
   }, [refetchSettlementIds, refetchSettlements]);
 
   return {
-    settlements,
+    settlements: listedSettlements,
     isLoading: settlementIdsQuery.isLoading || settlementsQuery.isLoading,
     isError: settlementIdsQuery.isError || settlementsQuery.isError,
     refetch,

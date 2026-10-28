@@ -2,9 +2,13 @@ import TokensDisplay from './TokensDisplay';
 import { urlManager } from '../lib/url-manager';
 import { Check, Hourglass, X } from 'lucide-react';
 import { memo } from 'react';
-import { SettlementRowProps } from '../types/components';
+import { Settlement } from '../types/settlement';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useNavigate } from 'react-router-dom';
+
+interface SettlementRowProps {
+  settlement: Settlement;
+}
 
 const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRowProps) {
   const navigate = useNavigate();
@@ -37,11 +41,7 @@ const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRow
       </td>
       <td className="w-[35%] group-hover:bg-white group-hover:shadow-standard transition-all">{settlement.reference || 'No reference'}</td>
       <td className="w-[20%] group-hover:bg-white group-hover:shadow-standard transition-all">
-        {'flows' in settlement ? (
-          <TokensDisplay flows={settlement.flows} />
-        ) : (
-          <span className="text-text-placeholder">No data</span>
-        )}
+        <TokensDisplay flows={settlement.flows} />
       </td>
       <td className="w-[20%] group-hover:bg-white group-hover:shadow-standard transition-all">
         <div className={`inline-flex items-center gap-1 ${status.classColor}`}>

@@ -1,4 +1,4 @@
-import { Flow } from '../types/settlement';
+import { FlowDraft } from '../types/settlement';
 import { logger } from './logger';
 
 interface FormattedFlow {
@@ -35,7 +35,7 @@ export const flowsManager = {
   /**
    * Creates a mapping of collection addresses to first NFT ID for preview purposes.
    */
-  getCollectionPreviews (flows: (FormattedFlow | Flow)[]): Record<string, string> {
+  getCollectionPreviews (flows: (FormattedFlow | FlowDraft)[]): Record<string, string> {
     const collectionPreviews: Record<string, string> = {};
 
     // Filter to only NFT flows.
