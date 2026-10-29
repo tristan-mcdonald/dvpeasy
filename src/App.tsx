@@ -18,14 +18,14 @@ import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
 import { WagmiProvider } from 'wagmi';
 
-// Lazy load page components for better code splitting.
+// Each page's code is loaded when it's first opened.
 const CreateSettlement = lazy(() => import('./pages/CreateSettlement'));
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Error404 = lazy(() => import('./pages/Error404'));
 const Help = lazy(() => import('./pages/Help'));
 const SettlementDetails = lazy(() => import('./pages/SettlementDetails'));
 
-// Declare global interface for HSStaticMethods.
+// FlyonUI's script adds `HSStaticMethods` to `window`.
 declare global {
   interface Window {
     HSStaticMethods: IStaticMethods;
@@ -51,9 +51,8 @@ function AppContent () {
   const location = useLocation();
   const navigate = useNavigate();
 
-  /**
-   * Handle GitHub Pages SPA routing.
-   */
+  // GitHub Pages serves `public/404.html` for a path it doesn't have, which sends the browser to `/`
+  // with the path in the query string. `index.html` saves the path, and this goes back to it.
   useEffect(() => {
     const redirect = sessionStorage.getItem('redirect');
     if (redirect) {
@@ -62,14 +61,11 @@ function AppContent () {
     }
   }, [navigate]);
 
-  /**
-   * Initialize FlyonUI components on route change.
-   */
+  // FlyonUI sets up the components in the page's markup, so it runs again on each page.
   useEffect(() => {
     const loadFlyonui = async () => {
       try {
         await import('flyonui/flyonui');
-        // Auto-initialize all FlyonUI components.
         if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
           window.HSStaticMethods.autoInit();
         }
@@ -91,15 +87,12 @@ function AppContent () {
 
       <main className="flex-1 flex flex-col container mx-auto py-6">
         <Routes>
-          {/* Bare route redirects to default network/version */}
           <Route path="/" element={<RedirectToDefaultDashboard />} />
           <Route path="/create" element={<RedirectToDefaultCreate />} />
           <Route path="/settlement/:id" element={<RedirectToDefaultSettlement />} />
 
-          {/* Network-scoped routes */}
           <Route path="/:network/:version" element={<NetworkWrapper />}>
 
-            {/* Dashboard at index */}
             <Route
             index
             element={
@@ -110,7 +103,6 @@ function AppContent () {
               </PageSuspense>
             } />
 
-            {/* Create settlement */}
             <Route
             path="create"
             element={
@@ -121,7 +113,6 @@ function AppContent () {
               </PageSuspense>
             } />
 
-            {/* Settlement details */}
             <Route
             path="settlement/:settlementId"
             element={
@@ -132,7 +123,6 @@ function AppContent () {
               </PageSuspense>
             } />
 
-            {/* Help page */}
             <Route
             path="help"
             element={
@@ -143,7 +133,7 @@ function AppContent () {
               </PageSuspense>
             } />
 
-            {/* 404 for unknown paths under valid network/version */}
+            {/* An unknown page on a valid network and version. */}
             <Route
             path="*"
             element={
@@ -155,7 +145,7 @@ function AppContent () {
             } />
           </Route>
 
-          {/* Global 404 for everything else */}
+          {/* Any other path. */}
           <Route
           path="*"
           element={
@@ -178,6 +168,9 @@ function AppContent () {
   );
 }
 
+/**
+ * The app: its providers, routes, header, footer and toasts.
+ */
 function App () {
   return (
     <ErrorBoundary
