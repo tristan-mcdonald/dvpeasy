@@ -3,8 +3,9 @@ import FlowCard from './FlowCard';
 import FlowDragOverlay from './FlowDragOverlay';
 import HeadingAndTotal from '../HeadingAndTotal';
 import NFTModal from '../NFTModal';
-import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, UniqueIdentifier, useSensor, useSensors } from '@dnd-kit/core';
 import { flowDisplay } from '../../lib/flow-display';
+import { flowSortId } from './flowSortId';
 import { FlowForDisplay } from '../../types/settlement';
 import { Plus } from 'lucide-react';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -34,8 +35,7 @@ export default function SettlementFlows ({
 
   const { copiedText: copiedNftId, copy: copyNftId } = useCopyToClipboard();
   const [nftFlowShown, setNftFlowShown] = useState<FlowForDisplay | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  // Drag and drop sensors.
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -43,32 +43,19 @@ export default function SettlementFlows ({
     }),
   );
 
-  // Handle drag start event.
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setActiveId(active.id as string);
+  const indexOfSortId = (id: UniqueIdentifier | undefined) =>
+    flows.findIndex((_, index) => flowSortId(index) === id);
+
+  const handleDragStart = ({ active }: DragStartEvent) => setActiveIndex(indexOfSortId(active.id));
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    const oldIndex = indexOfSortId(active.id);
+    const newIndex = indexOfSortId(over?.id);
+    if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) onReorderFlows?.(oldIndex, newIndex);
+    setActiveIndex(null);
   };
 
-  // Handle drag end event.
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id && onReorderFlows) {
-      const oldIndex = flows.findIndex((_, index) => `flow-${index}` === active.id);
-      const newIndex = flows.findIndex((_, index) => `flow-${index}` === over?.id);
-
-      if (oldIndex !== -1 && newIndex !== -1) onReorderFlows(oldIndex, newIndex);
-    }
-
-    setActiveId(null);
-  };
-
-  // Get the active flow being dragged for the overlay.
-  const activeFlow = useMemo(() => {
-    if (!activeId) return null;
-    const index = parseInt(activeId.replace('flow-', ''));
-    return flows[index] || null;
-  }, [activeId, flows]);
+  const activeFlow = activeIndex === null ? null : flows[activeIndex] ?? null;
 
   const flowCount = flows.length;
   const collectionPreviews = useMemo(() => flowDisplay.collectionPreviews(flows), [flows]);
@@ -115,7 +102,7 @@ export default function SettlementFlows ({
           onDragEnd={handleDragEnd}
           sensors={sensors}>
             <SortableContext
-            items={flows.map((_, index) => `flow-${index}`)}
+            items={flows.map((_, index) => flowSortId(index))}
             strategy={verticalListSortingStrategy}>
               {flowItems}
             </SortableContext>

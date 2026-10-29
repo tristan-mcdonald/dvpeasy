@@ -1,5 +1,6 @@
 import FlowDetails from './FlowDetails';
 import FlowTokenBadge from './FlowTokenBadge';
+import { flowSortId } from './flowSortId';
 import NFTIcon from '../NFTIcon';
 import Tooltip from '../Tooltip';
 import { Check, Copy, Edit, ExternalLink, GripVertical, Trash2 } from 'lucide-react';
@@ -49,7 +50,7 @@ const FlowCard = memo(function FlowCard ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: `flow-${index}`, disabled: !isEditMode });
+  } = useSortable({ id: flowSortId(index), disabled: !isEditMode });
 
   const style = {
     transform: CSS.Transform.toString(transform),
