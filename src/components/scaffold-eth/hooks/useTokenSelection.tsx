@@ -161,10 +161,6 @@ export const useTokenSelection = ({
     setTimeout(() => {
       isUserTypingRef.current = false;
     }, 100);
-
-    // If user enters a valid address that's not in our lists, save it as custom token.
-    // Note: This will only work if we can fetch the token symbol successfully.
-    // The actual saving happens in the parent component after symbol detection.
   }, [onChange, storedTokenData]);
 
   /**

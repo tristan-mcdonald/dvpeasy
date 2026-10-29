@@ -3,9 +3,7 @@ import { Loader2, X } from 'lucide-react';
 import { forwardRef, ReactNode } from 'react';
 import { networkLinks } from '../../lib/network-links';
 import { isAddress } from 'viem';
-import { ListedToken } from '../../types/tokens';
 import { networks } from '../../config/networks';
-import { tokenStorage } from '../../lib/custom-token-storage';
 import { useAccount } from 'wagmi';
 import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 import { useDebounce } from 'use-debounce';
@@ -16,6 +14,7 @@ import { TokenDetailsContent } from './components/TokenDetailsContent';
 import { TokenDropdown } from './components/TokenDropdown';
 
 // Custom hooks.
+import { useSaveCustomToken } from './hooks/useSaveCustomToken';
 import { useTokenBalance } from './hooks/useTokenBalance';
 import { useTokenSelection } from './hooks/useTokenSelection';
 
@@ -126,44 +125,13 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     ? searchTokens(inputValue, { limit: 20, includeCustomTokens: true })
     : null;
 
-  /**
-   * Saves a valid address as a custom token if it has a symbol and isn't already saved.
-   */
-  const saveCustomTokenIfNeeded = (address: string) => {
-    if (isAddress(address) && tokenSymbol && chainId) {
-      const existingTokens = availableTokens || [];
-      const isExisting = existingTokens.some((existingToken: ListedToken) =>
-        existingToken.address.toLowerCase() === address.toLowerCase(),
-      );
-
-      if (!isExisting) {
-        const newToken: ListedToken = {
-          address,
-          symbol: tokenSymbol,
-          name: tokenSymbol,
-          chainId,
-        };
-
-        tokenStorage.addCustomTokenForChain(newToken, chainId);
-      }
-    }
-  };
-
-  /**
-   * Handles token selection from dropdown and saves as custom token if needed.
-   */
-  const handleTokenSelectWithStorage = (token: ListedToken) => {
-    handleTokenSelect(token);
-    saveCustomTokenIfNeeded(token.address);
-  };
-
-  /**
-   * Handles input changes and saves valid addresses as custom tokens.
-   */
-  const handleInputChangeWithStorage = (newValue: string) => {
-    handleInputChange(newValue);
-    saveCustomTokenIfNeeded(newValue);
-  };
+  useSaveCustomToken({
+    address: debouncedAddress,
+    symbol: tokenSymbol,
+    assetType,
+    listedTokens: availableTokens,
+    isLoadingList: isLoadingTokenData,
+  });
 
   // The dropdown lists the user's custom tokens apart from the network's.
   const allTokensToDisplay = isSearching ? searchResults?.tokens || [] : availableTokens || [];
@@ -186,7 +154,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
         <div className="relative">
           <input
           className={TOKEN_CONTAINER_CLASSES.input}
-          onChange={(event) => handleInputChangeWithStorage(event.target.value)}
+          onChange={(event) => handleInputChange(event.target.value)}
           onFocus={() => setIsDropdownOpen(true)}
           placeholder={placeholder}
           ref={ref}
@@ -213,7 +181,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
           listedTokens={tokensToDisplay}
           onRemoveCustomToken={token => handleRemoveCustomToken(token.address, refetchTokenData)}
           onRetry={refetchTokenData}
-          onSelect={handleTokenSelectWithStorage}
+          onSelect={handleTokenSelect}
           searchText={inputValue}
           selectedValue={value} />
         )}
