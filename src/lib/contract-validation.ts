@@ -82,58 +82,37 @@ const FutureDateSchema = z.string()
     return BigInt(Math.floor(date.getTime() / 1000));
   });
 
-// Flow schema with full validation and transformation.
-const FlowInputSchema = z.object({
+// A flow from the form, with its amount checked as a number but kept as typed, to be parsed with
+// its token's decimals.
+const FlowSchema = z.object({
   token: AddressSchema,
   from: AddressSchema,
   to: AddressSchema,
-  amount: z.string().min(1, { message: 'Amount is required' }),
+  amount: z.string()
+    .min(1, { message: 'Amount is required' })
+    .refine(amount => !isNaN(Number(amount)) && Number(amount) >= 0, {
+      message: 'Amount must be a valid non-negative number',
+    }),
   isNFT: z.boolean(),
-});
-
-/**
- * Flow schema that validates amount format without transforming to BigInt.
- * The actual BigInt conversion happens later with proper decimal handling.
- */
-const FlowWithAmountValidationSchema = FlowInputSchema.extend({
-  amount: z.string().min(1).refine((val) => {
-    /**
-     * For NFTs, must be a valid integer.
-     * For ERC20s, can be decimal or integer.
-     * Just validate it's a valid number format.
-     */
-    const numValue = Number(val);
-    return !isNaN(numValue) && numValue >= 0;
-  }, {
-    message: 'Amount must be a valid non-negative number',
-  }),
-}).transform((flow) => ({
+}).transform(flow => ({
+  ...flow,
   token: flow.token as Address,
   from: flow.from as Address,
   to: flow.to as Address,
-  amount: flow.amount,
-  isNFT: flow.isNFT,
 }));
 
 /**
  * A flow from the form whose addresses have been checked, with its amount still as typed.
  */
-export type ValidatedFlowDraft = z.output<typeof FlowWithAmountValidationSchema>;
+export type ValidatedFlowDraft = z.output<typeof FlowSchema>;
 
-// Settlement schema with full transformation.
 const SettlementSubmissionSchema = z.object({
-  flows: z.array(FlowInputSchema),
+  flows: z.array(FlowSchema),
   reference: z.string().max(256),
   cutoffDate: FutureDateSchema,
   isAutoSettled: z.boolean(),
-}).transform((input) => ({
-  validatedFlows: input.flows.map(flow => ({
-    token: flow.token as Address,
-    from: flow.from as Address,
-    to: flow.to as Address,
-    amount: flow.amount,
-    isNFT: flow.isNFT,
-  })),
+}).transform(input => ({
+  validatedFlows: input.flows,
   reference: input.reference,
   cutoffTimestamp: input.cutoffDate,
   isAutoSettled: input.isAutoSettled,
@@ -179,31 +158,6 @@ export const contractValidationManager = {
   },
 
   /**
-   * Validation for a single flow before contract submission.
-   * Validates all flow fields and returns properly formatted data.
-   * Note: Amount remains as string for later parsing with proper decimal handling.
-   */
-  validateFlowForSubmission (flow: FlowDraft): ValidatedFlowDraft {
-    const validationResult = FlowWithAmountValidationSchema.safeParse(flow);
-
-    if (!validationResult.success) {
-      const errorMessages = validationResult.error.issues
-        .map(issue => {
-          const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
-          return `${path}${issue.message}`;
-        })
-        .join(', ');
-      throw new ContractValidationError(
-        `Flow validation failed: ${errorMessages}`,
-        flow,
-        'Flow',
-      );
-    }
-
-    return validationResult.data;
-  },
-
-  /**
    * Validation for settlement creation.
    * Validates all settlement fields including flows, dates, and references.
    * Note: Flow amounts remain as strings for later parsing with proper decimal handling.
@@ -213,50 +167,20 @@ export const contractValidationManager = {
     reference: string;
     cutoffDate: string;
     isAutoSettled: boolean;
-  }): {
-    validatedFlows: ValidatedFlowDraft[];
-    reference: string;
-    cutoffTimestamp: bigint;
-    isAutoSettled: boolean;
-  } {
-    // First validate using the full submission schema.
+  }): z.output<typeof SettlementSubmissionSchema> {
     const validationResult = SettlementSubmissionSchema.safeParse(input);
+    if (validationResult.success) return validationResult.data;
 
-    if (!validationResult.success) {
-      const errorMessages = validationResult.error.issues
-        .map(issue => {
-          const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
-          return `${path}${issue.message}`;
-        })
-        .join(', ');
-      throw new ContractValidationError(
-        `Settlement validation failed: ${errorMessages}`,
-        input,
-        'Settlement',
-      );
-    }
-
-    // Now validate each flow.
-    const validatedFlows = input.flows.map((flow, index) => {
-      try {
-        return this.validateFlowForSubmission(flow);
-      } catch (error) {
-        if (error instanceof ContractValidationError) {
-          throw new ContractValidationError(
-            `Flow ${index + 1}: ${error.message}`,
-            flow,
-            `flows[${index}]`,
-          );
-        }
-        throw error;
-      }
-    });
-
-    return {
-      validatedFlows,
-      reference: validationResult.data.reference,
-      cutoffTimestamp: validationResult.data.cutoffTimestamp,
-      isAutoSettled: validationResult.data.isAutoSettled,
-    };
+    const errorMessages = validationResult.error.issues
+      .map(issue => {
+        const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
+        return `${path}${issue.message}`;
+      })
+      .join(', ');
+    throw new ContractValidationError(
+      `Settlement validation failed: ${errorMessages}`,
+      input,
+      'Settlement',
+    );
   },
 };
