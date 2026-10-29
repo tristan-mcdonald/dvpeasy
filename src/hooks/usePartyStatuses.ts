@@ -16,6 +16,8 @@ import { useCallback, useMemo } from 'react';
 import { useCurrentNetwork } from './useCurrentNetwork';
 import { useReadContract, useReadContracts } from 'wagmi';
 
+const noPartyStatuses: PartyStatusForDisplay[] = [];
+
 interface UsePartyStatusesOptions {
   settlementId: string | undefined;
   settlement: Settlement | undefined;
@@ -87,7 +89,7 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
   );
 
   return {
-    partyStatuses: formattedPartyStatuses ?? [],
+    partyStatuses: formattedPartyStatuses ?? noPartyStatuses,
     hasLoaded: formattedPartyStatuses !== undefined,
     currentPartyStatus,
     allApprovalsComplete,

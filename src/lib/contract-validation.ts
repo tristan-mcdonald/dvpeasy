@@ -9,7 +9,7 @@ import { z } from 'zod';
  */
 
 // Base validation schemas for common types.
-const AddressSchema = z.string().refine(isAddress, {
+const AddressSchema = z.custom<Address>(value => typeof value === 'string' && isAddress(value), {
   message: 'Invalid Ethereum address format',
 });
 
@@ -93,13 +93,7 @@ const FlowSchema = z.object({
     .refine(amount => !isNaN(Number(amount)) && Number(amount) >= 0, {
       message: 'Amount must be a valid non-negative number',
     }),
-  isNFT: z.boolean(),
-}).transform(flow => ({
-  ...flow,
-  token: flow.token as Address,
-  from: flow.from as Address,
-  to: flow.to as Address,
-}));
+});
 
 /**
  * A flow from the form whose addresses have been checked, with its amount still as typed.
