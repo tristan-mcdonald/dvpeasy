@@ -64,8 +64,9 @@ export const graphColors = {
 
   // Edge and UI element colors
   edge: {
-    stroke: '#999',
-    arrowFill: '#999',
+    stroke: 'hsla(34.1, 100%, 62.7%, 0.5)',
+    strokeHover: 'hsla(34.1, 100%, 62.7%, 0.7)',
+    strokeHidden: 'hsla(34.1, 100%, 62.7%, 0)',
   },
 
   // Node interaction elements
