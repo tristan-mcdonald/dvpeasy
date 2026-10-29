@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * How long a copy button shows that it copied, in milliseconds.
  */
-const COPIED_DURATION = 2000;
+export const COPIED_DURATION = 2000;
 
 /**
  * Copies text to the clipboard, and holds the text last copied for `COPIED_DURATION`, so that the

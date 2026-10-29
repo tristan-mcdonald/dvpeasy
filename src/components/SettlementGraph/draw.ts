@@ -1,4 +1,5 @@
 import { copyToClipboard } from '../../lib/clipboard';
+import { COPIED_DURATION } from '../../hooks/useCopyToClipboard';
 import { cssCustomProperty, graphColors } from '../../config/theme';
 import { DragBehavior, SubjectPosition } from 'd3-drag';
 import { GraphLink, GraphNode, labelFontFamily } from './graph';
@@ -7,7 +8,6 @@ import { select, Selection } from 'd3-selection';
 type GraphSelection = Selection<SVGGElement, unknown, null, undefined>;
 
 const nodeCornerRadius = 8;
-const copiedDuration = 2000;
 
 /**
  * Draws an edge for each link, with its label on a path of its own, and fades them in one by one.
@@ -167,7 +167,7 @@ function appendCopyButtons (nodeGroups: Selection<SVGGElement, GraphNode, SVGGEl
 
       if (!await copyToClipboard(node.address)) return;
       showCopyIcon(copyButton, true);
-      await new Promise(resolve => setTimeout(resolve, copiedDuration));
+      await new Promise(resolve => setTimeout(resolve, COPIED_DURATION));
       showCopyIcon(copyButton, false);
     });
 

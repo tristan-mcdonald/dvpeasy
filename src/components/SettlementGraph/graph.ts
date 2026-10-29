@@ -81,8 +81,8 @@ export function buildGraph (flows: FlowForDisplay[]): { nodes: GraphNode[]; link
 /**
  * The width of a label in pixels, so that each node fits its address.
  */
-function measureTextWidth (text: string, fontSize = 12) {
+function measureTextWidth (text: string) {
   const context = document.createElement('canvas').getContext('2d')!;
-  context.font = `${fontSize}px ${labelFontFamily}`;
+  context.font = `12px ${labelFontFamily}`;
   return context.measureText(text).width;
 }

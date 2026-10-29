@@ -47,9 +47,10 @@ export function gridPosition (layout: GridLayout, index: number) {
  * A force which pulls each node towards its cell in the grid, more strongly across than down.
  */
 export function gridForce (nodes: GraphNode[], layout: GridLayout) {
+  const targets = nodes.map((_node, index) => gridPosition(layout, index));
   return (alpha: number) => {
     nodes.forEach((node, index) => {
-      const target = gridPosition(layout, index);
+      const target = targets[index];
       node.vx = (node.vx || 0) + (target.x - node.x) * alpha * 0.5;
       node.vy = (node.vy || 0) + (target.y - node.y) * alpha * 0.3;
     });
