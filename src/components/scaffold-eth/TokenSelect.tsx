@@ -1,6 +1,5 @@
 import LabelWithIcon from '../LabelWithIcon';
-import Tooltip from '../Tooltip';
-import { AlertCircle, Loader2, RefreshCw, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { forwardRef, ReactNode } from 'react';
 import { networkLinks } from '../../lib/network-links';
 import { isAddress } from 'viem';
@@ -14,7 +13,7 @@ import { useTokenData } from '../../hooks/useTokenData';
 
 // Extracted components.
 import { TokenDetailsContent } from './components/TokenDetailsContent';
-import { TokenListItem } from './components/TokenListItem';
+import { TokenDropdown } from './components/TokenDropdown';
 
 // Custom hooks.
 import { useTokenBalance } from './hooks/useTokenBalance';
@@ -166,26 +165,10 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     saveCustomTokenIfNeeded(newValue);
   };
 
-  // Determine which tokens to display in dropdown.
-  const allTokensToDisplay = isSearching
-    ? searchResults?.tokens || []
-    : availableTokens || [];
-
-  // Separate custom tokens from tokens list for better organisation.
-  const { customTokensToDisplay, tokensToDisplay } = allTokensToDisplay.reduce(
-    (acc: { customTokensToDisplay: ListedToken[]; tokensToDisplay: ListedToken[] }, token: ListedToken) => {
-      if (isCustomToken(token)) {
-        acc.customTokensToDisplay.push(token);
-      } else {
-        acc.tokensToDisplay.push(token);
-      }
-      return acc;
-    },
-    { customTokensToDisplay: [] as ListedToken[], tokensToDisplay: [] as ListedToken[] },
-  );
-
-  const isLoadingTokens = isLoadingTokenData;
-  const hasError = tokenDataError;
+  // The dropdown lists the user's custom tokens apart from the network's.
+  const allTokensToDisplay = isSearching ? searchResults?.tokens || [] : availableTokens || [];
+  const customTokensToDisplay = allTokensToDisplay.filter(isCustomToken);
+  const tokensToDisplay = allTokensToDisplay.filter(token => !isCustomToken(token));
 
   return (
     <div className="flex-auto">
@@ -221,115 +204,18 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
           )}
         </div>
 
-        {/* Dropdown select list. */}
         {isDropdownOpen && (
-          <div className={TOKEN_CONTAINER_CLASSES.dropdown}>
-            {/* Loading state. */}
-            {isLoadingTokens && (
-              <div className="px-3 py-4">
-                <div className="flex items-center gap-2 text-sm text-label">
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>
-                    {isSearching ? 'Searching tokens…' : 'Loading tokens…'}
-                  </span>
-                </div>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                  className="flex items-center gap-3 px-3 py-2 animate-pulse"
-                  key={i}>
-                    <div className="size-6 bg-attention rounded-full"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-attention rounded mb-1"></div>
-                      <div className="h-3 bg-attention rounded w-2/3"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Error state. */}
-            {hasError && !isLoadingTokens && (
-              <div className="px-3 py-4">
-                <div className="flex items-center gap-2 text-sm text-error mb-2">
-                  <AlertCircle className="size-4" />
-                  <span>{isSearching ? 'Search failed' : 'Failed to load tokens'}</span>
-                </div>
-                <button
-                className="btn btn-sm btn-ghost gap-2"
-                onClick={() => isSearching ? undefined : refetchTokenData()}
-                type="button">
-                  <RefreshCw className="size-3" />
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {/* Token list. */}
-            {!isLoadingTokens && !hasError && (
-              <>
-                {customTokensToDisplay.length > 0 || tokensToDisplay.length > 0 ? (
-                  <>
-                    {/* User's custom tokens section .*/}
-                    {customTokensToDisplay.length > 0 && (
-                      <>
-                        <div className="text-xs text-text-label mx-3 py-2 font-medium border-b border-interface-border">
-                          Your custom tokens ({customTokensToDisplay.length})
-                        </div>
-                        {customTokensToDisplay.map((token: ListedToken) => (
-                          <TokenListItem
-                          actions={
-                            <Tooltip content="Remove custom token">
-                              <button
-                              className={`p-1 ${TOKEN_BUTTON_CLASSES.remove}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRemoveCustomToken(token.address, refetchTokenData);
-                              }}
-                              type="button">
-                                <X className="size-3 text-error" />
-                              </button>
-                            </Tooltip>
-                          }
-                          isCustomToken={true}
-                          key={`custom-${token.address}-${token.chainId}`}
-                          onSelect={handleTokenSelectWithStorage}
-                          selectedValue={value}
-                          token={token} />
-                        ))}
-                      </>
-                    )}
-
-                    {/* Tokens section. */}
-                    {tokensToDisplay.length > 0 && (
-                      <>
-                        <div className="text-xs text-text-label mx-3 py-2 font-medium border-b border-interface-border">
-                          {isSearching
-                            ? `Search results (${tokensToDisplay.length})`
-                            : `Tokens (${networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`
-                          }
-                        </div>
-                        {tokensToDisplay.map((token: ListedToken) => (
-                          <TokenListItem
-                          isCustomToken={false}
-                          key={`token-${token.address}-${token.chainId}`}
-                          onSelect={handleTokenSelectWithStorage}
-                          selectedValue={value}
-                          token={token} />
-                        ))}
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <div className="px-3 py-4 text-center text-text-label">
-                    {isSearching
-                      ? `No tokens found matching "${inputValue}"`
-                      : 'No tokens available'
-                    }
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <TokenDropdown
+          customTokens={customTokensToDisplay}
+          hasError={Boolean(tokenDataError)}
+          isLoading={isLoadingTokenData}
+          listHeading={`Tokens (${networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`}
+          listedTokens={tokensToDisplay}
+          onRemoveCustomToken={token => handleRemoveCustomToken(token.address, refetchTokenData)}
+          onRetry={refetchTokenData}
+          onSelect={handleTokenSelectWithStorage}
+          searchText={inputValue}
+          selectedValue={value} />
         )}
       </div>
 
