@@ -21,7 +21,8 @@ export interface GridLayout {
 }
 
 export function gridLayout (width: number, nodeCount: number): GridLayout {
-  const columnCount = Math.floor(width / columnSpacing);
+  // An SVG narrower than one column still has one, or no node would have a cell.
+  const columnCount = Math.max(1, Math.floor(width / columnSpacing));
   const rowCount = Math.ceil(nodeCount / columnCount);
   const height = Math.max(minimumHeight, (rowCount * rowSpacing) + (verticalPadding * 2));
   return { width, height, columnCount, rowCount, nodeCount };
