@@ -1,4 +1,3 @@
-import './SettlementGraph.css';
 import { copyToClipboard } from '../lib/clipboard';
 import { cssCustomProperty, graphColors, nodeColors } from '../config/theme';
 import { drag } from 'd3-drag';
@@ -10,7 +9,7 @@ import { utilityManager } from '../lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { zoom, zoomIdentity } from 'd3-zoom';
 
-import type { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum, D3ZoomEvent, ZoomBehavior } from 'd3';
+import type { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum, D3ZoomEvent } from 'd3';
 
 interface GraphEdge {
   source: string;
@@ -61,8 +60,6 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
    * mapping persists between renders and is accessible in event handlers.
    */
   const addressMappingRef = useRef<Record<string, string>>({});
-  // Store zoom behavior reference for conditional enabling/disabling.
-  const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   // Use ref for interaction state to avoid re-renders.
   const isInteractionEnabledRef = useRef<boolean>(false);
 
@@ -133,9 +130,6 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
       .on('zoom', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
         container.attr('transform', event.transform.toString());
       });
-
-    // Store zoom behavior reference for later use.
-    zoomBehaviorRef.current = zoomBehavior;
 
     // Apply zoom behavior to SVG and set initial zoom to fit content.
     svg.call(zoomBehavior);
@@ -249,24 +243,6 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
     const feMerge = glowFilter.append('feMerge');
     feMerge.append('feMergeNode').attr('in', 'coloredBlur');
     feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
-
-    // Create edge gradient.
-    const edgeGradient = defs.append('linearGradient')
-      .attr('id', 'edge-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '0%');
-
-    edgeGradient.selectAll('stop')
-      .data([
-        {offset: '0%', color: 'rgba(107, 114, 128, 0.6)'},
-        {offset: '50%', color: 'rgba(107, 114, 128, 0.8)'},
-        {offset: '100%', color: 'rgba(107, 114, 128, 0.6)'},
-      ])
-      .enter().append('stop')
-      .attr('offset', (d: GradientStop) => d.offset)
-      .attr('stop-color', (d: GradientStop) => d.color);
 
     // Add arrowhead marker for directed edges.
     defs.append('marker')
@@ -406,7 +382,6 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
 
     // Draw edges with styling and entrance animation.
     link.append('path')
-      .attr('id', (d: D3SimulationLink, i: number) => `edge${i}`)
       .attr('d', getEdgePath)
       .attr('marker-end', 'url(#arrow)')
       .attr('stroke', 'hsla(34.1, 100%, 62.7%, 0)')
@@ -590,15 +565,6 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
           copiedAddressRef.current = originalAddress;
           updateIcon(button, originalAddress);
 
-          // Add success pulse animation.
-          button.select('circle:last-child')
-            .transition()
-            .duration(300)
-            .attr('r', 12)
-            .transition()
-            .duration(300)
-            .attr('r', 10);
-
           await new Promise(resolve => setTimeout(resolve, 2000));
           copiedAddressRef.current = null;
           updateIcon(button, originalAddress);
@@ -608,8 +574,7 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
     // Add invisible larger hit area for better clickability.
     copyButton.append('circle')
       .attr('r', 15)
-      .attr('fill', 'transparent')
-      .attr('class', 'copy-button-hit-area');
+      .attr('fill', 'transparent');
 
     // Add copy button visible background.
     copyButton.append('circle')
