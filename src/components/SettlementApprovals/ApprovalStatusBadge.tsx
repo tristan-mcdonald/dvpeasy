@@ -12,6 +12,9 @@ interface ApprovalStatusBadgeProps {
   status: ApprovalStatus;
 }
 
+/**
+ * A party's approval status as a coloured badge.
+ */
 export default function ApprovalStatusBadge ({ status }: ApprovalStatusBadgeProps) {
   const badge = BADGE_BY_TYPE[status.type];
 

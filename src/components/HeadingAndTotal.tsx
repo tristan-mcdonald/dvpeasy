@@ -5,6 +5,9 @@ interface HeadingAndTotalProps {
   pluralName?: string;
 }
 
+/**
+ * A section's heading, with a count of its items beside it.
+ */
 export default function HeadingAndTotal ({ heading, count, singularName, pluralName }: HeadingAndTotalProps) {
   const pluralizedName = count === 1 ? singularName : (pluralName || `${singularName}s`);
 

@@ -7,6 +7,9 @@ interface HeaderLocalProps {
   centerVertically?: boolean;
 }
 
+/**
+ * A page's heading, with an optional description under it.
+ */
 export default function HeaderLocal ({ title, description, children, centerVertically = false }: HeaderLocalProps) {
   const headerClasses = centerVertically
     ? 'flex flex-col justify-center items-center my-auto text-center'

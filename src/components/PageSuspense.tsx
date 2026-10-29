@@ -5,9 +5,6 @@ interface PageSuspenseProps {
   fallback?: ReactNode
 }
 
-/**
- * Provides consistent loading state for lazy-loaded page components.
- */
 function PageLoadingFallback () {
   return (
     <div className="flex flex-col items-center justify-center mt-auto mb-auto min-h-[50vh]">
@@ -18,7 +15,7 @@ function PageLoadingFallback () {
 }
 
 /**
- * Wrapper component that provides Suspense boundary with consistent loading UI.
+ * Shows a loading message while a page's code, which is loaded only when it's needed, arrives.
  */
 export default function PageSuspense ({ children, fallback }: PageSuspenseProps) {
   return (

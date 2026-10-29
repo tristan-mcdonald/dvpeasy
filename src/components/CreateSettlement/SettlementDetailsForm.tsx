@@ -10,6 +10,9 @@ interface SettlementDetailsFormProps {
   setIsAutoSettled: (isAutoSettled: boolean) => void;
 }
 
+/**
+ * The create form's settlement fields: cutoff date, reference and auto-settle.
+ */
 export default function SettlementDetailsForm ({
   cutoffDate,
   setCutoffDate,

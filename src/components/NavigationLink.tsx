@@ -11,7 +11,7 @@ interface NavigationLinkProps {
 }
 
 /**
- * Reusable navigation link component with consistent aria-current handling and styling variants.
+ * A link in the header or the mobile menu, marked as the current page when it is.
  */
 export default function NavigationLink ({
   to,

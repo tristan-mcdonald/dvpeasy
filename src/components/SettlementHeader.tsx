@@ -11,6 +11,9 @@ interface SettlementHeaderProps {
   onRefresh: () => void;
 }
 
+/**
+ * The settlement page's heading, with buttons to go back to the dashboard and to refresh it.
+ */
 export default function SettlementHeader ({
   settlementId,
   reference,

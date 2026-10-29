@@ -11,6 +11,10 @@ interface TokenApprovalButtonsProps {
   isApproving: boolean;
 }
 
+/**
+ * Buttons to approve the DVP contract to move a token: the amount still needed, or an unlimited
+ * amount. An NFT has only the first.
+ */
 export default function TokenApprovalButtons ({
   tokenStatus,
   onApproveToken,

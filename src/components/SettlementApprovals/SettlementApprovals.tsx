@@ -23,6 +23,9 @@ interface SettlementApprovalsProps {
   isWithdrawing?: boolean;
 }
 
+/**
+ * The approval card of each party which sends something in the settlement.
+ */
 export default function SettlementApprovals ({
   partyStatuses,
   isLoading,

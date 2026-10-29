@@ -8,6 +8,10 @@ interface PaginationProps {
   maxPagesAround?: number;
 }
 
+/**
+ * Page numbers for a list, with the first and last always shown and the pages around the current
+ * one between them.
+ */
 export default function Pagination ({
   totalItems,
   currentPage,

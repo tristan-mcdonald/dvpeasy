@@ -6,6 +6,9 @@ interface WithdrawEtherButtonProps {
   onWithdraw: () => void
 }
 
+/**
+ * Withdraws the ETH the connected party deposited in a settlement which expired.
+ */
 export default function WithdrawEtherButton ({ isWithdrawing, onWithdraw }: WithdrawEtherButtonProps) {
   const { isWalletOnUrlNetwork } = useWalletNetwork();
 

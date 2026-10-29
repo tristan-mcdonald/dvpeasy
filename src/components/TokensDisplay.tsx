@@ -11,6 +11,9 @@ interface TokensDisplayProps {
   flows: Flow[];
 }
 
+/**
+ * The logos of a settlement's first three tokens, with a count of the rest.
+ */
 function TokensDisplay ({ flows }: TokensDisplayProps) {
   const { chainId } = useCurrentNetwork().network;
   const tokensForDisplay = useTokensForDisplay(flows.map(flow => flow.token));

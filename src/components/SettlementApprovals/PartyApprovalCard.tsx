@@ -34,6 +34,10 @@ const PartyHeader = ({ address }: { address: string }) => (
   </header>
 );
 
+/**
+ * A party's approvals: whether it has approved the settlement, and a row for each token and for any
+ * ETH it sends. The connected party's card is marked, and has the buttons.
+ */
 export default function PartyApprovalCard ({
   partyStatus,
   currentUserAddress,

@@ -20,6 +20,9 @@ const SIZE_CLASSES = {
   large: 'w-96 h-96',
 };
 
+/**
+ * An NFT's image, read from its token URI, with loading and failure states.
+ */
 export const NFTImage: FC<NFTImageProps> = ({
   tokenAddress,
   tokenId,

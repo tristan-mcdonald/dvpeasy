@@ -4,14 +4,13 @@ import { useCurrentNetworkPath } from '../hooks/useCurrentNetworkPath';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Help button component that navigates to the help page.
+ * The header's link to the help page on the current network.
  */
 export default function HelpButton () {
   const currentNetworkPath = useCurrentNetworkPath();
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Build help path from current network path.
     const pathSegments = currentNetworkPath.split('/').filter(Boolean);
     const helpPath = pathSegments.length === 2
       ? `/${pathSegments[0]}/${pathSegments[1]}/help`

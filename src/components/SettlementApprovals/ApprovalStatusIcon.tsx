@@ -10,6 +10,10 @@ interface ApprovalStatusIconProps {
   pendingTooltip?: string;
 }
 
+/**
+ * A tick, a cross or an hourglass, with a tooltip, for whether an approval was made, wasn't made in
+ * time, or is awaited.
+ */
 export default function ApprovalStatusIcon ({
   isApproved,
   isExpired,
@@ -18,7 +22,6 @@ export default function ApprovalStatusIcon ({
   notApprovedTooltip = 'Approval was not made by party',
   pendingTooltip = 'Approval has not yet been made by party',
 }: ApprovalStatusIconProps) {
-  // For settled settlements, always show success.
   if (isSettled) {
     return (
       <Tooltip content={approvedTooltip}>

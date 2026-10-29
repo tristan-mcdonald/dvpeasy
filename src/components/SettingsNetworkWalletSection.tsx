@@ -9,8 +9,8 @@ interface SettingsNetworkWalletSectionProps {
 }
 
 /**
- * Reusable section containing network selection and wallet connection.
- * Includes error boundaries for error handling.
+ * The help, network, version and wallet buttons, in the header and the mobile menu. Each has its
+ * own error boundary, so that one which fails leaves the others working.
  */
 export default function SettingsNetworkWalletSection ({
   className = 'justify-self-end flex items-center shadow-standard rounded-lg',

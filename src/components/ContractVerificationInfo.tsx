@@ -2,8 +2,8 @@ import Address from './scaffold-eth/Address';
 import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 
 /**
- * Component that displays smart contract addresses for verification.
- * Shows DVP and DVP Helper contract addresses with links to block explorers.
+ * The DVP and helper contracts' addresses on the current network, with links to the block
+ * explorer, so that users can check what they're approving.
  */
 export default function ContractVerificationInfo () {
   const { deployment, network } = useCurrentNetwork();

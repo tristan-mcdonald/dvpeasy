@@ -20,11 +20,14 @@ const EMPTY_FLOW: FlowDraft = {
   isNFT: false,
 };
 
+/**
+ * The dialog for adding a flow, or editing one. It closes on Escape, and the page behind it doesn't
+ * scroll.
+ */
 export default function FlowModal ({ isOpen, onClose, onSave, flow, title = 'Add token flow' }: FlowModalProps) {
   const [currentFlow, setCurrentFlow] = useState<FlowDraft>(flow || EMPTY_FLOW);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Handle escape key and prevent body scroll when modal is open.
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -45,7 +48,7 @@ export default function FlowModal ({ isOpen, onClose, onSave, flow, title = 'Add
     };
   }, [isOpen, onClose]);
 
-  // Reset form when modal opens/closes or flow changes.
+  // Each time it opens, the form starts from the flow being edited, or an empty one.
   useEffect(() => {
     if (isOpen) {
       setCurrentFlow(flow || EMPTY_FLOW);
@@ -53,7 +56,6 @@ export default function FlowModal ({ isOpen, onClose, onSave, flow, title = 'Add
     }
   }, [isOpen, flow]);
 
-  // Event handlers.
   const handleSave = () => {
     if (isFormValid) {
       onSave(currentFlow);

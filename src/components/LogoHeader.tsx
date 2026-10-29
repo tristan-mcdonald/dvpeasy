@@ -8,7 +8,7 @@ interface LogoHeaderProps {
 }
 
 /**
- * Reusable logo component for header sections with consistent sizing and link behavior.
+ * The app's logo in the header and the mobile menu, linking to the dashboard.
  */
 export default function LogoHeader ({
   className = 'text-xl',

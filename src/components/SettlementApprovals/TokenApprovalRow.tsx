@@ -16,6 +16,10 @@ interface TokenApprovalRowProps {
   onMaxApprove: (tokenAddress: string) => void;
 }
 
+/**
+ * A row of a party's approval card for one token: how much is required and approved, and the
+ * buttons to approve it.
+ */
 export default function TokenApprovalRow ({
   tokenStatus,
   isUserParty,
@@ -29,7 +33,6 @@ export default function TokenApprovalRow ({
   const isTokenApproving = approvingToken?.toLowerCase() === tokenStatus.tokenAddress.toLowerCase() && isUserParty;
 
   const renderApprovalColumn = () => {
-    // Show approve buttons if not approved, not expired, not settled, and current user is the party.
     if (!hasApproval && !isExpired && !isSettled && isUserParty) {
       return (
         <TokenApprovalButtons
@@ -49,7 +52,7 @@ export default function TokenApprovalRow ({
       );
     }
 
-    // When settlement is settled, show the required amount as the approved amount since tokens were transferred.
+    // Once settled, the tokens have moved, so the amount required is shown as approved.
     const displayedApprovedAmount = isSettled ? tokenStatus.formattedRequired : tokenStatus.formattedApproved;
 
     return (

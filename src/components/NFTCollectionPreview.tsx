@@ -9,13 +9,16 @@ interface NFTCollectionPreviewProps {
   className?: string;
 }
 
+/**
+ * An NFT collection's image, for the token badges and lists.
+ */
 export const NFTCollectionPreview: FC<NFTCollectionPreviewProps> = ({
   tokenAddress,
   tokenId,
   size = 'thumbnail',
   className = '',
 }) => {
-  // Use the specific NFT ID that we know exists in the settlement.
+  // A collection has no image of its own, so it's shown by one of its NFTs in the settlement.
   return (
     <div className={className}>
       <NFTImage

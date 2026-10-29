@@ -5,6 +5,9 @@ interface SettlementTableProps {
   settlements: Settlement[];
 }
 
+/**
+ * The dashboard's table of settlements.
+ */
 export default function SettlementTable ({ settlements }: SettlementTableProps) {
   return (
     <div className='min-w-0 w-full overflow-x-auto h-fit shadow-standard rounded-lg border border-interface-border bg-card-background p-4'>

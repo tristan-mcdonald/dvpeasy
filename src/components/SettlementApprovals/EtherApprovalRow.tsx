@@ -16,6 +16,11 @@ interface EtherApprovalRowProps {
   isWithdrawing?: boolean;
 }
 
+/**
+ * A row of a party's approval card for the ETH it must send, which it deposits by approving the
+ * settlement. While the settlement is open the party can revoke its approval, and once it has
+ * expired, withdraw the ETH.
+ */
 export default function EtherApprovalRow ({
   partyStatus,
   isExpired,
@@ -32,7 +37,7 @@ export default function EtherApprovalRow ({
   const formattedRequired = formatEther(partyStatus.etherRequired);
   const formattedDeposited = formatEther(partyStatus.etherDeposited);
 
-  // When settlement is settled, show the required amount as the approved amount since funds were transferred.
+  // Once settled, the ETH has moved, so the amount required is shown as deposited.
   const displayedApprovedAmount = isSettled ? formattedRequired : formattedDeposited;
 
   const canShowRevokeButton = isUserParty && partyStatus.isApproved && !isExpired && !isSettled && onRevokeApproval;

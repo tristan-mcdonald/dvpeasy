@@ -17,8 +17,8 @@ interface ContractVersionModalProps {
 }
 
 /**
- * Modal dialog for selecting contract versions.
- * Displays available versions for the current network.
+ * A dialog for choosing between the contract versions deployed on the current network, with
+ * deprecated versions marked.
  */
 export default function ContractVersionModal ({ isOpen, onClose }: ContractVersionModalProps) {
   const { deployment: currentDeployment, network } = useCurrentNetwork();
@@ -37,7 +37,6 @@ export default function ContractVersionModal ({ isOpen, onClose }: ContractVersi
 
   const handleVersionSelect = (version: string) => {
     try {
-      // Use the network manager to change version and update URL.
       changeVersion(version);
       logger.info(`Switched to contract version ${version}`);
       onClose();

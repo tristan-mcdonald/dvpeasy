@@ -6,6 +6,9 @@ interface RevokeApprovalButtonProps {
   onRevoke: () => void
 }
 
+/**
+ * Revokes the connected party's approval of a settlement, returning any ETH it deposited.
+ */
 export default function RevokeApprovalButton ({ isRevoking, onRevoke }: RevokeApprovalButtonProps) {
   const { isWalletOnUrlNetwork } = useWalletNetwork();
 

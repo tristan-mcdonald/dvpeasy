@@ -13,8 +13,7 @@ interface NetworkSelectionModalProps {
 }
 
 /**
- * Modal dialog for selecting blockchain networks.
- * Filters available networks based on user's test network preference.
+ * A dialog for choosing the network, which shows test networks if the user has turned them on.
  */
 export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelectionModalProps) {
   const { showTestNetworks, setShowTestNetworks } = useTestNetworkSetting();
@@ -32,7 +31,6 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
 
   const handleNetworkSelect = async (networkId: NetworkId) => {
     try {
-      // Change the network in the URL.
       changeNetwork(networkId);
       onClose();
     } catch (error) {
@@ -60,7 +58,6 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
       className="shadow-standard border border-interface-border rounded-lg w-full max-w-md bg-body-background p-6"
       onClick={(event) => event.stopPropagation()}>
 
-        {/* Header */}
         <header className="flex justify-between items-center border-b border-interface-border pb-4">
           <h2>Select network</h2>
           <button
@@ -72,14 +69,12 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
           </button>
         </header>
 
-        {/* Wallet connection info */}
         {isConnected && (
           <div className="pt-6 pb-4 border-b border-interface-border">
             <p className="text-sm">When you switch networks, you will be prompted to connect to that network in your wallet.</p>
           </div>
         )}
 
-        {/* Test networks toggle */}
         <div className="pt-6 pb-4 border-b border-interface-border">
           <div className="flex items-center gap-3">
             <input
@@ -95,7 +90,6 @@ export default function NetworkSelectionModal ({ isOpen, onClose }: NetworkSelec
           <p className="text-text-label text-sm mt-3">When enabled, test networks will be shown in the network selector.</p>
         </div>
 
-        {/* Network list */}
         {networkGroups.length === 0 ? (
           <div className="text-center">
             <p className="pt-6">No networks available.</p>

@@ -34,6 +34,9 @@ interface ButtonLinkAsExternalLinkProps extends ButtonLinkBaseProps {
 
 type ButtonLinkProps = ButtonLinkAsButtonProps | ButtonLinkAsLinkProps | ButtonLinkAsExternalLinkProps;
 
+/**
+ * A button, or a link styled as one: to a page in the app with `to`, or elsewhere with `href`.
+ */
 export default function ButtonLink (props: ButtonLinkProps) {
   const {
     children,
@@ -64,10 +67,8 @@ export default function ButtonLink (props: ButtonLinkProps) {
   const buttonClass = `${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${disabledClass} ${className}`;
 
   if (props.as === 'link') {
-    // Check whether it's an external link with `href`, or internal link with `to`.
     if ('href' in props) {
       return (
-        // Render an external link.
         <a
         className={buttonClass}
         href={props.href}
@@ -79,7 +80,6 @@ export default function ButtonLink (props: ButtonLinkProps) {
       );
     } else {
       return (
-        // Render an internal link.
         <Link
         className={buttonClass}
         to={props.to}>
@@ -90,7 +90,6 @@ export default function ButtonLink (props: ButtonLinkProps) {
     }
   } else {
     return (
-      // Render a button.
       <button
       className={buttonClass}
       disabled={disabled}

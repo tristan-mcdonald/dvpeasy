@@ -16,6 +16,10 @@ interface SettlementActionsProps {
   onExecute: () => void;
 }
 
+/**
+ * The approve and execute buttons at the foot of an open settlement, for a party which sends
+ * something in it.
+ */
 export default function SettlementActions ({
   isSettled,
   isExpired,

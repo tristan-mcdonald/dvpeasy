@@ -23,6 +23,10 @@ interface SettlementFlowsProps {
   onAddFlow?: () => void;
 }
 
+/**
+ * A settlement's flows as cards. In edit mode, on the create page, they can be dragged into a new
+ * order, edited and removed, and new ones added.
+ */
 export default function SettlementFlows ({
   flows,
   tokensForDisplay,
@@ -60,7 +64,6 @@ export default function SettlementFlows ({
   const flowCount = flows.length;
   const collectionPreviews = useMemo(() => flowDisplay.collectionPreviews(flows), [flows]);
 
-  // Handle case when no flows and no add function is provided (read-only mode).
   if (flowCount === 0 && !onAddFlow) {
     return (
       <span className="block py-2 text-center text-text-label">No flows found for this settlement.</span>
@@ -94,7 +97,6 @@ export default function SettlementFlows ({
   return (
     <div className="space-y-3">
       {isEditMode ? (
-        // Show flows with drag & drop and add button.
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-14">
           <DndContext
           collisionDetection={closestCenter}
@@ -128,7 +130,6 @@ export default function SettlementFlows ({
           )}
         </ul>
       ) : (
-        // Show flows only.
         <>
           {flowCount > 0 && (
             <HeadingAndTotal

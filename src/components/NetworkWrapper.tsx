@@ -8,13 +8,12 @@ import { useEffect } from 'react';
 import { useWalletNetworkSync } from '../hooks/useWalletNetwork';
 
 /**
- * Wrapper component for network-scoped routes.
- * Validates the network and version in the URL, and keeps the wallet in step with them.
+ * The layout of every page under `/{network}/{version}`, which shows an error for a network or
+ * version with no deployment, and keeps the wallet in step with the URL.
  */
 export default function NetworkWrapper () {
   const params = useParams<{ network?: string; version?: string }>();
 
-  // Parse and validate network/version from URL.
   const parsedParams = urlManager.parseNetworkAndVersion(params);
   const { network } = useCurrentNetwork();
   const { isSwitching, isWalletOnUrlNetwork, switchWallet, walletNetwork } = useWalletNetworkSync();
@@ -26,7 +25,6 @@ export default function NetworkWrapper () {
     if (networkId && version) savedSelection.saveVersion(networkId, version);
   }, [networkId, version]);
 
-  // Show error if URL network/version is invalid.
   if (!parsedParams) {
     return (
       <HeaderLocal

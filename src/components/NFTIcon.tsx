@@ -5,6 +5,9 @@ interface NFTIconProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+/**
+ * A generic NFT icon.
+ */
 export const NFTIcon: FC<NFTIconProps> = ({
   className = '',
   size = 'md',

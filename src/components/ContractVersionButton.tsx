@@ -4,9 +4,7 @@ import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useState } from 'react';
 
 /**
- * Contract version selection button.
- * Displays the current contract version tag as text.
- * Opens a version selection modal dialog on click.
+ * The header's button showing the contract version, which opens the version dialog.
  */
 export default function ContractVersionButton () {
   const { version } = useCurrentNetwork().deployment;

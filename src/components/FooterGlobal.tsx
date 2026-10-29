@@ -1,3 +1,6 @@
+/**
+ * The footer on every page, with a link to thank the author.
+ */
 export default function FooterGlobal () {
   return (
     <footer className="flex flex-col items-center justify-center gap-2 border-t border-interface-border px-4 py-6">

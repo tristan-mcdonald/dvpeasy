@@ -10,11 +10,9 @@ interface TokenLogoProps {
 }
 
 /**
- * A lookup of `alias` → `base icon name` for wrapped/testnet tokens.
- * If the user asks for "weth" or "tusdc", we actually point at "eth.svg" or "usdc.svg".
+ * Test and wrapped tokens' symbols, by the symbol whose icon in `public/icons/tokens/` they share.
  */
 const SYMBOL_MAP: Record<string, string> = {
-  // Wrapped/testnet variants → base symbols.
   taave: 'aave',
   tdai: 'dai',
   tlink: 'link',
@@ -30,6 +28,10 @@ const SYMBOL_MAP: Record<string, string> = {
   wuni: 'uni',
 };
 
+/**
+ * A token's logo from the first of its sources which loads: the token list's logo, Trust Wallet's,
+ * then the app's own icon for its symbol. Until one loads, or if none does, a generic coin icon.
+ */
 export const TokenLogo: FC<TokenLogoProps> = ({
   tokenSymbol,
   logoUrl,
@@ -50,18 +52,15 @@ export const TokenLogo: FC<TokenLogoProps> = ({
 
   const normalized = tokenSymbol?.toLowerCase() || '';
 
-  // If there's an alias (wrapped/testnet), point at its base symbol.
   const targetSymbol = normalized in SYMBOL_MAP ? SYMBOL_MAP[normalized] : normalized;
   const localIconUrl = targetSymbol ? `/icons/tokens/${targetSymbol}.svg` : null;
 
-  // Memoize the fallback chain to prevent constant re-creation.
   const imageUrls = useMemo(() => [
     logoUrl,
     trustWalletLogoUrl,
     localIconUrl,
   ].filter(Boolean) as string[], [logoUrl, trustWalletLogoUrl, localIconUrl]);
 
-  // Clear any existing timeout.
   const clearLoadingTimeout = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -69,7 +68,6 @@ export const TokenLogo: FC<TokenLogoProps> = ({
     }
   }, []);
 
-  // Try the next image URL in the fallback chain.
   const tryNextImage = useCallback(() => {
     const nextLevel = fallbackLevelRef.current + 1;
     if (nextLevel < imageUrls.length) {
@@ -77,25 +75,21 @@ export const TokenLogo: FC<TokenLogoProps> = ({
       setCurrentImageUrl(imageUrls[nextLevel]);
       setImageState('loading');
     } else {
-      // No more fallbacks available.
       setImageState('error');
       setCurrentImageUrl(null);
     }
   }, [imageUrls]);
 
-  // Handle image load error - try next fallback.
   const handleImageError = useCallback(() => {
     clearLoadingTimeout();
     tryNextImage();
   }, [clearLoadingTimeout, tryNextImage]);
 
-  // Handle successful image load.
   const handleImageLoad = useCallback(() => {
     clearLoadingTimeout();
     setImageState('loaded');
   }, [clearLoadingTimeout]);
 
-  // Reset everything when the image URLs change.
   useEffect(() => {
     clearLoadingTimeout();
     fallbackLevelRef.current = 0;
@@ -107,7 +101,6 @@ export const TokenLogo: FC<TokenLogoProps> = ({
       setCurrentImageUrl(imageUrls[0]);
       setImageState('loading');
 
-      // Set timeout for first attempt.
       const timeoutId = setTimeout(() => {
         tryNextImage();
       }, 3000);
@@ -115,11 +108,10 @@ export const TokenLogo: FC<TokenLogoProps> = ({
       timeoutRef.current = timeoutId;
     }
 
-    // Cleanup timeout on unmount or dependency change.
     return () => clearLoadingTimeout();
   }, [normalized, imageUrls, clearLoadingTimeout, tryNextImage]);
 
-  // Set up timeout when we're loading a specific image.
+  // An image which neither loads nor fails within three seconds counts as failed.
   useEffect(() => {
     if (imageState === 'loading' && currentImageUrl) {
       clearLoadingTimeout();
@@ -134,27 +126,24 @@ export const TokenLogo: FC<TokenLogoProps> = ({
     }
   }, [currentImageUrl, imageState, clearLoadingTimeout, tryNextImage]);
 
-  // If no symbol provided at all, immediately render fallback.
   if (!tokenSymbol) {
     return (
       <Coins className={`${sizeClasses[size]} ${className} text-text-label`} />
     );
   }
 
-  // Show fallback icon for error or loading states without a current image.
   if (imageState === 'error' || (imageState === 'loading' && !currentImageUrl)) {
     return (
       <Coins className={`${sizeClasses[size]} ${className} text-text-label`} />
     );
   }
 
-  // Show loading state with hidden image loading attempt.
+  // The image loads hidden behind the generic icon.
   if (imageState === 'loading' && currentImageUrl) {
     return (
       <div className={`${sizeClasses[size]} ${className} relative`}>
         <Coins className={`${sizeClasses[size]} text-text-label`} />
 
-        {/* Hidden image for loading attempt. */}
         <img
         alt={`${tokenSymbol} logo`}
         className="absolute inset-0 opacity-0 pointer-events-none"
@@ -165,7 +154,6 @@ export const TokenLogo: FC<TokenLogoProps> = ({
     );
   }
 
-  // Show the actual image when successfully loaded.
   return (
     <div className={`${sizeClasses[size]} ${className} relative`}>
       <img

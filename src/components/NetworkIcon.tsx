@@ -7,7 +7,7 @@ interface NetworkIconProps {
 }
 
 /**
- * Network icon component that displays the appropriate network logo or a fallback.
+ * A network's logo, or a generic icon for a network without one.
  */
 export default function NetworkIcon ({
   network,
@@ -21,7 +21,6 @@ export default function NetworkIcon ({
     );
   }
 
-  // Display the appropriate icon component based on network ID.
   switch (network.id) {
     case 'mainnet':
     case 'sepolia':
@@ -30,7 +29,6 @@ export default function NetworkIcon ({
     case 'baseSepolia':
       return <BaseIcon className={className} />;
     default:
-      // Fallback for networks without dedicated icon components.
       return (
         <div className={`${className} rounded-full bg-interface-dark flex items-center justify-center text-white text-xs font-bold`}>
           <span>{network.displayName.charAt(0).toUpperCase()}</span>

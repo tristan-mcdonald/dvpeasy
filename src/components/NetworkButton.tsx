@@ -5,9 +5,7 @@ import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
 import { useState } from 'react';
 
 /**
- * Network selection button.
- * Shows current network logo with a tooltip displaying connection status.
- * Opens network selection modal on click.
+ * The header's button showing the network's logo, which opens the network dialog.
  */
 export default function NetworkButton () {
   const { network } = useCurrentNetwork();

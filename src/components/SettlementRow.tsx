@@ -17,6 +17,9 @@ interface SettlementRowProps {
   settlement: Settlement;
 }
 
+/**
+ * A settlement in the dashboard's table, which opens it when clicked.
+ */
 const SettlementRow = memo(function SettlementRow ({ settlement }: SettlementRowProps) {
   const navigate = useNavigate();
   const { deployment, network } = useCurrentNetwork();

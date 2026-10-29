@@ -28,6 +28,9 @@ interface SettlementOverviewProps {
   settlement: Settlement;
 }
 
+/**
+ * A settlement's status, cutoff date and whether it settles itself once every party approves.
+ */
 export default function SettlementOverview ({ settlement }: SettlementOverviewProps) {
   const cutoffDate = new Date(settlement.cutoffDate);
 

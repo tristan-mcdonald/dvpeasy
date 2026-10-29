@@ -7,6 +7,9 @@ interface CreateSettlementActionsProps {
   onSubmit: () => void;
 }
 
+/**
+ * The create page's submit button, disabled while the wallet is on another network.
+ */
 export default function CreateSettlementActions ({ isLoading, onSubmit }: CreateSettlementActionsProps) {
   const { isWalletOnUrlNetwork } = useWalletNetwork();
 

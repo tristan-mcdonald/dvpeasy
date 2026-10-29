@@ -8,7 +8,7 @@ interface NFTModalProps {
 }
 
 /**
- * Modal component for displaying NFT images in a fullscreen overlay.
+ * A larger view of a flow's NFT image, over the page.
  */
 export default function NFTModal ({ flow, onClose }: NFTModalProps) {
   if (flow?.nftId === undefined) return null;

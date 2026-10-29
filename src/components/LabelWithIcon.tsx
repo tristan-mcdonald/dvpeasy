@@ -7,6 +7,9 @@ interface LabelWithIconProps {
   className?: string;
 }
 
+/**
+ * A form label with an icon before it.
+ */
 export const LabelWithIcon: FC<LabelWithIconProps> = ({
   icon,
   children,

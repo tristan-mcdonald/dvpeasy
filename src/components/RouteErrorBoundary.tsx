@@ -15,10 +15,6 @@ interface RouteErrorInfo {
   routeName?: string;
 }
 
-/**
- * Route-specific error boundary that provides navigation-aware error recovery.
- * Includes route context in error logging and offers route-specific recovery options.
- */
 // eslint-disable-next-line react-refresh/only-export-components
 function RouteErrorBoundaryContent ({ children, routeName }: RouteErrorBoundaryProps) {
   const location = useLocation();
@@ -58,7 +54,8 @@ function RouteErrorBoundaryContent ({ children, routeName }: RouteErrorBoundaryP
 }
 
 /**
- * Class-based wrapper to handle the router hooks limitation in class components.
+ * An error boundary for one page, which logs its path and replaces only that page with a message,
+ * leaving the header and footer in place.
  */
 export default class RouteErrorBoundary extends Component<RouteErrorBoundaryProps> {
   render () {

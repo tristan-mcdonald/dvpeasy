@@ -25,8 +25,8 @@ interface ErrorBoundaryState {
 const MAX_RETRY_COUNT = 3;
 
 /**
- * Error Boundary component that catches JavaScript errors anywhere in the child component tree.
- * Provides a fallback UI, error recovery mechanisms, and integrates with the logging system.
+ * Catches errors in rendering its children and logs them. It shows the `fallback` given, or a
+ * message which offers up to three retries, with the error's details in development.
  */
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor (props: ErrorBoundaryProps) {
@@ -49,7 +49,6 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   componentDidCatch (error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
-    // Log the error with context.
     logger.error('Error Boundary caught an error', {
       error: error.message,
       componentStack: errorInfo.componentStack,
@@ -57,15 +56,11 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       timestamp: new Date().toISOString(),
     });
 
-    // Call optional onError callback.
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
   }
 
-  /**
-   * Reset the error boundary state to retry rendering.
-   */
   handleRetry = () => {
     const newRetryCount = this.state.retryCount + 1;
 
@@ -82,17 +77,11 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     }
   };
 
-  /**
-   * Refresh the entire page.
-   */
   handleRefresh = () => {
     logger.info('Error Boundary triggered page refresh');
     window.location.reload();
   };
 
-  /**
-   * Navigate to home page.
-   */
   handleGoHome = () => {
     logger.info('Error Boundary triggered navigation to home');
     const { networkId, version } = savedSelection.initial();
@@ -101,7 +90,6 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   render () {
     if (this.state.hasError) {
-      // Use custom fallback if provided.
       if (this.props.fallback) {
         return this.props.fallback;
       }

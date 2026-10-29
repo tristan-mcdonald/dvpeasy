@@ -9,24 +9,18 @@ export interface ApprovalStatus {
 }
 
 /**
- * Settlement manager for approval-related operations.
+ * What a party's approval card says about its approvals.
  */
 export const settlementManager = {
-  /**
-   * Approval status for a party based on current state.
-   */
   approvalStatus (
     partyStatus: PartyStatusForDisplay,
     isExpired: boolean,
     isSettled: boolean,
   ): ApprovalStatus {
-    // Check if all individual token approvals are complete.
     const allSpendApprovalsComplete = partyStatus.tokenStatuses.every(settlements.isTokenApproved);
 
-    // Check if ether approval is complete.
     const etherApprovalComplete = partyStatus.etherDeposited >= partyStatus.etherRequired;
 
-    // All approvals are complete if party is approved AND all spend approvals are complete.
     const allApprovalsComplete = partyStatus.isApproved && allSpendApprovalsComplete && etherApprovalComplete;
 
     if (isSettled) return { message: 'All required approvals were completed', type: 'success' };
@@ -36,7 +30,8 @@ export const settlementManager = {
   },
 
   /**
-   * Formatted approval amount calculation.
+   * How much of a token is still to be approved, worked out from the formatted amount required, to
+   * six decimal places.
    */
   formattedApprovalAmount (
     formattedRequired: string,

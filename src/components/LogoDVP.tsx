@@ -1,3 +1,6 @@
+/**
+ * The dvpeasy logo.
+ */
 export default function LogoDVP ({ className = 'h-7' }: { className?: string }) {
   return (
     <svg

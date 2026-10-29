@@ -7,6 +7,9 @@ type Props = {
   shadow?: boolean;
 };
 
+/**
+ * The cutoff date's field, with Flatpickr's calendar, in the `Y-m-d H:i` format the form keeps.
+ */
 export function DatePicker ({ cutoffDate, setCutoffDate, shadow }: Props) {
   const ref = useRef<HTMLInputElement>(null);
 
@@ -18,11 +21,10 @@ export function DatePicker ({ cutoffDate, setCutoffDate, shadow }: Props) {
       dateFormat: 'Y-m-d H:i',
       defaultDate: cutoffDate,
       onChange: ([date]) => {
-        // Handle case where date is undefined (when clearing the input).
         if (date) {
           setCutoffDate(datePicker.formatDate(date, 'Y-m-d H:i'));
         } else {
-          // Set a default date 4 hours from now if cleared.
+          // A cleared field goes back to four hours from now, as on a new form.
           const defaultDate = new Date();
           defaultDate.setHours(defaultDate.getHours() + 4);
           const formattedDate = datePicker.formatDate(defaultDate, 'Y-m-d H:i');

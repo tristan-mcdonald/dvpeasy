@@ -5,6 +5,9 @@ interface TooltipProps {
   content: string;
 }
 
+/**
+ * A tooltip above its children while the pointer is over them.
+ */
 export default function Tooltip ({ children, content }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
 

@@ -7,9 +7,8 @@ import { utilityManager } from '../lib/utils';
 import Tooltip from './Tooltip';
 
 /**
- * Custom wallet connection button.
- * Shows wallet icon with "Connect wallet" text when disconnected, or wallet icon with native
- * token balance and truncated address when connected. Opens AppKit modal on click.
+ * The header's wallet button: "Connect wallet", or the wallet's balance and short address. It
+ * opens AppKit's dialog.
  */
 export default function WalletButton () {
   const { open } = useAppKit();
@@ -21,10 +20,8 @@ export default function WalletButton () {
 
   const handleClick = () => {
     if (isConnected) {
-      // Show account view when connected.
       open({ view: 'Account' });
     } else {
-      // Show connection view when disconnected.
       open({ view: 'Connect' });
     }
   };

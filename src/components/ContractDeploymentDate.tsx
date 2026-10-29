@@ -6,8 +6,7 @@ interface ContractDeploymentDateProps {
 }
 
 /**
- * Component that displays the deployment date for a contract version.
- * Uses the manual deploymentDate from the contract configuration.
+ * The date a contract version was deployed, as recorded in its configuration.
  */
 export default function ContractDeploymentDate ({ version }: ContractDeploymentDateProps) {
   if (!version.deploymentDate) {
