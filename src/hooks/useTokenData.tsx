@@ -7,48 +7,15 @@ import { tokenStorage } from '../lib/custom-token-storage';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-/**
- * Unified token data hook that consolidates all token fetching logic.
- *
- * This hook replaces the separate `fetchAvailableTokens` and `fetchTokenListForSearch` functions to
- * eliminate duplicate 1Inch API calls. It provides both dropdown tokens and search functionality
- * from a single data source.
- *
- * Features:
- * - Single 1Inch API call per chain with smart caching
- * - Client-side search with relevance scoring
- * - Network-aware token filtering
- * - Custom token integration
- * - Graceful fallback for testnets
- *
- * @example
- * ```tsx
- * const { tokens, searchTokens, isLoading, error } = useTokenData(chainId);
- * const searchResults = searchTokens('USDC', { limit: 20 });
- * ```
- */
-
-/**
- * Search options for token filtering.
- */
 export interface TokenSearchOptions {
-  /** Maximum number of results to return */
   limit?: number;
-  /** Include custom tokens in results */
   includeCustomTokens?: boolean;
 }
 
-/**
- * Search result with relevance scoring.
- */
 export interface TokenSearchResult {
-  /** Matching tokens */
   tokens: ListedToken[];
-  /** Search query used */
   query: string;
-  /** Total results found */
   totalResults: number;
-  /** Result counts by source */
   counts: {
     api: number;
     custom: number;
@@ -72,7 +39,9 @@ function getTestnetTokens (network: Network): ListedToken[] {
 }
 
 /**
- * Fetch tokens from 1Inch API for mainnet networks.
+ * The 1inch token list for a main network, read through the dev server's `/api/1inch` proxy
+ * (`vite.config.ts`), which adds the API key. Without a key, or if the read fails, only the
+ * native token.
  */
 async function fetchMainnetTokens (chainId: number): Promise<ListedToken[]> {
   const network = networks.byChainId(chainId)!;
@@ -97,7 +66,7 @@ async function fetchMainnetTokens (chainId: number): Promise<ListedToken[]> {
       headers: {
         'Accept': 'application/json',
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout.
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
@@ -122,13 +91,12 @@ async function fetchMainnetTokens (chainId: number): Promise<ListedToken[]> {
 }
 
 /**
- * Transform 1Inch API response data into ListedToken array.
+ * The native token, then 1inch's tokens without its own entry for the native token.
  */
 function transformTokensData (tokensData: Record<string, unknown>, chainId: number): ListedToken[] {
   const network = networks.byChainId(chainId)!;
   const tokens: ListedToken[] = [];
 
-  // First, add native token.
   tokens.push({
     address: network.nativeToken.address,
     symbol: network.nativeToken.symbol,
@@ -140,7 +108,6 @@ function transformTokensData (tokensData: Record<string, unknown>, chainId: numb
     lastUpdated: Date.now(),
   });
 
-  // Transform 1Inch tokens and filter out native token duplicates.
   const transformedTokens = Object.values(tokensData)
     .filter((token: unknown) => {
       const tokenData = token as Record<string, unknown>;
@@ -165,7 +132,8 @@ function transformTokensData (tokensData: Record<string, unknown>, chainId: numb
 }
 
 /**
- * Calculate relevance score for search result ranking. Higher scores appear first in results.
+ * How well a token matches a search, by the first of these checks it passes: from its exact symbol
+ * (100) down to part of its address (10), or 0 if none.
  */
 function calculateRelevanceScore (token: ListedToken, query: string): number {
   const normalizedQuery = query.toLowerCase().trim();
@@ -175,32 +143,19 @@ function calculateRelevanceScore (token: ListedToken, query: string): number {
 
   let score = 0;
 
-  // Exact symbol match gets highest score.
   if (symbol === normalizedQuery) score += 100;
-
-  // Symbol starts with query gets high score.
   else if (symbol.startsWith(normalizedQuery)) score += 80;
-
-  // Symbol contains query gets medium score.
   else if (symbol.includes(normalizedQuery)) score += 60;
-
-  // Exact name match gets high score.
   else if (name === normalizedQuery) score += 70;
-
-  // Name starts with query gets medium score.
   else if (name.startsWith(normalizedQuery)) score += 50;
-
-  // Name contains query gets lower score.
   else if (name.includes(normalizedQuery)) score += 30;
-
-  // Address match gets lowest score.
   else if (address.includes(normalizedQuery)) score += 10;
 
   return score;
 }
 
 /**
- * Merge and rank tokens from different sources with relevance scoring.
+ * The tokens which match a search, best first and then by name, with how many came from each list.
  */
 function mergeAndRankTokens (
   apiTokens: ListedToken[],
@@ -211,7 +166,6 @@ function mergeAndRankTokens (
   const tokenMap = new Map<string, ListedToken & { relevanceScore: number; source: string }>();
   const counts = { api: 0, custom: 0 };
 
-  // Add custom tokens first.
   customTokens.forEach(token => {
     const key = `${token.address.toLowerCase()}-${token.chainId}`;
     const relevanceScore = calculateRelevanceScore(token, query);
@@ -221,7 +175,7 @@ function mergeAndRankTokens (
     }
   });
 
-  // Add API tokens (highest priority, will override custom tokens with same address).
+  // A token in both lists takes the token list's details.
   apiTokens.forEach(token => {
     const key = `${token.address.toLowerCase()}-${token.chainId}`;
     const relevanceScore = calculateRelevanceScore(token, query);
@@ -232,30 +186,27 @@ function mergeAndRankTokens (
     }
   });
 
-  // Convert to array, sort by relevance, and limit results.
   const tokens = Array.from(tokenMap.values())
     .sort((a, b) => {
-      // First sort by relevance score.
       if (b.relevanceScore !== a.relevanceScore) {
         return b.relevanceScore - a.relevanceScore;
       }
 
-      // Then by name.
       return a.name.localeCompare(b.name);
     })
     .slice(0, maxResults)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .map(({ relevanceScore: _relevanceScore, source: _source, ...token }) => token); // Remove scoring fields.
+    .map(({ relevanceScore: _relevanceScore, source: _source, ...token }) => token);
 
   return { tokens, counts };
 }
 
 /**
- * Unified hook for fetching and searching tokens.
- * Eliminates duplicate API calls by providing both dropdown and search from single source.
+ * The tokens offered in the token selector on a chain, with the user's custom tokens after them,
+ * and a search over both. Main networks use 1inch's token list; test networks list their test
+ * tokens.
  */
 export function useTokenData (chainId: number, limit: number = 100) {
-  // Fetch all tokens for the chain.
   const {
     data: allTokens,
     isLoading,
@@ -270,22 +221,19 @@ export function useTokenData (chainId: number, limit: number = 100) {
         throw new Error(`Unsupported network: ${chainId}`);
       }
 
-      // Handle testnets.
       if (network.isTestnet) {
         return getTestnetTokens(network);
       }
 
-      // Handle mainnets with 1Inch API.
       return await fetchMainnetTokens(chainId);
     },
     enabled: true,
-    staleTime: 5 * 60 * 1000, // 5 minutes.
-    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection.
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * Math.pow(2, attemptIndex), 5000),
   });
 
-  // Get custom tokens for the current chain.
   const customTokens = useMemo(() => {
     const stored = tokenStorage.getCustomTokensForChain(chainId);
     return stored.map(token => ({
@@ -294,13 +242,11 @@ export function useTokenData (chainId: number, limit: number = 100) {
     })) as ListedToken[];
   }, [chainId]);
 
-  // Combine API tokens with custom tokens for dropdown.
   const tokens = useMemo(() => {
     if (!allTokens) return [];
 
     const combined = [...allTokens];
 
-    // Add custom tokens that aren't already in the API results.
     customTokens.forEach(customToken => {
       const existsInApi = allTokens.some(apiToken =>
         apiToken.address.toLowerCase() === customToken.address.toLowerCase(),
@@ -313,7 +259,6 @@ export function useTokenData (chainId: number, limit: number = 100) {
     return combined.slice(0, limit);
   }, [allTokens, customTokens, limit]);
 
-  // Client-side search function.
   const searchTokens = useMemo(() => {
     return (query: string, options: TokenSearchOptions = {}): TokenSearchResult => {
       const { limit: searchLimit = 50, includeCustomTokens = true } = options;
@@ -346,17 +291,11 @@ export function useTokenData (chainId: number, limit: number = 100) {
   }, [allTokens, customTokens]);
 
   return {
-    /** All available tokens for dropdown */
     tokens: tokens || [],
-    /** Client-side search function */
     searchTokens,
-    /** Loading state */
     isLoading,
-    /** Error state */
     error,
-    /** Refetch function */
     refetch,
-    /** Custom tokens for current chain */
     customTokens,
   };
 }

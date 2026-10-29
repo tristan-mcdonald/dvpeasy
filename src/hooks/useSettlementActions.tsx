@@ -20,6 +20,11 @@ interface UseSettlementActionsProps {
   onSuccess?: () => void;
 }
 
+/**
+ * The connected party's actions on a settlement: approving it (with any ETH it must send),
+ * approving its tokens, executing, revoking and withdrawing ETH. Each shows its progress in a toast
+ * and calls `onSuccess` once its transaction is mined.
+ */
 export function useSettlementActions ({
   settlementId,
   address,
@@ -58,7 +63,6 @@ export function useSettlementActions ({
       return;
     }
 
-    // Validate inputs.
     try {
       contractValidationManager.validateSettlementId(settlementId);
       if (!contractValidationManager.isValidAddress(address)) {
@@ -104,7 +108,6 @@ export function useSettlementActions ({
       return;
     }
 
-    // Validate inputs.
     try {
       contractValidationManager.validateSettlementId(settlementId);
       if (!contractValidationManager.isValidAddress(address)) {
@@ -149,7 +152,6 @@ export function useSettlementActions ({
       return;
     }
 
-    // Validate inputs.
     try {
       if (!contractValidationManager.isValidAddress(address)) {
         throw new ContractValidationError('Invalid wallet address', address, 'address');
@@ -157,7 +159,7 @@ export function useSettlementActions ({
       if (!contractValidationManager.isValidAddress(tokenAddress)) {
         throw new ContractValidationError('Invalid token address', tokenAddress, 'tokenAddress');
       }
-      contractValidationManager.validateAmountOrId(amount, false); // Assuming ERC20 token approval
+      contractValidationManager.validateAmountOrId(amount, false); // `false` only words the error for an amount; an NFT's ID passes the same check.
     } catch (error) {
       if (error instanceof ContractValidationError) {
         toast.error(`Validation error: ${error.message}`);

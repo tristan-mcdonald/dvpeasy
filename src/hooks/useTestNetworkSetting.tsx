@@ -3,26 +3,23 @@ const TEST_NETWORK_SETTING_KEY = 'dvp-show-test-networks';
 import { useEffect, useState } from 'react';
 
 /**
- * Hook to manage the user's preference for showing test networks.
- * Stores the setting in localStorage for persistence across sessions.
- * Automatically syncs across all components using this hook.
+ * Whether the network list shows test networks, kept in `localStorage`. A window event keeps every
+ * component which uses it in step.
  */
 export function useTestNetworkSetting () {
   const [showTestNetworks, setShowTestNetworks] = useState<boolean>(false);
 
-  // Load initial value from localStorage.
   useEffect(() => {
     const stored = localStorage.getItem(TEST_NETWORK_SETTING_KEY);
     if (stored !== null) {
       setShowTestNetworks(stored === 'true');
     } else {
-      // Default to true for development purposes.
+      // Test networks are shown until the user turns them off.
       setShowTestNetworks(true);
       localStorage.setItem(TEST_NETWORK_SETTING_KEY, 'true');
     }
   }, []);
 
-  // Listen for changes from other components.
   useEffect(() => {
     const handleSettingChange = () => {
       const stored = localStorage.getItem(TEST_NETWORK_SETTING_KEY);
@@ -31,7 +28,6 @@ export function useTestNetworkSetting () {
       }
     };
 
-    // Listen for custom events when setting changes.
     window.addEventListener(SETTING_CHANGE_EVENT, handleSettingChange);
 
     return () => {
@@ -43,7 +39,6 @@ export function useTestNetworkSetting () {
     setShowTestNetworks(value);
     localStorage.setItem(TEST_NETWORK_SETTING_KEY, value.toString());
 
-    // Dispatch custom event to notify other components.
     window.dispatchEvent(new CustomEvent(SETTING_CHANGE_EVENT));
   };
 

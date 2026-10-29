@@ -3,22 +3,19 @@ import { urlManager } from '../lib/url-manager';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Hook to extract network and version from the current URL path.
- * Returns the dashboard path for the current or default network/version.
- * Used by components outside the nested route structure (HeaderGlobal, Error404).
+ * The dashboard's path for the network and version in the URL, or for the user's last choice.
+ * It reads the location rather than the route's parameters, for components outside the network's
+ * routes, such as the header and the 404 page.
  */
 export function useCurrentNetworkPath (): string {
   const location = useLocation();
 
-  // Extract network and version from URL path pattern: /{network}/{version}/...
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
-  // Check if path has at least network and version segments.
   if (pathSegments.length >= 2) {
     const potentialNetwork = pathSegments[0];
     const potentialVersion = pathSegments[1];
 
-    // Validate the extracted network and version.
     const parsed = urlManager.parseNetworkAndVersion({
       network: potentialNetwork,
       version: potentialVersion,
@@ -29,7 +26,6 @@ export function useCurrentNetworkPath (): string {
     }
   }
 
-  // Fallback to default network and version if URL doesn't contain valid network/version.
   const { networkId, version } = savedSelection.initial();
   return urlManager.buildDashboardUrl(networkId, version);
 }

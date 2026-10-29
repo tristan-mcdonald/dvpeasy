@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { utilityManager } from '../lib/utils';
 
 /**
- * Hook for managing settlement form state.
- * Handles cutoff date, reference, and auto-settle settings.
+ * The create form's settlement fields. The cutoff date starts four hours ahead.
  */
 export function useSettlementForm () {
   const [cutoffDate, setCutoffDate] = useState(() => {
@@ -14,9 +13,6 @@ export function useSettlementForm () {
   const [reference, setReference] = useState('');
   const [isAutoSettled, setIsAutoSettled] = useState(false);
 
-  /**
-   * Reset form to default values.
-   */
   const resetForm = () => {
     const date = new Date();
     date.setHours(date.getHours() + 4);
@@ -25,24 +21,18 @@ export function useSettlementForm () {
     setIsAutoSettled(false);
   };
 
-  /**
-   * Check if form has required values.
-   */
   const isFormValid = cutoffDate.length > 0;
 
   return {
-    // State.
     cutoffDate,
     reference,
     isAutoSettled,
 
-    // Actions.
     setCutoffDate,
     setReference,
     setIsAutoSettled,
     resetForm,
 
-    // Computed.
     isFormValid,
   };
 }

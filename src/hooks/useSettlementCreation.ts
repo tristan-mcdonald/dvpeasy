@@ -17,8 +17,8 @@ import { useCurrentNetwork } from './useCurrentNetwork';
 import { useFetchTokenMetadata } from './useTokenMetadata';
 
 /**
- * Hook for handling settlement creation logic.
- * Manages form validation, contract interaction, and transaction handling.
+ * Validates the create form, sends the new settlement to the DVP contract, and opens it once it's
+ * mined.
  */
 export function useSettlementCreation () {
   const navigate = useNavigate();
@@ -43,9 +43,6 @@ export function useSettlementCreation () {
     };
   };
 
-  /**
-   * Create settlement with provided parameters using validation.
-   */
   const createSettlement = async (
     flows: FlowDraft[],
     cutoffDate: string,
@@ -57,7 +54,6 @@ export function useSettlementCreation () {
       return;
     }
 
-    // Validate and prepare settlement data.
     let validatedSettlement;
     try {
       validatedSettlement = contractValidationManager.validateSettlementForSubmission({
