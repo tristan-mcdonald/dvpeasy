@@ -1,11 +1,11 @@
 import FlowDetails from './FlowDetails';
 import FlowTokenBadge from './FlowTokenBadge';
-import { flowSortId } from './flowSortId';
 import NFTIcon from '../NFTIcon';
 import Tooltip from '../Tooltip';
 import { Check, Copy, Edit, ExternalLink, GripVertical, Trash2 } from 'lucide-react';
 import { CSS } from '@dnd-kit/utilities';
 import { FlowForDisplay } from '../../types/settlement';
+import { flowSortId } from './flowSortId';
 import { memo } from 'react';
 import { networkLinks } from '../../lib/network-links';
 import { TokenForDisplay } from '../../hooks/useTokensForDisplay';

@@ -1,5 +1,5 @@
-import { copyToClipboard } from '../../lib/clipboard';
 import { COPIED_DURATION } from '../../hooks/useCopyToClipboard';
+import { copyToClipboard } from '../../lib/clipboard';
 import { cssCustomProperty, graphColors } from '../../config/theme';
 import { DragBehavior, SubjectPosition } from 'd3-drag';
 import { GraphLink, GraphNode, labelFontFamily } from './graph';
