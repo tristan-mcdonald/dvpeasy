@@ -13,6 +13,10 @@ interface FilterDrawerProps {
   totalSettlements?: number;
 }
 
+/**
+ * The drawer of dashboard filters: by token, by settlement ID, and, with a wallet connected, to the
+ * wallet's own settlements.
+ */
 export default function FilterDrawer ({
   isOpen,
   onClose,

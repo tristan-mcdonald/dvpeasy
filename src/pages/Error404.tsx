@@ -4,8 +4,7 @@ import { LayoutDashboard } from 'lucide-react';
 import { useCurrentNetworkPath } from '../hooks/useCurrentNetworkPath';
 
 /**
- * 404 error page component displayed when users navigate to invalid routes.
- * Provides a user-friendly error message and navigation back to the dashboard.
+ * The page for a path which doesn't exist, with a link back to the dashboard.
  */
 export default function Error404 () {
   const currentDashboardPath = useCurrentNetworkPath();

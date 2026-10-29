@@ -6,6 +6,9 @@ interface DashboardErrorStateProps {
   onRetry: () => void;
 }
 
+/**
+ * Says the settlements couldn't be read, with a button to try again.
+ */
 export default function DashboardErrorState ({ onRetry }: DashboardErrorStateProps) {
   return (
     <div>

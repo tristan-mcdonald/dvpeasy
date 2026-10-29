@@ -13,6 +13,10 @@ interface DashboardContentProps {
   filters: UseDashboardState;
 }
 
+/**
+ * The dashboard's current page of settlements, or a message with a link to create one if there are
+ * none.
+ */
 export default function DashboardContent ({
   settlements,
   pagination,

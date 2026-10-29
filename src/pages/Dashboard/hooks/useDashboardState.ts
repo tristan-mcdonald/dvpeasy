@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-// State interface.
 export interface DashboardState {
-  // Filter state.
   tokenFilter: string;
   settlementIdFilter: string;
   walletFilter: boolean;
 
-  // UI state.
   isDrawerOpen: boolean;
 
-  // Pagination state.
   currentPage: number;
   settlementsPerPage: number;
 }
 
-// Derived state interface.
 export interface DashboardDerivedState {
   isTokenFiltering: boolean;
   isSettlementIdFiltering: boolean;
@@ -24,7 +19,6 @@ export interface DashboardDerivedState {
   hasActiveFilters: boolean;
 }
 
-// Action types.
 type DashboardAction =
   | { type: 'SET_TOKEN_FILTER'; payload: string }
   | { type: 'SET_SETTLEMENT_ID_FILTER'; payload: string }
@@ -38,7 +32,6 @@ type DashboardAction =
   | { type: 'RESET_TO_FIRST_PAGE' }
   | { type: 'SYNC_FROM_URL'; payload: Partial<DashboardState> };
 
-// Initial state.
 const initialState: DashboardState = {
   tokenFilter: '',
   settlementIdFilter: '',
@@ -48,7 +41,6 @@ const initialState: DashboardState = {
   settlementsPerPage: 20,
 };
 
-// Reducer function.
 function dashboardReducer (state: DashboardState, action: DashboardAction): DashboardState {
   switch (action.type) {
     case 'SET_TOKEN_FILTER':
@@ -95,13 +87,10 @@ function dashboardReducer (state: DashboardState, action: DashboardAction): Dash
   }
 }
 
-// Main hook interface.
 export interface UseDashboardState {
-  // State.
   state: DashboardState;
   derived: DashboardDerivedState;
 
-  // Filter actions.
   setTokenFilter: (value: string) => void;
   setSettlementIdFilter: (value: string) => void;
   setWalletFilter: (value: boolean) => void;
@@ -110,11 +99,9 @@ export interface UseDashboardState {
   clearWalletFilter: () => void;
   clearAllFilters: () => void;
 
-  // UI actions.
   setDrawerOpen: (isOpen: boolean) => void;
   toggleDrawer: () => void;
 
-  // Pagination actions.
   handlePageChange: (newPage: number) => void;
   resetToFirstPage: () => void;
   getPaginatedData: <T>(data: T[]) => {
@@ -124,27 +111,29 @@ export interface UseDashboardState {
   };
 }
 
+/**
+ * The dashboard's filters, its filter drawer and its page, which is kept in the URL as `?page=`.
+ */
 export function useDashboardState (): UseDashboardState {
   const [searchParams, setSearchParams] = useSearchParams();
   const [state, dispatch] = useReducer(dashboardReducer, initialState);
   const lastUrlPage = useRef<string | null>(null);
 
-  // Sync state with URL when URL changes (mount, browser navigation, etc).
+  // When the URL's page changes from outside, such as by going back, the state follows it.
   useEffect(() => {
     const pageParam = searchParams.get('page');
     const pageFromUrl = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
 
-    // Only update state if URL page is different from what we last set.
+    // The page this hook itself last wrote to the URL is skipped.
     if (pageParam !== lastUrlPage.current && pageFromUrl !== state.currentPage) {
       dispatch({ type: 'SET_CURRENT_PAGE', payload: pageFromUrl });
     }
   }, [searchParams, state.currentPage]);
 
-  // Update URL when state.currentPage changes.
+  // The page goes into the URL, except for the first.
   useEffect(() => {
     const expectedPageParam = state.currentPage === 1 ? null : state.currentPage.toString();
 
-    // Track what we're setting to avoid re-syncing from URL.
     lastUrlPage.current = expectedPageParam;
 
     setSearchParams((prev) => {
@@ -158,7 +147,6 @@ export function useDashboardState (): UseDashboardState {
     }, { replace: true });
   }, [state.currentPage, setSearchParams]);
 
-  // Derived state calculations.
   const derived = useMemo((): DashboardDerivedState => {
     const isTokenFiltering = state.tokenFilter.trim() !== '';
     const isSettlementIdFiltering = state.settlementIdFilter.trim() !== '';
@@ -173,7 +161,6 @@ export function useDashboardState (): UseDashboardState {
     };
   }, [state.tokenFilter, state.settlementIdFilter, state.walletFilter]);
 
-  // Action creators.
   const setTokenFilter = useCallback((value: string) => {
     dispatch({ type: 'SET_TOKEN_FILTER', payload: value });
   }, []);
@@ -218,7 +205,6 @@ export function useDashboardState (): UseDashboardState {
     dispatch({ type: 'RESET_TO_FIRST_PAGE' });
   }, []);
 
-  // Pagination helper.
   const getPaginatedData = useCallback(<T>(data: T[]) => {
     const totalPages = Math.ceil(data.length / state.settlementsPerPage);
     const validCurrentPage = totalPages > 0 && state.currentPage > totalPages ? 1 : state.currentPage;

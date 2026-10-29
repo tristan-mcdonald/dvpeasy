@@ -1,6 +1,10 @@
 import ContractVerificationInfo from '../components/ContractVerificationInfo';
 import HeaderLocal from '../components/HeaderLocal';
 
+/**
+ * The help page: what DVP is, how the app works, how to get started, and how to check the
+ * contracts.
+ */
 export default function Help () {
   return (
     <div className="mx-auto max-w-5xl pb-12">
@@ -8,7 +12,6 @@ export default function Help () {
       description="Learn about DVP settlements and how to use this application safely"
       title="Help & information" />
 
-      {/* Explanation of DVP */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>What is Delivery Versus Payment (DVP)?</h2>
         <p className="mt-3 leading-relaxed w-full max-w-ch">Delivery Versus Payment is a financial settlement mechanism which ensures the simultaneous exchange of assets between multiple parties. It eliminates counterparty risk by guaranteeing that asset transfers only happen when all conditions are met.</p>
@@ -28,7 +31,6 @@ export default function Help () {
         </ul>
       </section>
 
-      {/* Why DVP? */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>Why DVP?</h2>
         <h3 className="mt-8">The problem: Settlement risk</h3>
@@ -39,7 +41,6 @@ export default function Help () {
         <p className="mt-2 leading-relaxed w-full max-w-ch">Unlike traditional DVP systems that require trusted intermediaries, blockchain-based DVP operates through publicly auditable, permissionless smart contracts. This brings risk mitigation to crypto markets without centralization or administrative control.</p>
       </section>
 
-      {/* DVPeasy Features */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>DVPeasy features</h2>
         <ul className="mt-6 grid md:grid-cols-2 gap-4">
@@ -70,7 +71,6 @@ export default function Help () {
         </ul>
       </section>
 
-      {/* How DVP works */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>How DVP settlements work</h2>
         <ol className="mt-2 list-decimal ml-4 marker:font-medium marker:text-text-label">
@@ -93,7 +93,6 @@ export default function Help () {
         </ol>
       </section>
 
-      {/* Getting started */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>Getting started</h2>
         <ol className="mt-2 list-decimal ml-4 marker:font-medium marker:text-text-label">
@@ -126,7 +125,6 @@ export default function Help () {
         </ol>
       </section>
 
-      {/* Security best practices */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>Security best practices</h2>
         <ul>
@@ -157,7 +155,6 @@ export default function Help () {
         </ul>
       </section>
 
-      {/* Contract verification */}
       <section className="mt-10 border-t border-interface-border pt-10">
         <h2>Contract verification</h2>
         <div
@@ -168,7 +165,6 @@ export default function Help () {
         <ContractVerificationInfo />
       </section>
 
-      {/* FAQ */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>Frequently asked questions</h2>
         <ul>
@@ -191,7 +187,6 @@ export default function Help () {
         </ul>
       </section>
 
-      {/* Support */}
       <section className="mt-10 border-t border-interface-border pt-8 reading-content">
         <h2>Need more help?</h2>
         <p className="mt-2 leading-relaxed w-full max-w-ch">If you encounter issues or have questions not covered here:</p>

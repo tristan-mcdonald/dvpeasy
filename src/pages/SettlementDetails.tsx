@@ -14,6 +14,10 @@ import { useSettlementActions } from '../hooks/useSettlementActions';
 import { useSettlementDetails } from '../hooks/useSettlementDetails';
 import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
 
+/**
+ * A settlement's page: its details, flows, graph of parties, and each party's approvals, with the
+ * connected party's actions.
+ */
 export default function SettlementDetails () {
   const navigate = useNavigate();
   const { deployment, network } = useCurrentNetwork();
@@ -59,10 +63,9 @@ export default function SettlementDetails () {
     onSuccess: refresh,
   });
 
-  // Auto-redirect to dashboard if settlement is not found after loading completes.
+  // A settlement which doesn't exist shows its error for two seconds, then goes to the dashboard.
   useEffect(() => {
     if (!isLoading && error && !settlement) {
-      // Wait a brief moment to show the error, then redirect.
       const timer = setTimeout(() => {
         const dashboardUrl = urlManager.buildDashboardUrl(network.id, deployment.version.tag);
         navigate(dashboardUrl, { replace: true });

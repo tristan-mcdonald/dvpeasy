@@ -11,6 +11,10 @@ export interface DashboardData {
   totalSettlements: number;
 }
 
+/**
+ * The settlements the dashboard lists, filtered by token and ID. The wallet filter is applied when
+ * they're read, since it reads a different list.
+ */
 export function useDashboardData (dashboardState: UseDashboardState): DashboardData {
   const { tokenFilter, settlementIdFilter } = dashboardState.state;
   const { isWalletFiltering, isTokenFiltering, isSettlementIdFiltering } = dashboardState.derived;

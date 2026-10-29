@@ -8,6 +8,9 @@ import { useDashboardData } from './hooks/useDashboardData';
 import { useDashboardState } from './hooks/useDashboardState';
 import { useEffect } from 'react';
 
+/**
+ * The dashboard: the newest settlements on the network, which can be filtered and paged through.
+ */
 export default function Dashboard () {
   const dashboardState = useDashboardState();
   const { settlements, isLoading, isError, refetch, totalSettlements } = useDashboardData(dashboardState);
@@ -18,7 +21,7 @@ export default function Dashboard () {
   const { currentPage } = dashboardState.state;
   const { handlePageChange } = dashboardState;
 
-  // Reset to page 1 if current page exceeds total pages.
+  // A filter can leave the page past the last one, so it goes back to the first.
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
       handlePageChange(1);

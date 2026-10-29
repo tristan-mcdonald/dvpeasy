@@ -1,5 +1,8 @@
 import { UseDashboardState } from '../hooks/useDashboardState';
 
+/**
+ * The sentence in the filter drawer which says how many settlements match, and by which filters.
+ */
 export function getFilterResultsText (
   filters: UseDashboardState,
   settlementCount: number,

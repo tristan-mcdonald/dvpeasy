@@ -6,6 +6,9 @@ interface FilterBadgesProps {
   filters: UseDashboardState;
 }
 
+/**
+ * A badge for each filter applied, which removes it, and one to clear them all.
+ */
 export default function FilterBadges ({ filters }: FilterBadgesProps) {
   const { isTokenFiltering, isSettlementIdFiltering, isWalletFiltering, hasActiveFilters } = filters.derived;
   const { data: tokenMetadata } = useTokenMetadata(filters.state.tokenFilter);

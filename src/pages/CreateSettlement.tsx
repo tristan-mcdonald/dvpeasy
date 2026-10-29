@@ -10,8 +10,11 @@ import { useSettlementCreation } from '../hooks/useSettlementCreation';
 import { useSettlementForm } from '../hooks/useSettlementForm';
 import { useTokensForDisplay } from '../hooks/useTokensForDisplay';
 
+/**
+ * The create page: a settlement's flows, its cutoff date, reference and auto-settle, and a guide
+ * while it has no flows yet.
+ */
 export default function CreateSettlement () {
-  // Custom hooks for managing different aspects of the component.
   const flowManagement = useFlowManagement();
   const settlementForm = useSettlementForm();
   const { isLoading, createSettlement, isConnected } = useSettlementCreation();
@@ -22,9 +25,6 @@ export default function CreateSettlement () {
     [flowManagement.flows],
   );
 
-  /**
-   * Handle form submission.
-   */
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -51,7 +51,6 @@ export default function CreateSettlement () {
       description="Create a new DVP settlement with multiple token flows"
       title="Create settlement"/>
 
-      {/* Settlement creation guidance */}
       {flowManagement.flows.length === 0 && (
         <div className="mx-auto max-w-5xl bg-card-background border border-interface-border rounded-lg p-6">
           <div className="flex items-start gap-3">

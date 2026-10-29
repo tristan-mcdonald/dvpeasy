@@ -9,6 +9,10 @@ interface DashboardHeaderProps {
   filters: UseDashboardState;
 }
 
+/**
+ * Above the dashboard's table: a link to the DVP contract in the block explorer, the button which
+ * opens the filters, and the filters applied.
+ */
 export default function DashboardHeader ({ onShowFilters, filters }: DashboardHeaderProps) {
   const { deployment, network } = useCurrentNetwork();
   const blockExplorerUrl = networkLinks.address(network.chainId, deployment.dvpAddress);
@@ -17,7 +21,6 @@ export default function DashboardHeader ({ onShowFilters, filters }: DashboardHe
     <div className="space-y-2 max-w-full w-full">
       <div className="flex items-center justify-between gap-2 max-w-full w-full">
 
-        {/* View all transactions on blockchain explorer link */}
         <a
         className="transition-colors flex items-center gap-2"
         href={blockExplorerUrl}
@@ -27,7 +30,6 @@ export default function DashboardHeader ({ onShowFilters, filters }: DashboardHe
           <span className="link link-animated link-primary">View all transactions on this smart contract</span>
         </a>
 
-        {/* Filters open button */}
         <button
         className="transition-colors flex items-center gap-2"
         aria-label="Show filters"
@@ -39,7 +41,6 @@ export default function DashboardHeader ({ onShowFilters, filters }: DashboardHe
 
       </div>
 
-      {/* Applied filters */}
       <FiltersApplied filters={filters} />
 
     </div>
