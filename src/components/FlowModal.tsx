@@ -21,8 +21,7 @@ const EMPTY_FLOW: FlowDraft = {
 };
 
 /**
- * The dialog for adding a flow, or editing one. It closes on Escape, and the page behind it doesn't
- * scroll.
+ * The dialog for adding a flow, or editing one.
  */
 export default function FlowModal ({ isOpen, onClose, onSave, flow, title = 'Add token flow' }: FlowModalProps) {
   const [currentFlow, setCurrentFlow] = useState<FlowDraft>(flow || EMPTY_FLOW);

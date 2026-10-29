@@ -159,7 +159,7 @@ export function useSettlementActions ({
       if (!contractValidationManager.isValidAddress(tokenAddress)) {
         throw new ContractValidationError('Invalid token address', tokenAddress, 'tokenAddress');
       }
-      // `false` describes the value as an amount in any error; an NFT's ID passes the same check.
+      // `false` makes any error call it an amount; an NFT's ID passes the same check.
       contractValidationManager.validateAmountOrId(amount, false);
     } catch (error) {
       if (error instanceof ContractValidationError) {

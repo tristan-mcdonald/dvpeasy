@@ -68,7 +68,7 @@ export const errorManager = {
   },
 
   /**
-   * Classify an error by viem's error classes, which wagmi's errors carry as their causes.
+   * Classifies an error by viem's error classes, which wagmi's errors carry as their causes.
    */
   parse (error: unknown, context: Record<string, unknown> = {}): ContractError {
     if (error instanceof ContractError) return error;
@@ -91,7 +91,7 @@ export const errorManager = {
   },
 
   /**
-   * Format an error for user display. Each kind has its own message, except the two which wrap an
+   * The message to show the user for an error. Each kind has its own, except the two which wrap an
    * error `parse` couldn't name, whose cause can say more: the DVP contract's custom error, or the
    * one-line summary from viem or wagmi.
    */
@@ -116,7 +116,7 @@ export const errorManager = {
   },
 
   /**
-   * Parse and log an error, and return the message to show the user.
+   * Parses and logs an error, and returns the message to show the user.
    */
   report (error: unknown, context: Record<string, unknown> = {}): string {
     const parsedError = this.parse(error, context);

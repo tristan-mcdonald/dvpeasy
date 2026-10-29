@@ -13,9 +13,8 @@ interface TokenLogoResolverProps {
 type ImageState = 'oneinch' | 'trustwallet' | 'local' | 'custom' | 'fallback';
 
 /**
- * A token's logo, trying each source in turn as one fails to load: the token list's logo, Trust
- * Wallet's, then the app's own icon for its symbol, then a generic icon. Custom tokens always get
- * the generic icon, and ETH and wrapped ETH the app's own.
+ * A token's logo in the token selector, from the same sources in the same order as `TokenLogo`.
+ * Custom tokens always get the generic icon, and ETH and wrapped ETH the app's own.
  */
 export const TokenLogoResolver = memo<TokenLogoResolverProps>(({
   token,

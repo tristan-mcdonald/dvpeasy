@@ -53,7 +53,7 @@ const BigIntFromStringSchema = z.union([
 // A cutoff date from the date picker, which must be in the future, as a timestamp in seconds.
 const FutureDateSchema = z.string()
   .transform((val, ctx) => {
-    // Handle both 'Y-m-d H:i' format and ISO format.
+    // Accepts the date picker's `Y-m-d H:i`, or ISO.
     const isoDateString = val.includes('T') ? val : val.replace(' ', 'T') + ':00';
     const date = new Date(isoDateString);
 
@@ -135,8 +135,7 @@ export const contractValidationManager = {
   },
 
   /**
-   * Checks the create form, throwing one error which lists every problem. Flow amounts stay as
-   * typed, to be parsed with their tokens' decimals.
+   * Checks the create form, throwing one error which lists every problem.
    */
   validateSettlementForSubmission (input: {
     flows: FlowDraft[];

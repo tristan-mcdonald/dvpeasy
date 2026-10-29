@@ -145,7 +145,6 @@ function AppContent () {
             } />
           </Route>
 
-          {/* Any other path. */}
           <Route
           path="*"
           element={

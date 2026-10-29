@@ -54,7 +54,6 @@ export default function SettlementApprovals ({
       singularName="party"
       pluralName="parties" />
       <div className="fade-container">
-        {/* Loading spinner that fades in when loading. */}
         <div className={`fade-loading ${shouldShowLoadingState ? 'fade-in' : ''} ${isInitialLoad ? 'initial-load' : ''}`}>
           <div className="flex items-center gap-2">
             <Loader2 className="size-4 animate-spin" />
@@ -62,7 +61,6 @@ export default function SettlementApprovals ({
           </div>
         </div>
 
-        {/* Content that fades out when loading. */}
         <div className={`fade-content ${shouldShowLoadingState ? 'fade-out' : ''} ${isInitialLoad ? 'initial-load' : ''}`}>
           <div className="space-y-4">
             {filteredPartyStatuses.length === 0 && !shouldShowLoadingState ? (

@@ -47,8 +47,8 @@ function isMetaMaskPage (url: string): boolean {
  */
 export const metaMaskTestManager = {
   /**
-   * Approves each switch of network MetaMask asks for, through Synpress and then by clicking the
-   * confirmation itself, since MetaMask can ask more than once. Returns how many it approved by clicking.
+   * Approves each switch of network MetaMask asks for, which can be more than one, through Synpress
+   * and then by clicking the confirmation. Returns how many needed a click.
    */
   async approveNetworkSwitch (
     metamask: MetaMask,

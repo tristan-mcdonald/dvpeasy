@@ -17,9 +17,8 @@ interface EtherApprovalRowProps {
 }
 
 /**
- * A row of a party's approval card for the ETH it must send, which it deposits by approving the
- * settlement. While the settlement is open the party can revoke its approval, and once it has
- * expired, withdraw the ETH.
+ * A row of a party's approval card for the ETH it deposits by approving, which it can revoke while
+ * the settlement is open, or withdraw once it has expired.
  */
 export default function EtherApprovalRow ({
   partyStatus,

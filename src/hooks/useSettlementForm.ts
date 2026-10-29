@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { utilityManager } from '../lib/utils';
 
 /**
- * The create form's settlement fields. The cutoff date starts four hours ahead.
+ * The create form's settlement fields, with the cutoff date four hours ahead.
  */
 export function useSettlementForm () {
   const [cutoffDate, setCutoffDate] = useState(() => {

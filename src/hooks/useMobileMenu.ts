@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Whether the mobile menu is open. It closes on Escape and on navigation, and the page behind it
- * doesn't scroll while it's open.
+ * Whether the mobile menu is open. It closes on Escape and navigation, and locks the page's scroll.
  */
 export function useMobileMenu () {
   const location = useLocation();

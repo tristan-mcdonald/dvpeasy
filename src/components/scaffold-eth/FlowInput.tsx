@@ -114,7 +114,6 @@ export const FlowInput: FC<FlowInputProps> = ({
               <span className="font-mono">{tokenSymbol || 'tokens'}</span>
             </div>
           )}
-          {/* NFT thumbnail with modal dialog */}
           {assetType === AssetType.ERC721 && flow.token && flow.amount && !amountError && !error && (
             <>
               <div className="absolute inset-y-0 right-2 flex items-center">
