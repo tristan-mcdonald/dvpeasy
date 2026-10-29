@@ -30,46 +30,17 @@ export function useSettlementCreation () {
   const fetchTokenMetadata = useFetchTokenMetadata();
 
   /**
-   * Verify asset type and parse token amount for a flow.
+   * A validated flow as the contract takes it, with its type and amount from the token's details.
    */
-  const verifyAndParseFlow = async (flow: ValidatedFlowDraft): Promise<Flow> => {
-    // Double-check asset type detection for accuracy.
+  const parseFlow = async (flow: ValidatedFlowDraft): Promise<Flow> => {
     const metadata = await fetchTokenMetadata(flow.token);
-    const detectedIsNFT = metadata.assetType === AssetType.ERC721;
-
-    if (detectedIsNFT !== flow.isNFT) {
-      logger.warn(`Asset type mismatch for ${flow.token}: detected=${detectedIsNFT}, provided=${flow.isNFT}`);
-    }
-
     return {
       token: flow.token,
-      isNFT: flow.isNFT,
+      isNFT: metadata.assetType === AssetType.ERC721,
       from: flow.from,
       to: flow.to,
       amountOrId: tokenManager.parseAmount(flow.amount, metadata),
     };
-  };
-
-  /**
-   * Double-check asset types as a defensive measure against detection failures.
-   */
-  const verifyAssetTypes = async (flows: FlowDraft[]): Promise<boolean> => {
-    // Defensive check to ensure asset types match blockchain state.
-    for (let i = 0; i < flows.length; i++) {
-      const flow = flows[i];
-      try {
-        const { assetType } = await fetchTokenMetadata(flow.token);
-        const detectedIsNFT = assetType === AssetType.ERC721;
-
-        if (detectedIsNFT !== flow.isNFT) {
-          toast.error(`Flow ${i + 1}: Asset type mismatch. Token appears to be ${detectedIsNFT ? 'NFT' : 'ERC20'} but marked as ${flow.isNFT ? 'NFT' : 'ERC20'}.`);
-          return false;
-        }
-      } catch (error) {
-        logger.warn(`Could not verify asset type for flow ${i + 1}:`, error);
-      }
-    }
-    return true;
   };
 
   /**
@@ -101,18 +72,11 @@ export function useSettlementCreation () {
       return;
     }
 
-    // Double-check asset types in case initial detection failed or was bypassed.
-    const assetTypesValid = await verifyAssetTypes(flows);
-    if (!assetTypesValid) {
-      return;
-    }
-
     setIsLoading(true);
     const toastId = toast.loading('Creating settlement…');
 
     try {
-      // Verify and parse each flow to get proper amountOrId values.
-      const parsedFlows = await Promise.all(validatedSettlement.validatedFlows.map(verifyAndParseFlow));
+      const parsedFlows = await Promise.all(validatedSettlement.validatedFlows.map(parseFlow));
 
       let hash: `0x${string}`;
       try {
