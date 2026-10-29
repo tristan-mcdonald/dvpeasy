@@ -124,7 +124,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   useSaveCustomToken({
     address: debouncedAddress,
     listedTokens: availableTokens,
-    isLoadingList: isLoadingTokenData,
+    isListReady: !isLoadingTokenData && !tokenDataError,
   });
 
   // The dropdown lists the user's custom tokens apart from the network's.
