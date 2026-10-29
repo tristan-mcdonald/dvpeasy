@@ -3,6 +3,7 @@ import { Loader2, X } from 'lucide-react';
 import { forwardRef, ReactNode } from 'react';
 import { networkLinks } from '../../lib/network-links';
 import { isAddress } from 'viem';
+import { ListedToken } from '../../types/tokens';
 import { networks } from '../../config/networks';
 import { useAccount } from 'wagmi';
 import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
@@ -93,6 +94,7 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     isCustomToken,
     handleRemoveCustomToken,
     getStoredTokenData,
+    getCustomTokens,
   } = useTokenSelection({ value, onChange });
 
   // Token balance and metadata.
@@ -119,24 +121,20 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     refetch: refetchTokenData,
   } = useTokenData(chainId, 100);
 
-  // Perform search when user types in input.
-  const isSearching = inputValue.trim().length > 0;
-  const searchResults = isSearching
-    ? searchTokens(inputValue, { limit: 20, includeCustomTokens: true })
-    : null;
-
   useSaveCustomToken({
     address: debouncedAddress,
-    symbol: tokenSymbol,
-    assetType,
     listedTokens: availableTokens,
     isLoadingList: isLoadingTokenData,
   });
 
   // The dropdown lists the user's custom tokens apart from the network's.
-  const allTokensToDisplay = isSearching ? searchResults?.tokens || [] : availableTokens || [];
-  const customTokensToDisplay = allTokensToDisplay.filter(isCustomToken);
-  const tokensToDisplay = allTokensToDisplay.filter(token => !isCustomToken(token));
+  const allTokensToDisplay = inputValue.trim()
+    ? searchTokens(inputValue, { limit: 20, includeCustomTokens: true }).tokens
+    : availableTokens;
+  const customTokenAddresses = new Set(getCustomTokens().map(token => token.address.toLowerCase()));
+  const isCustom = (token: ListedToken) => customTokenAddresses.has(token.address.toLowerCase());
+  const customTokensToDisplay = allTokensToDisplay.filter(isCustom);
+  const tokensToDisplay = allTokensToDisplay.filter(token => !isCustom(token));
 
   return (
     <div className="flex-auto">
@@ -173,17 +171,19 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
         </div>
 
         {isDropdownOpen && (
-          <TokenDropdown
-          customTokens={customTokensToDisplay}
-          hasError={Boolean(tokenDataError)}
-          isLoading={isLoadingTokenData}
-          listHeading={`Tokens (${networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`})`}
-          listedTokens={tokensToDisplay}
-          onRemoveCustomToken={token => handleRemoveCustomToken(token.address, refetchTokenData)}
-          onRetry={refetchTokenData}
-          onSelect={handleTokenSelect}
-          searchText={inputValue}
-          selectedValue={value} />
+          <div className={TOKEN_CONTAINER_CLASSES.dropdown}>
+            <TokenDropdown
+            customTokens={customTokensToDisplay}
+            hasError={Boolean(tokenDataError)}
+            isLoading={isLoadingTokenData}
+            listedTokens={tokensToDisplay}
+            networkName={networks.byChainId(chainId)?.displayName ?? `Chain ${chainId}`}
+            onRemoveCustomToken={token => handleRemoveCustomToken(token.address, refetchTokenData)}
+            onRetry={refetchTokenData}
+            onSelect={handleTokenSelect}
+            searchText={inputValue}
+            selectedValue={value} />
+          </div>
         )}
       </div>
 
