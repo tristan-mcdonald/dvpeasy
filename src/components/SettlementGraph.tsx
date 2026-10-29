@@ -4,7 +4,6 @@ import { drag } from 'd3-drag';
 import { FlowForDisplay } from '../types/settlement';
 import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
 import { select, Selection } from 'd3-selection';
-import { TokenForDisplay } from '../hooks/useTokensForDisplay';
 import { utilityManager } from '../lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { zoom, zoomIdentity } from 'd3-zoom';
@@ -46,10 +45,9 @@ type D3DragEventLocal = D3DragEvent<SVGGElement, D3SimulationNode, D3SimulationN
 
 interface SettlementGraphProps {
   flows: FlowForDisplay[];
-  tokensForDisplay: Record<string, TokenForDisplay>;
 }
 
-export default function SettlementGraph ({ flows, tokensForDisplay }: SettlementGraphProps) {
+export default function SettlementGraph ({ flows }: SettlementGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInteractionEnabled, setIsInteractionEnabled] = useState<boolean>(false);
@@ -778,7 +776,7 @@ export default function SettlementGraph ({ flows, tokensForDisplay }: Settlement
       // Stop the D3.js simulation.
       simulation.stop();
     };
-  }, [flows, tokensForDisplay]);
+  }, [flows]);
 
   // Handle click events to enable/disable interactions.
   useEffect(() => {

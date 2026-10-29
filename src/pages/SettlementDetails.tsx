@@ -101,9 +101,7 @@ export default function SettlementDetails () {
         <SettlementFlows
         flows={flowsForDisplay}
         tokensForDisplay={tokensForDisplay} />
-        <SettlementGraph
-        flows={flowsForDisplay}
-        tokensForDisplay={tokensForDisplay} />
+        <SettlementGraph flows={flowsForDisplay} />
         <SettlementApprovals
         approvingToken={approvingToken}
         currentUserAddress={address}
