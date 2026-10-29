@@ -9,62 +9,28 @@ import { useAccount } from 'wagmi';
 import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 import { useDebounce } from 'use-debounce';
 import { useTokenData } from '../../hooks/useTokenData';
-
-// Extracted components.
 import { TokenDetailsContent } from './components/TokenDetailsContent';
 import { TokenDropdown } from './components/TokenDropdown';
-
-// Custom hooks.
 import { useSaveCustomToken } from './hooks/useSaveCustomToken';
 import { useTokenBalance } from './hooks/useTokenBalance';
 import { useTokenSelection } from './hooks/useTokenSelection';
-
-// Utilities.
 import { TOKEN_CONTAINER_CLASSES, TOKEN_BUTTON_CLASSES } from './utils/tokenSizeUtils';
 
-/**
- * Props for the TokenSelect component.
- */
 interface TokenSelectProps {
-  /** Current selected token value (address) */
   value: string;
-  /** Callback when token selection changes */
   onChange: (value: string) => void;
-  /** Label text for the input field */
   label: string;
-  /** Placeholder text for the input field */
   placeholder?: string;
-  /** Optional icon to display with the label */
   icon?: ReactNode;
-  /** Optional address to check balance for (overrides connected address) */
+  // The flow's sender, whose balance is shown instead of the connected wallet's.
   addressForBalance?: string;
-  /** Error message to display */
   error?: string | null;
 }
 
 /**
- * TokenSelect component for selecting tokens with comprehensive search and management features.
- *
- * Provides token selection with:
- * - Real-time search across available tokens
- * - Custom token management (add/remove)
- * - Balance display for selected tokens
- * - Token logo display with fallback system
- * - Clipboard integration and blockchain explorer links
- *
- * @param props - Component props
- * @returns JSX element representing the token selection interface
- *
- * @example
- * ```tsx
- * <TokenSelect
- * value={selectedToken}
- * onChange={setSelectedToken}
- * label="Select Token"
- * placeholder="Search tokens or enter address…"
- * addressForBalance="0x123…"
- * error={validationError} />
- * ```
+ * A field for choosing a token: a search over the network's token list and the user's custom
+ * tokens, or an address typed or pasted in. Below it, the chosen token's details and the sender's
+ * balance of it.
  */
 export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   value,
@@ -78,12 +44,10 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
   const { address } = useAccount();
   const { chainId } = useCurrentNetwork().network;
 
-  // Use addressForBalance if provided, otherwise fall back to connected address.
   const balanceAddress = addressForBalance || address;
 
   const [debouncedAddress] = useDebounce(value, 500);
 
-  // Token selection state and handlers.
   const {
     inputValue,
     isDropdownOpen,
@@ -97,7 +61,6 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     getCustomTokens,
   } = useTokenSelection({ value, onChange });
 
-  // Token balance and metadata.
   const {
     tokenSymbol,
     isLoadingSymbol,
@@ -112,7 +75,6 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
     storedTokenData: getStoredTokenData(),
   });
 
-  // Unified token data that provides both dropdown tokens and search functionality.
   const {
     tokens: availableTokens,
     searchTokens,
@@ -138,14 +100,12 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
 
   return (
     <div className="flex-auto">
-      {/* Label. */}
       {icon ? (
         <LabelWithIcon icon={<span className="size-4">{icon}</span>} htmlFor='tokenAddress'>{label}</LabelWithIcon>
       ) : (
         <label className="block label mb-2">{label}</label>
       )}
 
-      {/* Token input with dropdown. */}
       <div
       className="relative w-full"
       ref={comboBoxRef}>
@@ -187,7 +147,6 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
         )}
       </div>
 
-      {/* Token details. */}
       <div className={TOKEN_CONTAINER_CLASSES.details}>
         {isAddress(debouncedAddress) ? (
           isLoadingSymbol ? (
@@ -222,7 +181,6 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
         )}
       </div>
 
-      {/* Testnet notices. */}
       {networks.byChainId(chainId)?.isTestnet && (
         <span className="block !mt-2 text-xs text-text-label">
           You're on a test network. You can get test tokens{' '}
@@ -233,7 +191,6 @@ export const TokenSelect = forwardRef<HTMLInputElement, TokenSelectProps>(({
         </span>
       )}
 
-      {/* Error display. */}
       {error && (
         <span className="block !mt-2 text-error font-xs">{error}</span>
       )}

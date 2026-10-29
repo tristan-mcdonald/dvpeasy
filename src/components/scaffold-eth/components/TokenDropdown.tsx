@@ -18,8 +18,8 @@ interface TokenDropdownProps {
 }
 
 /**
- * The contents of the token selector's dropdown: the user's custom tokens, then the network's tokens or the search
- * results, with loading and error states.
+ * The contents of the token selector's dropdown: the user's custom tokens, then the network's
+ * tokens or the search results, with loading and error states.
  */
 export function TokenDropdown ({
   customTokens,

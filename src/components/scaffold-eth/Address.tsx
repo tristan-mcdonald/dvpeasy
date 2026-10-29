@@ -17,6 +17,9 @@ interface AddressProps {
   className?: string;
 }
 
+/**
+ * An address, or its ENS name, with buttons to copy it and open it in the block explorer.
+ */
 const Address = memo(({
   address,
   showCopy = true,
@@ -29,24 +32,22 @@ const Address = memo(({
   const hasInitiallyLoadedRef = useRef(false);
   const { chainId } = useCurrentNetwork().network;
 
-  // ENS resolution with safeguards to prevent infinite loops.
+  // ENS names are registered on Ethereum mainnet, whichever network the app is on.
   const { data: ensName, isLoading: ensLoading } = useEnsName({
     address: isAddress(address) ? address as `0x${string}` : undefined,
-    chainId: 1, // Only resolve on Ethereum mainnet for ENS.
+    chainId: 1,
     query: {
       enabled: isAddress(address) && hasInitiallyLoadedRef.current,
-      staleTime: 60 * 1000, // Cache for 1 minute.
-      refetchOnWindowFocus: false, // Prevent refetch on focus.
-      refetchOnMount: false, // Only fetch once per mount.
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
     },
   });
 
   const isLoading = ensLoading && !hasInitiallyLoadedRef.current;
 
-  // Compute display address without causing re-renders.
   const displayAddress = useMemo(() => {
     if (isAddress(address)) {
-      // Show ENS name if available, otherwise show the address.
       if (ensName && !showFull) {
         return ensName;
       }
@@ -56,22 +57,18 @@ const Address = memo(({
     }
   }, [address, showFull, ensName]);
 
-  // Mark as initially loaded - this effect only runs once per component instance.
   useEffect(() => {
     if (!hasInitiallyLoadedRef.current) {
       hasInitiallyLoadedRef.current = true;
     }
   }, []);
 
-  // Get the block explorer URL for the current chain and address.
   const blockExplorerUrl = networkLinks.address(chainId, address);
 
-  // Only show loading spinner on initial load, not during background refetches.
   if (isLoading && !hasInitiallyLoadedRef.current) {
     return <Loader2 className="size-4 animate-spin" />;
   }
 
-  // Determine if the address is truncated.
   const isTruncated = isAddress(address) && !ensName && !showFull;
 
   return (

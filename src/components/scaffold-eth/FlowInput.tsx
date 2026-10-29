@@ -19,6 +19,10 @@ interface FlowInputProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
+/**
+ * One flow's fields in the flow dialog: sender, receiver, token, and the amount or NFT ID, which is
+ * checked against the token's type.
+ */
 export const FlowInput: FC<FlowInputProps> = ({
   flow,
   onChange,
@@ -38,7 +42,7 @@ export const FlowInput: FC<FlowInputProps> = ({
     }
   }, [assetType, flow, onChange]);
 
-  // Track overall validation state and communicate to parent.
+  // Tells the dialog whether the flow can be added.
   useEffect(() => {
     if (onValidationChange) {
       const isValid =

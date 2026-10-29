@@ -8,33 +8,18 @@ import { TokenBalance } from './TokenBalance';
 import { TokenLogoResolver } from './TokenLogoResolver';
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 
-/**
- * Props for the TokenDetailsContent component.
- */
 interface TokenDetailsContentProps {
-  /** The token address being displayed */
   debouncedAddress: string;
-  /** Token symbol for display */
   tokenSymbol: string;
-  /** Current chain ID */
   chainId: number;
-  /** The address whose balance is being displayed */
   balanceAddress?: string;
-  /** Optional custom address for balance display */
   addressForBalance?: string;
-  /** The type of asset (ERC20, ERC721, ETH) */
   assetType: AssetType | null;
-  /** Whether NFT balance is currently loading */
   isLoadingNftBalance: boolean;
-  /** NFT balance value (for ERC721 tokens) */
   nftBalance: bigint | null;
-  /** Whether ERC20/ETH balance is currently loading */
   isLoadingBalance: boolean;
-  /** User balance data from wagmi useBalance hook */
   userBalance: { formatted: string; symbol?: string } | undefined;
-  /** Whether this is a custom token */
   isCustomToken: boolean;
-  /** Stored token data from selection (includes logo URLs) */
   storedTokenData?: {
     address: string;
     symbol?: string;
@@ -46,34 +31,8 @@ interface TokenDetailsContentProps {
 }
 
 /**
- * TokenDetailsContent component for displaying comprehensive token information.
- *
- * Shows:
- * - Token logo with fallback system
- * - Token symbol and basic information
- * - `Copy address` and `view on block explorer` buttons
- * - Balance information based on asset type
- *
- * Features:
- * - Clipboard integration for address copying
- * - External link to block explorer for token verification
- * - Contextual balance display based on asset type
- * - Memoized for performance optimization
- *
- * @param props - Component props
- * @returns JSX element representing the token details panel
- *
- * @example
- * ```tsx
- * <TokenDetailsContent
- * debouncedAddress="0x123…"
- * tokenSymbol="DAI"
- * chainId={1}
- * assetType={AssetType.ERC20}
- * isCustomToken={false}
- * // …other props
- * />
- * ```
+ * The chosen token in the token selector: its logo and symbol, buttons to copy its address and
+ * open it in the block explorer, and a balance of it.
  */
 export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
   debouncedAddress,
@@ -91,7 +50,6 @@ export const TokenDetailsContent = memo<TokenDetailsContentProps>(({
 }) => {
   const { copiedText, copy } = useCopyToClipboard();
 
-  // Get the block explorer URL for the current chain and token address.
   const blockExplorerUrl = networkLinks.address(chainId, debouncedAddress);
 
   return (

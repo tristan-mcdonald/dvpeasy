@@ -4,49 +4,17 @@ import { memo, ReactNode } from 'react';
 import { TOKEN_CONTAINER_CLASSES } from '../utils/tokenSizeUtils';
 import { TokenLogoResolver } from './TokenLogoResolver';
 
-/**
- * Props for the TokenListItem component.
- */
 interface TokenListItemProps {
-  /** Token metadata to display */
   token: ListedToken;
-  /** Currently selected token value for comparison */
   selectedValue: string;
-  /** Whether this is a custom token */
   isCustomToken: boolean;
-  /** Callback when token is selected */
   onSelect: (token: ListedToken) => void;
-  /** Optional additional actions (e.g., remove button for custom tokens) */
   actions?: ReactNode;
 }
 
 /**
- * TokenListItem component for rendering individual token entries in dropdowns.
- *
- * Provides consistent rendering for both custom and available tokens with:
- * - Token logo with fallback system
- * - Symbol and name display
- * - Token address display
- * - Selection indicator
- * - Optional action buttons
- *
- * Features:
- * - Consistent styling and interaction patterns
- * - Support for additional actions (remove, etc.)
- * - Selection state indication
- * - Memoized for performance optimization
- *
- * @param props - Component props
- * @returns JSX element representing a selectable token list item
- *
- * @example
- * ```tsx
- * <TokenListItem
- * token={tokenMetadata}
- * selectedValue="0x123…"
- * isCustomToken={false}
- * onSelect={handleTokenSelect} />
- * ```
+ * A token in the selector's dropdown, with a tick if it's the selected one, and any actions, such
+ * as removing a custom token, beside it.
  */
 export const TokenListItem = memo<TokenListItemProps>(({
   token,
