@@ -37,6 +37,7 @@ const Address = memo(({
     address: isAddress(address) ? address as `0x${string}` : undefined,
     chainId: 1,
     query: {
+      // Enabled only on a render after the first, which was meant to stop a render loop.
       enabled: isAddress(address) && hasInitiallyLoadedRef.current,
       staleTime: 60 * 1000,
       refetchOnWindowFocus: false,

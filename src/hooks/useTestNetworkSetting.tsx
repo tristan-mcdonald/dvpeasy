@@ -14,7 +14,7 @@ export function useTestNetworkSetting () {
     if (stored !== null) {
       setShowTestNetworks(stored === 'true');
     } else {
-      // Test networks are shown until the user turns them off.
+      // Test networks are shown by default while the app is in development.
       setShowTestNetworks(true);
       localStorage.setItem(TEST_NETWORK_SETTING_KEY, 'true');
     }

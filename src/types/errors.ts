@@ -23,7 +23,8 @@ export class NetworkError extends ContractError {
 }
 
 /**
- * An error `errorManager.parse` couldn't name.
+ * An error with no more specific class: one `errorManager.parse` couldn't name, or a settlement
+ * ID which isn't a number.
  */
 export class InvalidDataError extends ContractError {
   readonly type = 'INVALID_DATA';

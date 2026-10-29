@@ -22,7 +22,7 @@ interface TokenSelectProps {
   label: string;
   placeholder?: string;
   icon?: ReactNode;
-  // The flow's sender, whose balance is shown instead of the connected wallet's.
+  /** The flow's sender, whose balance is shown instead of the connected wallet's. */
   addressForBalance?: string;
   error?: string | null;
 }

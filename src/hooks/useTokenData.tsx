@@ -202,9 +202,9 @@ function mergeAndRankTokens (
 }
 
 /**
- * The tokens offered in the token selector on a chain, with the user's custom tokens after them,
- * and a search over both. Main networks use 1inch's token list; test networks list their test
- * tokens.
+ * The first `limit` tokens offered in the token selector on a chain, with the user's custom tokens
+ * after the network's, and a search over both. Main networks use 1inch's token list; test networks
+ * list their test tokens.
  */
 export function useTokenData (chainId: number, limit: number = 100) {
   const {

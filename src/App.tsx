@@ -51,8 +51,8 @@ function AppContent () {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // GitHub Pages serves `public/404.html` for a path it doesn't have, which sends the browser to `/`
-  // with the path in the query string. `index.html` saves the path, and this goes back to it.
+  // GitHub Pages serves `public/404.html` for a path it doesn't have, which sends the browser to
+  // `/` with the path in the query string. `index.html` saves the path, and this goes back to it.
   useEffect(() => {
     const redirect = sessionStorage.getItem('redirect');
     if (redirect) {

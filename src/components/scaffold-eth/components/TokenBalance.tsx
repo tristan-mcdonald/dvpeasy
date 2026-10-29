@@ -3,9 +3,9 @@ import { memo } from 'react';
 import { tokenManager } from '../../../lib/token-manager';
 
 interface TokenBalanceProps {
-  // The address whose balance is shown: the flow's sender, or else the connected wallet.
+  /** The address whose balance is shown: the flow's sender, or else the connected wallet. */
   balanceAddress?: string;
-  // Set when the balance is the flow's sender's, which changes the wording.
+  /** Set when the balance is the flow's sender's, which changes the wording. */
   addressForBalance?: string;
   assetType: AssetType | null;
   isLoadingNftBalance: boolean;

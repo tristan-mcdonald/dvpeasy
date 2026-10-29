@@ -63,7 +63,8 @@ export default function SettlementDetails () {
     onSuccess: refresh,
   });
 
-  // A settlement which doesn't exist shows its error for two seconds, then goes to the dashboard.
+  // A settlement whose first read fails, for any reason, shows its error for two seconds, then the
+  // page goes to the dashboard.
   useEffect(() => {
     if (!isLoading && error && !settlement) {
       const timer = setTimeout(() => {

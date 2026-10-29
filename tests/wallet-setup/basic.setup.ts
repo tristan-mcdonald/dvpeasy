@@ -4,7 +4,8 @@ import { getExtensionId, MetaMask } from '@synthetixio/synpress/playwright';
 // The public Hardhat test wallet, unless the environment gives another.
 const WALLET_SEED_PHRASE: string = process.env.WALLET_SEED_PHRASE || 'test test test test test test test test test test test junk';
 const WALLET_PASSWORD: string = process.env.WALLET_PASSWORD || 'Tester@1234';
-const WALLET_PRIVATE_KEY: string = process.env.WALLET_PRIVATE_KEY || ''; // Optional: a funded Sepolia account to import as well.
+// Optional: the private key of the Sepolia test account 0x2f…98710F, to import as well.
+const WALLET_PRIVATE_KEY: string = process.env.WALLET_PRIVATE_KEY || '';
 
 // Synpress names its wallet cache by a hash of this function without its comments, so a change to
 // its code means rebuilding the cache with `yarn test:e2e:setup-wallet`.
