@@ -1,13 +1,6 @@
-/**
- * Custom token storage utilities for the TokenSelect component.
- * Handles user-defined tokens stored in localStorage with network-aware management.
- */
 import { ListedToken } from '../types/tokens';
 import { logger } from './logger';
 
-/**
- * localStorage utilities for managing custom tokens.
- */
 const CUSTOM_TOKENS_KEY = 'dvp-custom-tokens';
 
 export interface CustomTokensStorage {
@@ -15,10 +8,10 @@ export interface CustomTokensStorage {
   lastUpdated: number;
 }
 
+/**
+ * Tokens the user has added in the token selector, kept in `localStorage` by chain ID.
+ */
 export const tokenStorage = {
-  /**
-   * Initialize or load storage.
-   */
   _getStorage (): CustomTokensStorage {
     try {
       const stored = localStorage.getItem(CUSTOM_TOKENS_KEY);
@@ -43,9 +36,6 @@ export const tokenStorage = {
   },
 
 
-  /**
-   * Save custom tokens for a specific chain.
-   */
 _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
     try {
       const data = this._getStorage();
@@ -57,9 +47,6 @@ _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
     }
   },
 
-/**
-   * Load custom tokens for a specific chain.
-   */
   getCustomTokensForChain (chainId: number): ListedToken[] {
     try {
       const data = this._getStorage();
@@ -71,16 +58,11 @@ _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
   },
 
 
-  /**
-   * Add a new custom token for a specific chain.
-   */
   addCustomTokenForChain (token: ListedToken, chainId: number): ListedToken[] {
     const existing = this.getCustomTokensForChain(chainId);
 
-    // Ensure token has chainId set.
     const tokenWithChainId = { ...token, chainId };
 
-    // Check if token already exists (by address and chainId).
     const exists = existing.some(existingToken =>
       existingToken.address.toLowerCase() === tokenWithChainId.address.toLowerCase() &&
       existingToken.chainId === chainId,
@@ -96,9 +78,6 @@ _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
   },
 
 
-  /**
-   * Search custom tokens by symbol, name, or address for a specific chain.
-   */
   searchCustomTokens (query: string, chainId: number): ListedToken[] {
     const customTokens = this.getCustomTokensForChain(chainId);
     const searchTerm = query.toLowerCase().trim();
@@ -114,9 +93,6 @@ _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
     );
   },
 
-  /**
-   * Remove a custom token by address from a specific chain.
-   */
   removeCustomTokenFromChain (address: string, chainId: number): ListedToken[] {
     const existing = this.getCustomTokensForChain(chainId);
     const updated = existing.filter(token =>
@@ -126,16 +102,10 @@ _saveCustomTokensForChain (chainId: number, tokens: ListedToken[]): void {
     return updated;
   },
 
-  /**
-   * Clear all custom tokens for a specific chain.
-   */
   clearCustomTokensForChain (chainId: number): void {
     this._saveCustomTokensForChain(chainId, []);
   },
 
-  /**
-   * Get storage statistics for debugging and monitoring.
-   */
 getStorageStats (): {
     totalCustomTokens: number;
     chainBreakdown: Record<number, number>;
@@ -144,7 +114,6 @@ getStorageStats (): {
       const data = this._getStorage();
       const chainBreakdown: Record<number, number> = {};
 
-      // Count tokens per chain.
       Object.entries(data.chainTokens).forEach(([chainId, tokens]) => {
         chainBreakdown[Number(chainId)] = tokens.length;
       });

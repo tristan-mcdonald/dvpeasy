@@ -139,9 +139,6 @@ export const errorManager = {
     };
   },
 
-  /**
-   * Log an error with context.
-   */
   log (error: ContractError, context?: Record<string, unknown>): void {
     const errorInfo = this.debugInfo(error);
     const fullContext = {

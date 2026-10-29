@@ -1,13 +1,9 @@
 import React from 'react';
 
 /**
- * Utility manager for general utility functions.
- * Provides methods for input handling, address formatting, date formatting, and comparison.
+ * Small helpers for text inputs, addresses, dates and comparing values.
  */
 export const utilityManager = {
-  /**
-   * Handle trimming whitespace from input values on blur.
-   */
   handleInputBlur (
     event: React.FocusEvent<HTMLInputElement>,
     onChange: (value: string) => void,
@@ -19,7 +15,7 @@ export const utilityManager = {
   },
 
   /**
-   * Create input props with onChange and onBlur handlers for trimming.
+   * Props for a controlled text input which trims its value when it loses focus.
    */
   createTrimmedInputProps (
     value: string,
@@ -33,7 +29,7 @@ export const utilityManager = {
   },
 
   /**
-   * Shorten an address for display purposes.
+   * Shortens an address to its first and last `length` characters.
    */
   shortenAddress (address: string, length: number = 6): string {
     if (!address || address.length <= length * 2) return address;
@@ -41,7 +37,7 @@ export const utilityManager = {
   },
 
   /**
-   * Format date as 'Y-m-d H:i' to match Flatpickr format.
+   * Formats a date in local time as `Y-m-d H:i`, the format the date picker is set up with.
    */
   formatDateForFlatpickr (date: Date): string {
     const year = date.getFullYear();
@@ -53,29 +49,23 @@ export const utilityManager = {
   },
 
   /**
-   * Deep comparison of two values to determine if they are equal.
-   * Handles objects, arrays, primitives, and special cases like Date objects.
+   * Whether two values are deeply equal, comparing dates by their time.
    */
   isEqual (a: unknown, b: unknown): boolean {
-    // Handle simple cases first
     if (a === b) return true;
     if (a === null || b === null) return a === b;
     if (a === undefined || b === undefined) return a === b;
 
-    // Handle different types
     const typeA = typeof a;
     const typeB = typeof b;
     if (typeA !== typeB) return false;
 
-    // Handle primitive types
     if (typeA !== 'object') return a === b;
 
-    // Handle Date objects
     if (a instanceof Date && b instanceof Date) {
       return a.getTime() === b.getTime();
     }
 
-    // Handle arrays
     if (Array.isArray(a) && Array.isArray(b)) {
       if (a.length !== b.length) return false;
       for (let i = 0; i < a.length; i++) {
@@ -84,7 +74,6 @@ export const utilityManager = {
       return true;
     }
 
-    // Handle objects
     if (!Array.isArray(a) && !Array.isArray(b)) {
       const keysA = Object.keys(a as object);
       const keysB = Object.keys(b as object);
@@ -99,7 +88,7 @@ export const utilityManager = {
       return true;
     }
 
-    // Different types of objects
+    // One is an array and the other isn't.
     return false;
   },
 };

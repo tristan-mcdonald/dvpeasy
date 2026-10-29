@@ -15,7 +15,7 @@ export interface NFTMetadata {
   }>;
 }
 
-// IPFS gateway fallbacks in order of preference.
+// Public gateways for `ipfs://` URIs, of which `normalizeIPFSUri` uses the first.
 const IPFS_GATEWAYS = [
   'https://gateway.pinata.cloud/ipfs/',
   'https://ipfs.io/ipfs/',
@@ -30,9 +30,6 @@ class NFTMetadataError extends Error {
   }
 }
 
-/**
- * Normalizes IPFS URIs to use HTTP gateways.
- */
 function normalizeIPFSUri (uri: string): string {
   if (uri.startsWith('ipfs://')) {
     const hash = uri.replace('ipfs://', '');
@@ -42,7 +39,7 @@ function normalizeIPFSUri (uri: string): string {
 }
 
 /**
- * Fetches JSON data from a URI with timeout and error handling.
+ * Fetches and parses JSON, aborting the request after the timeout.
  */
 async function fetchWithTimeout (url: string, timeoutMs = 10000): Promise<unknown> {
   const controller = new AbortController();
@@ -73,13 +70,9 @@ async function fetchWithTimeout (url: string, timeoutMs = 10000): Promise<unknow
 }
 
 /**
- * NFT manager for NFT metadata and image operations.
- * Provides methods for fetching NFT metadata, images, and preloading functionality.
+ * Reading an NFT's metadata and image through its token URI.
  */
 export const nftManager = {
-  /**
-   * Fetches the tokenURI for an NFT from the blockchain.
-   */
   async getTokenURI (tokenAddress: string, tokenId: string, chainId: number): Promise<string> {
     try {
       const uri = await publicClientFor(chainId).readContract({
@@ -103,29 +96,20 @@ export const nftManager = {
     }
   },
 
-  /**
-   * Fetches NFT metadata from a tokenURI.
-   */
   async fetchNFTMetadata (tokenAddress: string, tokenId: string, chainId: number): Promise<NFTMetadata> {
     try {
-      // Get tokenURI from contract.
       const tokenURI = await this.getTokenURI(tokenAddress, tokenId, chainId);
 
-      // Normalize IPFS URIs.
       const normalizedURI = normalizeIPFSUri(tokenURI);
 
-      // Fetch metadata JSON.
       const metadataResponse = await fetchWithTimeout(normalizedURI);
 
-      // Validate metadata structure.
       if (!metadataResponse || typeof metadataResponse !== 'object') {
         throw new Error('Invalid metadata format');
       }
 
-      // Type assertion for metadata.
       const metadata = metadataResponse as NFTMetadata;
 
-      // Normalize image URI if present.
       if (metadata.image) {
         metadata.image = normalizeIPFSUri(metadata.image);
       }
@@ -141,7 +125,7 @@ export const nftManager = {
   },
 
   /**
-   * Fetches just the image URL for an NFT.
+   * The NFT's image URL, or `null` if it has none or its metadata can't be read.
    */
   async fetchNFTImage (tokenAddress: string, tokenId: string, chainId: number): Promise<string | null> {
     try {
@@ -174,7 +158,7 @@ export const nftManager = {
   },
 
   /**
-   * Preloads an image to check if it's accessible.
+   * Whether the image at a URL loads.
    */
   preloadImage (src: string): Promise<boolean> {
     return new Promise((resolve) => {

@@ -1,8 +1,3 @@
-/**
- * Centralised logging service for the application.
- * Provides environment-aware logging with different log levels.
- */
-
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -14,6 +9,10 @@ interface LogContext {
   [key: string]: unknown
 }
 
+/**
+ * Logs to the console with a timestamp and level: every level in development, and only warnings
+ * and errors in production.
+ */
 class Logger {
   private isDevelopment: boolean;
   private currentLevel: LogLevel;
@@ -23,23 +22,14 @@ class Logger {
     this.currentLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
   }
 
-  /**
-   * Format a timestamp for log output.
-   */
   private formatTimestamp (): string {
     return new Date().toISOString();
   }
 
-  /**
-   * Format the log message with timestamp and level.
-   */
   private formatMessage (level: string, message: string): string {
     return `[${this.formatTimestamp()}] [${level}] ${message}`;
   }
 
-  /**
-   * Core logging method.
-   */
   private log (level: LogLevel, levelName: string, message: string, context?: LogContext): void {
     if (level < this.currentLevel) {
       return;
@@ -81,30 +71,18 @@ class Logger {
     }
   }
 
-  /**
-   * Debug level logging - only shown in development.
-   */
   debug (message: string, context?: LogContext): void {
     this.log(LogLevel.DEBUG, 'DEBUG', message, context);
   }
 
-  /**
-   * Info level logging - only shown in development.
-   */
   info (message: string, context?: LogContext): void {
     this.log(LogLevel.INFO, 'INFO', message, context);
   }
 
-  /**
-   * Warning level logging - shown in development and production.
-   */
   warn (message: string, context?: LogContext): void {
     this.log(LogLevel.WARN, 'WARN', message, context);
   }
 
-  /**
-   * Error level logging - shown in development and production.
-   */
   error (message: string, context?: LogContext | Error | unknown): void {
     let logContext: LogContext | undefined;
 
@@ -121,9 +99,6 @@ class Logger {
     this.log(LogLevel.ERROR, 'ERROR', message, logContext);
   }
 
-  /**
-   * Log an error with additional context.
-   */
   logError (error: unknown, message: string, additionalContext?: LogContext): void {
     let errorDetails: LogContext = {};
 
@@ -148,5 +123,4 @@ class Logger {
   }
 }
 
-// Export a singleton instance.
 export const logger = new Logger();

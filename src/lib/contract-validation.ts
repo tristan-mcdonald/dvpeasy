@@ -3,17 +3,11 @@ import { ContractValidationError } from '../types/errors';
 import { FlowDraft } from '../types/settlement';
 import { z } from 'zod';
 
-/**
- * Type guards and runtime validation for smart contract interactions.
- * This module provides both TypeScript type guards and Zod schemas for runtime validation.
- */
-
-// Base validation schemas for common types.
 const AddressSchema = z.custom<Address>(value => typeof value === 'string' && isAddress(value), {
   message: 'Invalid Ethereum address format',
 });
 
-// Reusable schema for parsing string/number to BigInt.
+// A non-negative whole number, from a bigint, a string or a number.
 const BigIntFromStringSchema = z.union([
   z.bigint().refine((val) => val >= 0n, { message: 'Amount/ID must be non-negative' }),
   z.string().transform((val, ctx) => {
@@ -56,7 +50,7 @@ const BigIntFromStringSchema = z.union([
   }),
 ]);
 
-// Schema for future date validation.
+// A cutoff date from the date picker, which must be in the future, as a timestamp in seconds.
 const FutureDateSchema = z.string()
   .transform((val, ctx) => {
     // Handle both 'Y-m-d H:i' format and ISO format.
@@ -113,20 +107,13 @@ const SettlementSubmissionSchema = z.object({
 }));
 
 /**
- * Contract validation manager for structured validation operations.
- * Provides type guards, validation functions, and error handling for contract data.
+ * Checking input before it's sent to the DVP contract.
  */
 export const contractValidationManager = {
-  /**
-   * Type guard for validating Ethereum addresses.
-   */
   isValidAddress (value: unknown): value is Address {
     return typeof value === 'string' && isAddress(value);
   },
 
-  /**
-   * Validates and normalizes a settlement ID.
-   */
   validateSettlementId (id: unknown): bigint {
     const result = BigIntFromStringSchema.safeParse(id);
     if (result.success) {
@@ -135,10 +122,6 @@ export const contractValidationManager = {
     throw new Error('Settlement ID must be a valid number, string, or BigInt');
   },
 
-  /**
-   * Validates and converts an amount or token ID to BigInt.
-   * Uses the existing BigIntFromStringSchema for consistent validation.
-   */
   validateAmountOrId (value: unknown, isNFT: boolean): bigint {
     const result = BigIntFromStringSchema.safeParse(value);
     if (!result.success) {
@@ -152,9 +135,8 @@ export const contractValidationManager = {
   },
 
   /**
-   * Validation for settlement creation.
-   * Validates all settlement fields including flows, dates, and references.
-   * Note: Flow amounts remain as strings for later parsing with proper decimal handling.
+   * Checks the create form, throwing one error which lists every problem. Flow amounts stay as
+   * typed, to be parsed with their tokens' decimals.
    */
   validateSettlementForSubmission (input: {
     flows: FlowDraft[];
