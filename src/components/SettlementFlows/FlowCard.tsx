@@ -128,11 +128,11 @@ export default FlowCard;
 type NftActionsProps = Pick<FlowCardProps, 'flow' | 'copiedNftId' | 'onCopyNftId' | 'onShowNft'>;
 
 function NftActions ({ flow, copiedNftId, onCopyNftId, onShowNft }: NftActionsProps) {
-  const { network } = useCurrentNetwork();
+  const { chainId } = useCurrentNetwork().network;
   if (flow.nftId === undefined) return null;
 
   const { nftId } = flow;
-  const nftMarketplaceUrl = networkLinks.nft(network.chainId, flow.token, nftId);
+  const nftMarketplaceUrl = networkLinks.nft(chainId, flow.token, nftId);
 
   return (
     <>
@@ -158,7 +158,7 @@ function NftActions ({ flow, copiedNftId, onCopyNftId, onShowNft }: NftActionsPr
           )}
         </button>
       </Tooltip>
-      {nftMarketplaceUrl && !network.isTestnet && (
+      {nftMarketplaceUrl && (
         <Tooltip content="View on NFT marketplace">
           <a
           className={nftActionClass}

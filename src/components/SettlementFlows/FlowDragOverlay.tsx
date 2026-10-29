@@ -3,7 +3,9 @@ import FlowTokenBadge from './FlowTokenBadge';
 import NFTIcon from '../NFTIcon';
 import { Copy, Edit, ExternalLink, GripVertical, Trash2 } from 'lucide-react';
 import { FlowForDisplay } from '../../types/settlement';
+import { networkLinks } from '../../lib/network-links';
 import { TokenForDisplay } from '../../hooks/useTokensForDisplay';
+import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 
 interface FlowDragOverlayProps {
   activeFlow: FlowForDisplay;
@@ -20,6 +22,10 @@ export default function FlowDragOverlay ({
   tokenForDisplay,
   collectionPreviewId,
 }: FlowDragOverlayProps) {
+  const { chainId } = useCurrentNetwork().network;
+  const hasMarketplaceLink = activeFlow.nftId !== undefined
+    && networkLinks.nft(chainId, activeFlow.token, activeFlow.nftId) !== undefined;
+
   return (
     <div className="block w-full shadow-2xl rounded-lg bg-input-background border-2 border-primary p-4 relative z-50 drag-overlay">
       <div className="flex items-center justify-between mb-1 border-b border-interface-border pb-4">
@@ -54,9 +60,11 @@ export default function FlowDragOverlay ({
           <div className="transition-colors p-1 text-primary">
             <Copy className="transition-colors size-4" />
           </div>
-          <div className="transition-colors p-1 text-primary">
-            <ExternalLink className="transition-colors size-4" />
-          </div>
+          {hasMarketplaceLink && (
+            <div className="transition-colors p-1 text-primary">
+              <ExternalLink className="transition-colors size-4" />
+            </div>
+          )}
         </>
       )} />
     </div>
