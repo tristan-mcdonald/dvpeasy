@@ -34,8 +34,8 @@ export interface Network {
   faucetUrl?: string;
   isTestnet: boolean;
   nativeToken: TokenDetails;
-  /** OpenSea's page for an NFT, with `{contract}` and `{token}` placeholders. */
-  nftUrlTemplate: string;
+  /** OpenSea's page for an NFT, with `{contract}` and `{token}` placeholders, on main networks. */
+  nftUrlTemplate?: string;
   rpcUrl: string;
   /** The tokens offered on a test network, which token APIs don't list. */
   testTokens?: TokenDetails[];
@@ -90,7 +90,6 @@ export const NETWORKS: Record<NetworkId, Network> = {
     faucetUrl: 'https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet',
     isTestnet: true,
     nativeToken: ETHER,
-    nftUrlTemplate: 'https://testnets.opensea.io/assets/base-sepolia/{contract}/{token}',
     rpcUrl: alchemyUrl('base-sepolia'),
     trustWalletFolder: 'base',
   },
@@ -117,7 +116,6 @@ export const NETWORKS: Record<NetworkId, Network> = {
     faucetUrl: 'https://sepoliafaucet.com',
     isTestnet: true,
     nativeToken: ETHER,
-    nftUrlTemplate: 'https://testnets.opensea.io/assets/sepolia/{contract}/{token}',
     rpcUrl: alchemyUrl('eth-sepolia'),
     testTokens: SEPOLIA_TEST_TOKENS,
     trustWalletFolder: 'ethereum',

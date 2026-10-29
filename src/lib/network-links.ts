@@ -18,14 +18,10 @@ export const networkLinks = {
     return networks.byChainId(chainId)?.faucetUrl;
   },
 
-  /**
-   * An NFT's page on a marketplace, for main networks only.
-   */
   nft (chainId: number, contractAddress: string, tokenId: string): string | undefined {
     const network = networks.byChainId(chainId);
-    if (!network || network.isTestnet) return undefined;
-    return network.nftUrlTemplate
-      .replace('{contract}', contractAddress)
+    return network?.nftUrlTemplate
+      ?.replace('{contract}', contractAddress)
       .replace('{token}', tokenId);
   },
 
