@@ -79,15 +79,6 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
     partyStatus => partyStatus?.tokenStatuses.every(settlements.isTokenApproved) ?? true,
   ));
 
-  const loadingPartyStatuses = useMemo(() => parties.map((party): PartyStatusForDisplay => ({
-    address: party,
-    isLoading: true,
-    isApproved: false,
-    etherRequired: 0n,
-    etherDeposited: 0n,
-    tokenStatuses: [],
-  })), [parties]);
-
   const { refetch: refetchSettlementApproval } = settlementApprovalQuery;
   const { refetch: refetchPartyStatuses } = partyStatusesQuery;
   const refetch = useCallback(
@@ -96,7 +87,7 @@ export function usePartyStatuses ({ settlementId, settlement, address }: UsePart
   );
 
   return {
-    partyStatuses: formattedPartyStatuses ?? loadingPartyStatuses,
+    partyStatuses: formattedPartyStatuses ?? [],
     hasLoaded: formattedPartyStatuses !== undefined,
     currentPartyStatus,
     allApprovalsComplete,
@@ -124,7 +115,6 @@ function formatPartyStatus ({
   if (!partyStatus) {
     return {
       address,
-      isLoading: false,
       isApproved: false,
       etherRequired: 0n,
       etherDeposited: 0n,
@@ -136,7 +126,6 @@ function formatPartyStatus ({
   return {
     ...partyStatus,
     address,
-    isLoading: false,
     tokenStatuses: partyStatus.tokenStatuses.map(tokenStatus => formatTokenStatus(
       tokenStatus,
       tokensMetadataByAddress[tokenStatus.tokenAddress.toLowerCase()]?.metadata,

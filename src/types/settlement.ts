@@ -44,7 +44,6 @@ export interface TokenStatusForDisplay extends TokenStatus {
  */
 export interface PartyStatusForDisplay extends Omit<PartyStatus, 'tokenStatuses'> {
   address: Address;
-  isLoading: boolean;
   tokenStatuses: TokenStatusForDisplay[];
   error?: string;
 }

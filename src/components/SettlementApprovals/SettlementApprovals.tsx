@@ -5,7 +5,6 @@ import { Address } from 'viem';
 import { Loader2 } from 'lucide-react';
 import { PartyStatusForDisplay } from '../../types/settlement';
 import { useFilteredParties } from './hooks/useFilteredParties';
-import { useLoadingState } from './hooks/useLoadingState';
 import { utilityManager } from '../../lib/utils';
 
 interface SettlementApprovalsProps {
@@ -39,11 +38,8 @@ export default function SettlementApprovals ({
   isRevoking,
   isWithdrawing,
 }: SettlementApprovalsProps) {
-  const { shouldShowLoadingState, isInitialLoad } = useLoadingState(
-    isLoading,
-    hasEverLoaded,
-    partyStatuses,
-  );
+  const isInitialLoad = !hasEverLoaded;
+  const shouldShowLoadingState = isLoading || isInitialLoad;
 
   const filteredPartyStatuses = useFilteredParties(partyStatuses);
 
