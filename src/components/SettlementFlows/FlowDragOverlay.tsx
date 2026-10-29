@@ -1,12 +1,12 @@
-import Address from './scaffold-eth/Address';
-import LabelWithIcon from './LabelWithIcon';
-import NFTCollectionPreview from './NFTCollectionPreview';
-import NFTIcon from './NFTIcon';
+import Address from '../scaffold-eth/Address';
+import LabelWithIcon from '../LabelWithIcon';
+import NFTCollectionPreview from '../NFTCollectionPreview';
+import NFTIcon from '../NFTIcon';
 import { ArrowDownRight, ArrowUpRight, Coins, Copy, Edit, ExternalLink, GripVertical, Hash, Loader2, Trash2, TriangleRight } from 'lucide-react';
-import { FlowForDisplay } from '../types/settlement';
-import { TokenForDisplay } from '../hooks/useTokensForDisplay';
-import { TokenLogoResolver } from './scaffold-eth/components/TokenLogoResolver';
-import { useCurrentNetwork } from '../hooks/useCurrentNetwork';
+import { FlowForDisplay } from '../../types/settlement';
+import { TokenForDisplay } from '../../hooks/useTokensForDisplay';
+import { TokenLogoResolver } from '../scaffold-eth/components/TokenLogoResolver';
+import { useCurrentNetwork } from '../../hooks/useCurrentNetwork';
 
 interface FlowDragOverlayProps {
   activeFlow: FlowForDisplay;
