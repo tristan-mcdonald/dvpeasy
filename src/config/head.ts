@@ -1,17 +1,12 @@
 /**
- * This file handles injecting all head elements dynamically.
+ * Adds the favicons, the web app manifest and Microsoft's tile tags to the document's head.
  */
-
 export const injectHeadElements = (): void => {
   injectFavicons();
 };
 
-/**
- * Injects all favicon and web app manifest tags into the document head.
- */
 const injectFavicons = (): void => {
   const faviconTags = [
-    // Apple touch icons.
     {
       rel: 'apple-touch-icon-precomposed',
       sizes: '57x57',
@@ -52,7 +47,6 @@ const injectFavicons = (): void => {
       sizes: '152x152',
       href: '/favicons/apple-touch-icon-152x152.png',
     },
-    // Favicons.
     {
       rel: 'icon',
       type: 'image/png',
@@ -83,14 +77,12 @@ const injectFavicons = (): void => {
       sizes: '128x128',
       href: '/favicons/favicon-128.png',
     },
-    // Web app manifest.
     {
       rel: 'manifest',
       href: '/favicons/site.webmanifest',
     },
   ];
 
-  // Microsoft application meta tags.
   const msAppMetaTags = [
     {
       name: 'application-name',
@@ -132,7 +124,6 @@ const injectFavicons = (): void => {
     document.head.appendChild(link);
   });
 
-  // Create and append meta elements for Microsoft applications.
   msAppMetaTags.forEach(tag => {
     const meta = document.createElement('meta');
 

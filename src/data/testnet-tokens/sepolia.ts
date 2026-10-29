@@ -1,7 +1,7 @@
 import type { TokenDetails } from '../../config/networks';
 
 /**
- * Sepolia testnet token database.
+ * The test tokens offered on Sepolia.
  */
 export const SEPOLIA_TEST_TOKENS: TokenDetails[] = [
   {

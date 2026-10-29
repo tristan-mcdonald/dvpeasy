@@ -1,9 +1,7 @@
 import { LayoutDashboard, Plus } from 'lucide-react';
 
 /**
- * Navigation configuration for the main application navigation.
- * @param dashboardPath - The dashboard path with current network/version.
- * @param createPath - The create settlement path with current network/version.
+ * The header's links, each with how to tell whether it's the current page.
  */
 export function getNavigationItems (dashboardPath: string, createPath: string) {
   return [
@@ -12,7 +10,7 @@ export function getNavigationItems (dashboardPath: string, createPath: string) {
       label: 'Dashboard',
       icon: LayoutDashboard,
       isActivePathPredicate: (currentPath: string) => {
-        // Match dashboard paths with network/version pattern.
+        // The dashboard is `/{network}/{version}`.
         const dashboardPattern = /^\/[^/]+\/[^/]+$/;
         return currentPath === '/' || dashboardPattern.test(currentPath);
       },
@@ -22,7 +20,6 @@ export function getNavigationItems (dashboardPath: string, createPath: string) {
       label: 'Create settlement',
       icon: Plus,
       isActivePathPredicate: (currentPath: string) => {
-        // Match create settlement paths.
         return currentPath.includes('/settlement/') && currentPath.endsWith('/create');
       },
     },

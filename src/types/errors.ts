@@ -1,5 +1,6 @@
 /**
- * Base error type for all contract-related errors.
+ * An error from the wallet, the RPC or the DVP contract, with a message for the user and whether
+ * trying again might work.
  */
 export abstract class ContractError extends Error {
   abstract readonly type: string;
@@ -13,7 +14,7 @@ export abstract class ContractError extends Error {
 }
 
 /**
- * Network connectivity or RPC errors.
+ * A request to the RPC which failed or timed out.
  */
 export class NetworkError extends ContractError {
   readonly type = 'NETWORK_ERROR';
@@ -22,7 +23,7 @@ export class NetworkError extends ContractError {
 }
 
 /**
- * Invalid or malformed data returned from contract.
+ * An error `errorManager.parse` couldn't name.
  */
 export class InvalidDataError extends ContractError {
   readonly type = 'INVALID_DATA';
@@ -31,7 +32,7 @@ export class InvalidDataError extends ContractError {
 }
 
 /**
- * Settlement-specific errors.
+ * A settlement ID with no settlement.
  */
 export class SettlementNotFoundError extends ContractError {
   readonly type = 'SETTLEMENT_NOT_FOUND';
@@ -44,7 +45,7 @@ export class SettlementNotFoundError extends ContractError {
 }
 
 /**
- * Token detection and metadata errors.
+ * A token whose type or details couldn't be read.
  */
 export class TokenDetectionError extends ContractError {
   readonly type = 'TOKEN_DETECTION_ERROR';
@@ -70,7 +71,7 @@ export class UnsupportedTokenError extends TokenDetectionError {
 }
 
 /**
- * Rate limiting or quota exceeded errors.
+ * The RPC refused a request for going over its rate limit.
  */
 export class RateLimitError extends ContractError {
   readonly type = 'RATE_LIMIT_ERROR';
@@ -79,7 +80,7 @@ export class RateLimitError extends ContractError {
 }
 
 /**
- * Transaction-related errors.
+ * A contract call which reverted.
  */
 export class TransactionError extends ContractError {
   readonly type = 'TRANSACTION_ERROR';
@@ -88,7 +89,7 @@ export class TransactionError extends ContractError {
 }
 
 /**
- * User rejection of transaction.
+ * The user declined a request in their wallet.
  */
 export class UserRejectionError extends ContractError {
   readonly type = 'USER_REJECTION';
